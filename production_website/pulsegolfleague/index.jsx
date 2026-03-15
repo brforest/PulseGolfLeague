@@ -50,7 +50,7 @@ function PulseGolfLeague() {
       {/* Header */}
       <header className="header">
         <div className="logo">
-          <span className="logo-text">PGL</span>
+          <img src={PglLogo} alt="Pulse Golf League" className="logo-image" />
         </div>
         <button
           className={`hamburger ${isMenuOpen ? 'open' : ''}`}
