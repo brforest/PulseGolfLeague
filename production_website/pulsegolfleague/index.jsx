@@ -115,11 +115,11 @@ function TournamentBracket() {
 
       <div className="purse-strip">
         {[
-          { round: 'ROUND OF 16', value: '$1,125 ea.' },
-          { round: 'QUARTERS',    value: '$2,500 ea.' },
-          { round: 'SEMI-FINAL',  value: '$5,000 ea.' },
-          { round: 'RUNNER-UP',   value: '$10,000' },
-          { round: 'CHAMPION',    value: '$15,000' },
+          { round: 'ROUND OF 16', value: '$1,125 ea.*' },
+          { round: 'QUARTERS',    value: '$2,500 ea.*' },
+          { round: 'SEMI-FINAL',  value: '$5,000 ea.*' },
+          { round: 'RUNNER-UP',   value: '$10,000*' },
+          { round: 'CHAMPION',    value: '$15,000*' },
         ].map(({ round, value }, i) => (
           <div key={i} className="purse-item">
             <span className="purse-value">{value}</span>
@@ -127,6 +127,7 @@ function TournamentBracket() {
           </div>
         ))}
       </div>
+      <p className="purse-disclaimer">* Assuming full field of 144 players</p>
     </div>
   );
 }
@@ -139,9 +140,12 @@ function PulseGolfLeague() {
     { id: 2, user: 'MIA R', text: 'This format is chaos in the best way.', tone: '' },
     { id: 3, user: 'TRACKER', text: 'Pulse Boost window opens after every round.', tone: 'accent' },
     { id: 4, user: 'JULIAN K', text: 'Pressure putt incoming on 18.', tone: '' },
+    { id: 5, user: 'ANNA W', text: 'That tee shot had no fear.', tone: '' },
+    { id: 6, user: 'DEVIN S', text: 'Crowd is loud and locked in.', tone: 'highlight' },
   ]);
   const sectionsRef = useRef([]);
-  const chatIdRef = useRef(5);
+  const chatIdRef = useRef(7);
+  const recentChatIndicesRef = useRef([]);
 
   const liveMessagePool = [
     { user: 'PULSE CAM', text: 'Leaderboard reshuffle after that birdie.', tone: 'highlight' },
@@ -150,6 +154,20 @@ function PulseGolfLeague() {
     { user: 'COACH FEED', text: 'Match play momentum swings are unreal.', tone: '' },
     { user: 'DEVIN S', text: 'Crowd is loud and locked in.', tone: 'highlight' },
     { user: 'PULSE CAM', text: 'Final group headed to the closing stretch.', tone: '' },
+    { user: 'RILEY M', text: 'He is absolutely dialled in right now.', tone: '' },
+    { user: 'TRACKER', text: 'Pulse Boost just hit — purse climbing.', tone: 'accent' },
+    { user: 'COACH FEED', text: 'Back nine starts in 10 minutes.', tone: '' },
+    { user: 'MARCUS T', text: 'That eagle on 7 changed everything.', tone: 'highlight' },
+    { user: 'ANNA W', text: 'Nobody saw that chip-in coming.', tone: '' },
+    { user: 'PULSE CAM', text: 'Both players tied going into 17.', tone: 'highlight' },
+    { user: 'ZARA K', text: 'Heart rate must be through the roof right now.', tone: '' },
+    { user: 'TRACKER', text: 'Sudden death is on the table if 18 halves.', tone: 'accent' },
+    { user: 'DEVIN S', text: 'Best match I have watched all season.', tone: '' },
+    { user: 'COACH FEED', text: 'Wind picking up on the back nine.', tone: '' },
+    { user: 'RILEY M', text: 'Crowd on their feet at 15.', tone: 'highlight' },
+    { user: 'MARCUS T', text: 'Match play pressure is different. You feel it.', tone: '' },
+    { user: 'ZARA K', text: 'That concession was a smart move.', tone: '' },
+    { user: 'PULSE CAM', text: 'We are heading to the 18th all square.', tone: 'highlight' },
   ];
 
   useEffect(() => {
@@ -184,7 +202,12 @@ function PulseGolfLeague() {
   useEffect(() => {
     const chatInterval = setInterval(() => {
       setChatMessages((prev) => {
-        const nextMessage = liveMessagePool[Math.floor(Math.random() * liveMessagePool.length)];
+        let nextIndex;
+        do {
+          nextIndex = Math.floor(Math.random() * liveMessagePool.length);
+        } while (recentChatIndicesRef.current.includes(nextIndex));
+        recentChatIndicesRef.current = [...recentChatIndicesRef.current.slice(-5), nextIndex];
+        const nextMessage = liveMessagePool[nextIndex];
         const message = {
           id: chatIdRef.current,
           user: nextMessage.user,
@@ -265,56 +288,6 @@ function PulseGolfLeague() {
         </div>
       </section>
 
-      {/* Introducing */}
-      <section className="intro-section animate-on-scroll">
-        <div className="section-bg intro-bg"></div>
-        <div className="section-overlay"></div>
-        <div className="intro-content">
-          <p className="intro-label">Introducing</p>
-          <h2 className="intro-title">Pulse Golf League</h2>
-          <div className="intro-copy">
-            <p>Golf has a pulse, but for too long, the professional game has been flatlining.</p>
-            <p>Traditional tours have built walls.<br />They've made it about high entry fees that drain a pro's bank account before they even tee off.<br />They've made it about exclusive structures and silent galleries.<br />They've forgotten that at its core, golf is about the raw, heart-pounding tension of a single putt.</p>
-            <p>The Pulse Golf League (PGL) isn't just another tour; it's a movement to democratize the sport.<br />We believe that talent should be the only barrier to entry, which is why we keep fees low and payouts high.<br />We believe that fans shouldn't just be spectators - they should be the fuel that drives the purse.<br />In the PGL, we don't just show you the score. We show you the pressure.<br />Through live-streamed match play and real-time Pulse effects, we bring you inside the ropes.<br />We capture the moments where hands shake and nerves fray.<br />We give the power to the people to boost the purse and reward the clutch players who define the weekend.</p>
-            <h3 className="intro-promise-title">Our Promise:</h3>
-            <ul className="intro-promise-list">
-              <li>To the Players: A platform that respects your grind, protects your pocketbook, and celebrates your skill.</li>
-              <li>To the Fans: A raw, accessible, and thrilling experience where your voice and your Pulse Boost change the stakes of the game.</li>
-              <li>To the Game: To keep it simple, keep it competitive, and keep it loud.</li>
-            </ul>
-            <p className="intro-closer">This is golf with a heartbeat. This is the Pulse Golf League.</p>
-          </div>
-        </div>
-      </section>
-
-      {/* Season Info */}
-      <section id="season" className="season-section animate-on-scroll">
-        <div className="section-bg season-bg"></div>
-        <div className="section-overlay"></div>
-        <div className="season-grid">
-          <div className="season-left">
-            <p className="season-label">PGL SEASON</p>
-            <h2 className="season-number">01</h2>
-          </div>
-          <div className="season-right">
-            <h3 className="season-title">MATCH PLAY<br />SERIES</h3>
-            <div className="season-details">
-              <div className="season-detail-item">
-                <span className="detail-label">PILOT EVENT</span>
-              </div>
-              <div className="season-detail-item">
-                <span className="detail-value">$54,000</span>
-                <span className="detail-label">PURSE</span>
-              </div>
-              <div className="season-detail-item">
-                <span className="detail-value">JULY 2026</span>
-                <span className="detail-label">YOLO FLIERS GC</span>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
-
       {/* Match Play Format */}
       <section id="format" className="format-section animate-on-scroll">
         <div className="section-bg format-bg"></div>
@@ -387,6 +360,28 @@ function PulseGolfLeague() {
         </div>
       </section>
 
+      {/* Introducing */}
+      <section className="intro-section animate-on-scroll">
+        <div className="section-bg intro-bg"></div>
+        <div className="section-overlay"></div>
+        <div className="intro-content">
+          <p className="intro-label">Introducing</p>
+          <h2 className="intro-title">Pulse Golf League</h2>
+          <div className="intro-copy">
+            <p>Golf has a pulse, but for too long, the professional game has been flatlining.</p>
+            <p>Traditional tours have built walls.<br />They've made it about high entry fees that drain a pro's bank account before they even tee off.<br />They've made it about exclusive structures and silent galleries.<br />They've forgotten that at its core, golf is about the raw, heart-pounding tension of a single putt.</p>
+            <p>The Pulse Golf League (PGL) isn't just another tour; it's a movement to democratize the sport.<br />We believe that talent should be the only barrier to entry, which is why we keep fees low and payouts high.<br />We believe that fans shouldn't just be spectators - they should be the fuel that drives the purse.<br />In the PGL, we don't just show you the score. We show you the pressure.<br />Through live-streamed match play and real-time Pulse effects, we bring you inside the ropes.<br />We capture the moments where hands shake and nerves fray.<br />We give the power to the people to boost the purse and reward the clutch players who define the weekend.</p>
+            <h3 className="intro-promise-title">Our Promise:</h3>
+            <ul className="intro-promise-list">
+              <li>To the Players: A platform that respects your grind, protects your pocketbook, and celebrates your skill.</li>
+              <li>To the Fans: A raw, accessible, and thrilling experience where your voice and your Pulse Boost change the stakes of the game.</li>
+              <li>To the Game: To keep it simple, keep it competitive, and keep it loud.</li>
+            </ul>
+            <p className="intro-closer">This is golf with a heartbeat. This is the Pulse Golf League.</p>
+          </div>
+        </div>
+      </section>
+
       {/* Match Day */}
       <section id="join" className="matchday-section animate-on-scroll">
         <div className="section-bg matchday-bg"></div>
@@ -401,13 +396,24 @@ function PulseGolfLeague() {
               <span className="matchday-label">Match Dates</span>
               <span className="matchday-value">July 13-16</span>
             </div>
+            <div className="matchday-detail">
+              <span className="matchday-label">Venue</span>
+              <span className="matchday-value">Yolo Fliers GC</span>
+              <span className="matchday-label">Woodland, CA</span>
+            </div>
             <div className="matchday-prize">
-              <span className="prize-amount">$15,000</span>
+              <span className="prize-amount">$15,000*</span>
               <span className="prize-label">TO THE WINNER</span>
+              <span className="prize-disclaimer">* Assuming full field of 144 players</span>
             </div>
           </div>
           <div className="matchday-cta">
-            <button className="join-button">JOIN US</button>
+            <a
+              href="https://app.squabbitgolf.com/tournament?inviteCode=CCYSKH"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="join-button"
+            >JOIN US</a>
             <div className="entry-info">
               <span className="entry-fee">$500 ENTRY</span>
               <span className="entry-note">TOP 32 EARN THEIR MONEY BACK</span>
@@ -420,12 +426,12 @@ function PulseGolfLeague() {
       <footer className="footer">
         <div className="footer-content">
           <span className="footer-logo">PGL</span>
-          <p>© 2025 Pulse Golf League. All rights reserved.</p>
+          <p>© 2026 Pulse Golf League. All rights reserved.</p>
           <div className="footer-links">
             <a href="#manifesto">Manifesto</a>
-            <a href="#season">Season</a>
             <a href="#format">Format</a>
             <a href="#live">Live</a>
+            <a href="#join">Join</a>
           </div>
         </div>
       </footer>
