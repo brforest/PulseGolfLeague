@@ -7,7 +7,7 @@ function TournamentBracket() {
   const SW = 120, SH = 30, HH = 50, UNIT = 40;
   const cx = [0, 160, 320, 480, 640];
   const rounds = ['R32', 'R16', 'QUARTERS', 'SEMIS', 'FINAL'];
-  const dates  = ['JUL 13', 'JUL 14', 'JUL 15 AM', 'JUL 15 PM', 'JUL 16'];
+  const dates  = ['JUL 14', 'JUL 15 AM', 'JUL 15 PM', 'JUL 16 AM', 'JUL 16 PM'];
 
   const r1y = Array.from({ length: 8 }, (_, i) => UNIT / 2 + i * UNIT);
   const r2y = Array.from({ length: 4 }, (_, i) => (r1y[i * 2] + r1y[i * 2 + 1]) / 2);
@@ -115,10 +115,11 @@ function TournamentBracket() {
 
       <div className="purse-strip">
         {[
-          { round: 'ROUND OF 16', value: '$1,125 ea.*' },
-          { round: 'QUARTERS',    value: '$2,500 ea.*' },
-          { round: 'SEMI-FINAL',  value: '$5,000 ea.*' },
-          { round: 'RUNNER-UP',   value: '$10,000*' },
+          { round: 'ROUND OF 32', value: '$500 ea.' },
+          { round: 'ROUND OF 16', value: '$1,000 ea.*' },
+          { round: 'QUARTERS',    value: '$2,250 ea.*' },
+          { round: 'SEMI-FINAL',  value: '$3,500 ea.*' },
+          { round: 'RUNNER-UP',   value: '$7,000*' },
           { round: 'CHAMPION',    value: '$15,000*' },
         ].map(({ round, value }, i) => (
           <div key={i} className="purse-item">
@@ -296,7 +297,7 @@ function PulseGolfLeague() {
           <h2 className="format-title">MATCH PLAY<br />MADNESS</h2>
         </div>
         <p className="format-description">
-          A four-day pilot built for pressure. Round of 32 starts the bracket, every match is head-to-head, and only one player survives all five rounds to claim the title.
+          A four-day pilot built for pressure. A one day stroke play qualifier, low 32 advance. Round of 32 starts the bracket, every match is head-to-head, and only one player survives all five rounds to claim the title.
         </p>
         <div className="format-flow">
           <div className="format-step">
