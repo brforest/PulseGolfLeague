@@ -1,0 +1,64 @@
+import 'dotenv/config';
+import express from 'express';
+import cors from 'cors';
+import helmet from 'helmet';
+import rateLimit from 'express-rate-limit';
+import { registerRoute } from './routes/register.js';
+import { startChargeJob } from './jobs/chargeRegistrations.js';
+
+const app = express();
+const PORT = process.env.PORT || 3001;
+
+// ── Security headers ──────────────────────────────────────
+app.use(helmet());
+
+// ── CORS ─────────────────────────────────────────────────
+// Accepts a comma-separated list so you can allow both www and apex domains
+const allowedOrigins = (process.env.FRONTEND_URL || 'http://localhost:5173')
+  .split(',')
+  .map((o) => o.trim());
+
+app.use(
+  cors({
+    origin: (origin, cb) => {
+      // Allow server-to-server calls (no origin) and listed origins
+      if (!origin || allowedOrigins.includes(origin)) return cb(null, true);
+      cb(new Error('Not allowed by CORS'));
+    },
+    methods: ['GET', 'POST'],
+    allowedHeaders: ['Content-Type'],
+  })
+);
+
+// ── Body parsing ──────────────────────────────────────────
+app.use(express.json({ limit: '20kb' }));
+
+// ── Rate limiting ─────────────────────────────────────────
+// Applied only to mutating API routes
+const registrationLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 10,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { error: 'Too many requests — please try again later.' },
+});
+
+// ── Routes ────────────────────────────────────────────────
+app.get('/api/health', (_req, res) => res.json({ status: 'ok', ts: new Date().toISOString() }));
+app.use('/api', registrationLimiter, registerRoute);
+
+// ── 404 fallthrough ───────────────────────────────────────
+app.use((_req, res) => res.status(404).json({ error: 'Not found.' }));
+
+// ── Global error handler ──────────────────────────────────
+// eslint-disable-next-line no-unused-vars
+app.use((err, _req, res, _next) => {
+  console.error('Unhandled error:', err);
+  res.status(500).json({ error: 'Internal server error.' });
+});
+
+// ── Start ─────────────────────────────────────────────────
+app.listen(PORT, () => {
+  console.log(`PGL API running on port ${PORT}`);
+  startChargeJob();
+});

@@ -1,5 +1,6 @@
 import React, { useEffect, useState, useRef } from 'react';
 import './index.css';
+import SignUp from './SignUp.jsx';
 
 const PglLogo = '/images/pgl_logo.png';
 
@@ -134,6 +135,7 @@ function TournamentBracket() {
 }
 
 function PulseGolfLeague() {
+  const [showSignup, setShowSignup] = useState(false);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [heartRate, setHeartRate] = useState(82);
   const [chatMessages, setChatMessages] = useState([
@@ -188,7 +190,7 @@ function PulseGolfLeague() {
     });
 
     return () => observer.disconnect();
-  }, []);
+  }, [showSignup]);  // re-observe fresh DOM nodes whenever main page re-appears
 
   useEffect(() => {
     const interval = setInterval(() => {
@@ -231,6 +233,10 @@ function PulseGolfLeague() {
   };
 
   const toggleMenu = () => setIsMenuOpen(!isMenuOpen);
+
+  if (showSignup) {
+    return <SignUp onBack={() => setShowSignup(false)} />;
+  }
 
   return (
     <div className="app-container">
@@ -409,14 +415,12 @@ function PulseGolfLeague() {
             </div>
           </div>
           <div className="matchday-cta">
-            <a
-              href="https://app.squabbitgolf.com/tournament?inviteCode=CCYSKH"
-              target="_blank"
-              rel="noopener noreferrer"
+            <button
               className="join-button"
-            >JOIN US</a>
+              onClick={() => setShowSignup(true)}
+            >SIGN UP</button>
             <div className="entry-info">
-              <span className="entry-fee">$500 ENTRY</span>
+              <span className="entry-fee">$519 ENTRY</span>
               <span className="entry-note">TOP 32 EARN THEIR MONEY BACK</span>
             </div>
           </div>
