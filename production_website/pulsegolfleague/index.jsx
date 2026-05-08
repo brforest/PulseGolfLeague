@@ -284,7 +284,7 @@ function PulseGolfLeague() {
         </button>
         <nav className={`nav ${isMenuOpen ? 'open' : ''}`}>
           <ul className="nav-list">
-            {['Manifesto', 'Season', 'Format', 'Live', 'Join'].map((item) => (
+            {['Manifesto', 'Format', 'Live', 'Join'].map((item) => (
               <li key={item}>
                 <a
                   href={`#${item.toLowerCase()}`}

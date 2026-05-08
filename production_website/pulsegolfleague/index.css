@@ -88,8 +88,8 @@ html {
 }
 
 .header.scrolled {
-  background: rgba(20, 26, 14, 0.9);
-  backdrop-filter: blur(8px);
+  background: rgba(20, 26, 14, 0.6);
+  backdrop-filter: blur(6px);
 }
 
 .logo-text {
