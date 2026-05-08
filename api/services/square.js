@@ -1,11 +1,12 @@
-import pkg from 'square';
-const { Client } = pkg;
+import { SquareClient, SquareEnvironment } from 'square';
 import { randomUUID } from 'crypto';
 
-const client = new Client({
-  accessToken: process.env.SQUARE_ACCESS_TOKEN,
+const client = new SquareClient({
+  token: process.env.SQUARE_ACCESS_TOKEN,
   environment:
-    process.env.SQUARE_ENV === 'production' ? 'production' : 'sandbox',
+    process.env.SQUARE_ENV === 'production'
+      ? SquareEnvironment.Production
+      : SquareEnvironment.Sandbox,
 });
 
 /**
@@ -14,7 +15,7 @@ const client = new Client({
  */
 export async function createOrFindCustomer(playerInfo) {
   // Search first to avoid duplicates
-  const { result: searchResult } = await client.customersApi.searchCustomers({
+  const searchResponse = await client.customers.search({
     query: {
       filter: {
         emailAddress: { exact: playerInfo.email.toLowerCase().trim() },
@@ -22,11 +23,11 @@ export async function createOrFindCustomer(playerInfo) {
     },
   });
 
-  if (searchResult.customers?.length > 0) {
-    return searchResult.customers[0].id;
+  if (searchResponse.customers?.length > 0) {
+    return searchResponse.customers[0].id;
   }
 
-  const { result } = await client.customersApi.createCustomer({
+  const createResponse = await client.customers.create({
     idempotencyKey: randomUUID(),
     emailAddress: playerInfo.email.toLowerCase().trim(),
     givenName: playerInfo.firstName.trim(),
@@ -48,7 +49,7 @@ export async function createOrFindCustomer(playerInfo) {
       .join(' · '),
   });
 
-  return result.customer.id;
+  return createResponse.customer.id;
 }
 
 /**
@@ -56,7 +57,7 @@ export async function createOrFindCustomer(playerInfo) {
  * Returns the saved Square card ID.
  */
 export async function saveCardOnFile(nonce, customerId, playerInfo) {
-  const { result } = await client.cardsApi.createCard({
+  const response = await client.cards.create({
     idempotencyKey: randomUUID(),
     sourceId: nonce,
     card: {
@@ -65,7 +66,7 @@ export async function saveCardOnFile(nonce, customerId, playerInfo) {
     },
   });
 
-  return result.card.id;
+  return response.card.id;
 }
 
 /**
@@ -73,7 +74,7 @@ export async function saveCardOnFile(nonce, customerId, playerInfo) {
  * Returns the Square payment ID.
  */
 export async function chargeCard({ customerId, cardId, amountCents, note }) {
-  const { result } = await client.paymentsApi.createPayment({
+  const response = await client.payments.create({
     idempotencyKey: randomUUID(),
     sourceId: cardId,
     customerId,
@@ -85,5 +86,5 @@ export async function chargeCard({ customerId, cardId, amountCents, note }) {
     note,
   });
 
-  return result.payment.id;
+  return response.payment.id;
 }
