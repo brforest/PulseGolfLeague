@@ -101,6 +101,10 @@ export default function TournamentInfo({ onRegister, onBack }) {
                 <span className="tinfo-fact-label">ENTRY FEE</span>
                 <span className="tinfo-fact-value">$519 · Charged ~June 23, 2026</span>
               </div>
+              <div className="tinfo-fact">
+                <span className="tinfo-fact-label">SIGNUP DEADLINE</span>
+                <span className="tinfo-fact-value">Monday, June 29, 2026</span>
+              </div>
             </div>
           </div>
         </section>

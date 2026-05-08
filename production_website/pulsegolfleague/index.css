@@ -83,7 +83,13 @@ html {
   justify-content: space-between;
   align-items: center;
   z-index: 1000;
-  mix-blend-mode: difference;
+  background: transparent;
+  transition: background 0.4s ease;
+}
+
+.header.scrolled {
+  background: rgba(20, 26, 14, 0.9);
+  backdrop-filter: blur(8px);
 }
 
 .logo-text {
@@ -143,12 +149,11 @@ html {
 }
 
 .nav-link {
-  color: var(--text-primary);
+  color: var(--text-secondary);
   text-decoration: none;
-  font-size: 0.75rem;
+  font-size: 0.7rem;
   font-weight: 500;
-  letter-spacing: 3px;
-  text-transform: uppercase;
+  letter-spacing: 2px;
   transition: opacity 0.3s;
 }
 
@@ -2204,7 +2209,7 @@ html {
 /* Overview 2-column layout */
 .tinfo-overview {
   display: grid;
-  grid-template-columns: 260px 1fr;
+  grid-template-columns: 320px 1fr;
   gap: 52px;
   align-items: start;
 }
@@ -2526,7 +2531,7 @@ html {
   .tinfo-overview {
     grid-template-columns: 1fr;
   }
-  .tinfo-poster-wrap { max-width: 260px; }
+  .tinfo-poster-wrap { max-width: 320px; }
   .tinfo-key-facts { grid-template-columns: 1fr; }
   .tinfo-schedule-item { gap: 16px; flex-direction: column; }
   .tinfo-schedule-date { min-width: unset; }

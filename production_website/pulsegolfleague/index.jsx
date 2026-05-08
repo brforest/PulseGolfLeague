@@ -141,6 +141,7 @@ function PulseGolfLeague() {
   const [showTournamentInfo, setShowTournamentInfo] = useState(false);
   const [showAdmin, setShowAdmin] = useState(() => window.location.hash === '#admin');
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [isScrolled, setIsScrolled] = useState(false);
   const [heartRate, setHeartRate] = useState(82);
   const [chatMessages, setChatMessages] = useState([
     { id: 1, user: 'PULSE CAM', text: 'Coverage is live from Yolo Fliers GC.', tone: 'highlight' },
@@ -230,6 +231,12 @@ function PulseGolfLeague() {
     return () => clearInterval(chatInterval);
   }, []);
 
+  useEffect(() => {
+    const onScroll = () => setIsScrolled(window.scrollY > 20);
+    window.addEventListener('scroll', onScroll, { passive: true });
+    return () => window.removeEventListener('scroll', onScroll);
+  }, []);
+
   const handleNavClick = (e, id) => {
     e.preventDefault();
     document.querySelector(id)?.scrollIntoView({ behavior: 'smooth' });
@@ -239,21 +246,21 @@ function PulseGolfLeague() {
   const toggleMenu = () => setIsMenuOpen(!isMenuOpen);
 
   const openAdmin = () => { window.location.hash = '#admin'; setShowAdmin(true); };
-  const closeAdmin = () => { history.replaceState(null, '', window.location.pathname); setShowAdmin(false); };
+  const closeAdmin = () => { history.replaceState(null, '', window.location.pathname); setShowAdmin(false); window.scrollTo(0, 0); };
 
   if (showAdmin) {
     return <Admin onBack={closeAdmin} />;
   }
 
   if (showSignup) {
-    return <SignUp onBack={() => setShowSignup(false)} />;
+    return <SignUp onBack={() => { setShowSignup(false); window.scrollTo(0, 0); }} />;
   }
 
   if (showTournamentInfo) {
     return (
       <TournamentInfo
         onRegister={() => { setShowTournamentInfo(false); setShowSignup(true); }}
-        onBack={() => setShowTournamentInfo(false)}
+        onBack={() => { setShowTournamentInfo(false); window.scrollTo(0, 0); }}
       />
     );
   }
@@ -261,7 +268,7 @@ function PulseGolfLeague() {
   return (
     <div className="app-container">
       {/* Header */}
-      <header className="header">
+      <header className={`header${isScrolled ? ' scrolled' : ''}`}>
         <div className="logo">
           <img src={PglLogo} alt="Pulse Golf League" className="logo-image" />
         </div>
