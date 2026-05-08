@@ -1,11 +1,14 @@
 import { Resend } from 'resend';
 
-const resend = new Resend(process.env.RESEND_API_KEY);
-const FROM = process.env.EMAIL_FROM || 'PGL <noreply@pulsegolfleague.com>';
+// Lazy client — env vars are loaded by the time these functions are called
+function getClient() {
+  return new Resend(process.env.RESEND_API_KEY);
+}
+const FROM = () => process.env.EMAIL_FROM || 'PGL <noreply@pulsegolfleague.com>';
 
 export async function sendConfirmationEmail(playerInfo) {
-  await resend.emails.send({
-    from: FROM,
+  await getClient().emails.send({
+    from: FROM(),
     to: [playerInfo.email],
     subject: "You're registered — Yolo Fliers Matchplay Championship",
     html: confirmationHtml(playerInfo),
@@ -13,8 +16,8 @@ export async function sendConfirmationEmail(playerInfo) {
 }
 
 export async function sendChargeEmail(playerInfo, { amountFormatted, paymentId }) {
-  await resend.emails.send({
-    from: FROM,
+  await getClient().emails.send({
+    from: FROM(),
     to: [playerInfo.email],
     subject: 'Entry fee charged — Yolo Fliers Matchplay Championship',
     html: chargeHtml(playerInfo, { amountFormatted, paymentId }),
