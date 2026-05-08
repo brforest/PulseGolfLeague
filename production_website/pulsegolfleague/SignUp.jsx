@@ -563,15 +563,12 @@ export default function SignUp({ onBack }) {
             input: {
               backgroundColor: 'transparent',
               color: '#f0ece0',
-              fontFamily: 'Inter, sans-serif',
-              fontSize: '15px',
             },
             'input::placeholder': {
               color: '#706c58',
             },
             '.message-text': {
               color: '#b0ab98',
-              fontSize: '12px',
             },
             '.message-icon': {
               color: '#b0ab98',
