@@ -1,13 +1,11 @@
 import pkg from 'square';
-const { Client, Environment } = pkg;
+const { Client } = pkg;
 import { randomUUID } from 'crypto';
 
 const client = new Client({
   accessToken: process.env.SQUARE_ACCESS_TOKEN,
   environment:
-    process.env.SQUARE_ENV === 'production'
-      ? Environment.Production
-      : Environment.Sandbox,
+    process.env.SQUARE_ENV === 'production' ? 'production' : 'sandbox',
 });
 
 /**
