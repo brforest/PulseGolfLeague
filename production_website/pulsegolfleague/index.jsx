@@ -139,7 +139,7 @@ function TournamentBracket() {
 function PulseGolfLeague() {
   const [showSignup, setShowSignup] = useState(false);
   const [showTournamentInfo, setShowTournamentInfo] = useState(false);
-  const [showAdmin, setShowAdmin] = useState(() => window.location.pathname === '/admin');
+  const [showAdmin, setShowAdmin] = useState(() => window.location.hash === '#admin');
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [heartRate, setHeartRate] = useState(82);
   const [chatMessages, setChatMessages] = useState([
@@ -238,8 +238,11 @@ function PulseGolfLeague() {
 
   const toggleMenu = () => setIsMenuOpen(!isMenuOpen);
 
+  const openAdmin = () => { window.location.hash = '#admin'; setShowAdmin(true); };
+  const closeAdmin = () => { history.replaceState(null, '', window.location.pathname); setShowAdmin(false); };
+
   if (showAdmin) {
-    return <Admin onBack={() => setShowAdmin(false)} />;
+    return <Admin onBack={closeAdmin} />;
   }
 
   if (showSignup) {
@@ -451,7 +454,7 @@ function PulseGolfLeague() {
       {/* Footer */}
       <footer className="footer">
         <div className="footer-content">
-          <span className="footer-logo">PGL</span>
+          <span className="footer-logo" onClick={openAdmin} style={{ cursor: 'default' }}>PGL</span>
           <p>© 2026 Pulse Golf League. All rights reserved.</p>
           <div className="footer-links">
             <a href="#manifesto">Manifesto</a>
