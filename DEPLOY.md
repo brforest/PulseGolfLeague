@@ -61,7 +61,11 @@ npm run build
 This produces a `dist/` folder. Copy it to your Droplet (or build directly on the server):
 
 ```bash
-scp -r dist/ user@YOUR_DROPLET_IP:/var/www/pgl/public
+scp -r dist/ user@YOUR_DROPLET_IP:/var/www/pulsegolfleague/public
+```
+or on the server:
+```bash
+cp -r dist/ /var/www/pulsegolfleague/public
 ```
 
 
@@ -72,9 +76,11 @@ scp -r dist/ user@YOUR_DROPLET_IP:/var/www/pgl/public
 On your Droplet, create the app directory and upload the `api/` folder:
 
 ```bash
-mkdir -p /var/www/pgl/api
+mkdir -p /var/www/pulsegolfleague/api
 # From your local machine:
-scp -r api/ user@YOUR_DROPLET_IP:/var/www/pgl/api
+scp -r api/ user@YOUR_DROPLET_IP:/var/www/pulsegolfleague/api
+# or from your server:
+cp -r api/ /var/www/pulsegolfleague/
 ```
 
 Or if using git, just pull the repo on the server.
@@ -100,7 +106,7 @@ SQL
 
 # Apply the schema
 psql postgresql://pgl_user:CHOOSE_A_STRONG_PASSWORD@localhost:5432/pgl \
-  -f /var/www/pgl/api/db/schema.sql
+  -f /var/www/pulsegolfleague/api/db/schema.sql
 ```
 
 You should see `CREATE TABLE` and `CREATE INDEX` printed. Run this only once.
@@ -118,7 +124,7 @@ sudo systemctl status postgresql
 On the Droplet:
 
 ```bash
-cd /var/www/pgl/api
+cd /var/www/pulsegolfleague/api
 cp .env.example .env
 nano .env   # or use vim, etc.
 ```
@@ -150,7 +156,7 @@ Save and close.
 ## 8. Install API Dependencies
 
 ```bash
-cd /var/www/pgl/api
+cd /var/www/pulsegolfleague/api
 npm install --omit=dev
 ```
 
@@ -163,7 +169,7 @@ npm install --omit=dev
 # Install PM2 globally if not already installed
 npm install -g pm2
 
-cd /var/www/pgl/api
+cd /var/www/pulsegolfleague/api
 
 # Create the logs directory
 mkdir -p logs
@@ -209,7 +215,7 @@ server {
     ssl_certificate_key /etc/letsencrypt/live/pulsegolfleague.com/privkey.pem;
 
     # Serve the built frontend
-    root /var/www/pgl/public;
+    root /var/www/pulsegolfleague/public;
     index index.html;
 
     # SPA fallback — lets React handle client-side routing
@@ -280,7 +286,7 @@ VITE_SQUARE_ENV=production
 ```
 Rebuild and redeploy the frontend (`npm run build`, copy `dist/`).
 
-**API** (`/var/www/pgl/api/.env`):
+**API** (`/var/www/pulsegolfleague/api/.env`):
 ```
 SQUARE_ENV=production
 SQUARE_ACCESS_TOKEN=YOUR_PRODUCTION_ACCESS_TOKEN
@@ -312,7 +318,7 @@ pm2 logs pgl-api | grep charge-job
 
 To manually trigger the charge job (e.g. for testing):
 ```bash
-cd /var/www/pgl/api
+cd /var/www/pulsegolfleague/api
 node -e "import('./jobs/chargeRegistrations.js').then(m => m.runChargeJob())"
 ```
 
