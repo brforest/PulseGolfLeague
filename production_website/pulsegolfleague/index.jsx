@@ -194,7 +194,7 @@ function PulseGolfLeague() {
     });
 
     return () => observer.disconnect();
-  }, [showSignup]);  // re-observe fresh DOM nodes whenever main page re-appears
+  }, [showSignup, showTournamentInfo]);  // re-observe fresh DOM nodes whenever main page re-appears
 
   useEffect(() => {
     const interval = setInterval(() => {
@@ -305,9 +305,12 @@ function PulseGolfLeague() {
           <p className="hero-subheading">
             144 players. 32 advance. One champion. Join the Pulse Golf League for our Pilot event at Yolo Fliers GC this July. High-intensity golf, streamed live to the world.
           </p>
-          <a href="#join" className="hero-join-button" onClick={(e) => handleNavClick(e, '#join')}>
-            Join Now
-          </a>
+          <div className="hero-cta">
+            <button className="hero-pilot-info-button" onClick={() => setShowTournamentInfo(true)}>Pilot Event Info</button>
+            <a href="#join" className="hero-join-button" onClick={(e) => handleNavClick(e, '#join')}>
+              Join Now
+            </a>
+          </div>
         </div>
         <div className="hero-scroll-indicator">
           <span>SCROLL</span>

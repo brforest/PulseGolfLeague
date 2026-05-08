@@ -507,6 +507,11 @@ export default function SignUp({ onBack }) {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
+  // Scroll to top when signup page mounts
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, []);
+
   // Load Square Web Payments SDK script once
   useEffect(() => {
     const squareEnv = import.meta.env.VITE_SQUARE_ENV || 'sandbox';
