@@ -7,21 +7,23 @@ function getClient() {
 const FROM = () => process.env.EMAIL_FROM || 'PGL <noreply@pulsegolfleague.com>';
 
 export async function sendConfirmationEmail(playerInfo) {
-  await getClient().emails.send({
+  const { error } = await getClient().emails.send({
     from: FROM(),
     to: [playerInfo.email],
     subject: "You're registered — Yolo Fliers Matchplay Championship",
     html: confirmationHtml(playerInfo),
   });
+  if (error) throw error;
 }
 
 export async function sendChargeEmail(playerInfo, { amountFormatted, paymentId }) {
-  await getClient().emails.send({
+  const { error } = await getClient().emails.send({
     from: FROM(),
     to: [playerInfo.email],
     subject: 'Entry fee charged — Yolo Fliers Matchplay Championship',
     html: chargeHtml(playerInfo, { amountFormatted, paymentId }),
   });
+  if (error) throw error;
 }
 
 // ─── Templates ────────────────────────────────────────────────────────────────
