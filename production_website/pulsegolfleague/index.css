@@ -2732,8 +2732,6 @@ html {
   color: var(--text-muted);
   border-bottom: 1px solid var(--border);
   white-space: nowrap;
-  position: sticky;
-  top: 57px;
 }
 
 .admin-table td {
