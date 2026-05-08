@@ -4,6 +4,8 @@ import cors from 'cors';
 import helmet from 'helmet';
 import rateLimit from 'express-rate-limit';
 import { registerRoute } from './routes/register.js';
+import { playersRoute } from './routes/players.js';
+import { adminRoute } from './routes/admin.js';
 import { startChargeJob } from './jobs/chargeRegistrations.js';
 
 const app = express();
@@ -28,8 +30,8 @@ app.use(
       if (!origin || allowedOrigins.includes(origin)) return cb(null, true);
       cb(new Error('Not allowed by CORS'));
     },
-    methods: ['GET', 'POST'],
-    allowedHeaders: ['Content-Type'],
+    methods: ['GET', 'POST', 'PATCH', 'DELETE'],
+    allowedHeaders: ['Content-Type', 'Authorization'],
   })
 );
 
@@ -46,9 +48,29 @@ const registrationLimiter = rateLimit({
   message: { error: 'Too many requests — please try again later.' },
 });
 
+// Generous limit for public read routes
+const publicReadLimiter = rateLimit({
+  windowMs: 60 * 1000, // 1 minute
+  max: 60,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { error: 'Too many requests — please try again later.' },
+});
+
+// Tight limit for admin endpoints
+const adminLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 100,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { error: 'Too many requests — please try again later.' },
+});
+
 // ── Routes ────────────────────────────────────────────────
 app.get('/api/health', (_req, res) => res.json({ status: 'ok', ts: new Date().toISOString() }));
+app.use('/api', publicReadLimiter, playersRoute);
 app.use('/api', registrationLimiter, registerRoute);
+app.use('/api/admin', adminLimiter, adminRoute);
 
 // ── 404 fallthrough ───────────────────────────────────────
 app.use((_req, res) => res.status(404).json({ error: 'Not found.' }));

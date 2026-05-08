@@ -1,6 +1,8 @@
 import React, { useEffect, useState, useRef } from 'react';
 import './index.css';
 import SignUp from './SignUp.jsx';
+import TournamentInfo from './TournamentInfo.jsx';
+import Admin from './Admin.jsx';
 
 const PglLogo = '/images/pgl_logo.png';
 
@@ -136,6 +138,8 @@ function TournamentBracket() {
 
 function PulseGolfLeague() {
   const [showSignup, setShowSignup] = useState(false);
+  const [showTournamentInfo, setShowTournamentInfo] = useState(false);
+  const [showAdmin, setShowAdmin] = useState(() => window.location.pathname === '/admin');
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [heartRate, setHeartRate] = useState(82);
   const [chatMessages, setChatMessages] = useState([
@@ -234,8 +238,21 @@ function PulseGolfLeague() {
 
   const toggleMenu = () => setIsMenuOpen(!isMenuOpen);
 
+  if (showAdmin) {
+    return <Admin onBack={() => setShowAdmin(false)} />;
+  }
+
   if (showSignup) {
     return <SignUp onBack={() => setShowSignup(false)} />;
+  }
+
+  if (showTournamentInfo) {
+    return (
+      <TournamentInfo
+        onRegister={() => { setShowTournamentInfo(false); setShowSignup(true); }}
+        onBack={() => setShowTournamentInfo(false)}
+      />
+    );
   }
 
   return (
@@ -415,6 +432,10 @@ function PulseGolfLeague() {
             </div>
           </div>
           <div className="matchday-cta">
+            <button
+              className="tournament-info-button"
+              onClick={() => setShowTournamentInfo(true)}
+            >Tournament Info</button>
             <button
               className="join-button"
               onClick={() => setShowSignup(true)}
