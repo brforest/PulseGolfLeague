@@ -1,3 +1,16 @@
+Deploy frontend changes:
+```
+cd ~/pulsegolfleague/PulseGolfLeague
+rm production_website/pulsegolfleague/dist/index.html
+git pull
+cd production_website/pulsegolfleague
+npm install && npm run build
+sudo cp -r dist/* /var/www/pulsegolfleague/public
+cd ~/pulsegolfleague/PulseGolfLeague/api
+npm install --omit=dev
+pm2 restart pgl-api
+```
+
 # PGL Deployment Guide
 
 ## Prerequisites

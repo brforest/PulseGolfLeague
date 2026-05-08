@@ -94,7 +94,7 @@ function TournamentDetailsStep({ onNext }) {
 
         <div className="signup-charge-notice">
           <span className="signup-charge-notice-icon">ℹ</span>
-          <span>Your card will <strong>not</strong> be charged today. The $519 entry fee is collected approximately three weeks before the event, on or around <strong>June 23, 2026</strong>.</span>
+          <span>Your card will <strong>not</strong> be charged today. The $500 entry fee (+ $19 processing fee) is collected approximately three weeks before the event, on or around <strong>June 23, 2026</strong>.</span>
         </div>
 
         <div className="signup-actions">
@@ -318,7 +318,7 @@ function PaymentStep({ cardContainerRef, paymentError, submitting, onSubmit, onB
       <div className="signup-card">
         <h2 className="signup-card-title">Payment Information</h2>
         <p className="signup-card-subtitle">
-          Your card will <strong>not</strong> be charged today. The entry fee of{' '}
+          Your card will <strong>not</strong> be charged today. A total of{' '}
           <strong>$519.00</strong> will be collected approximately three weeks before the event,
           on or around <strong>June 23, 2026</strong>.
         </p>
@@ -326,6 +326,14 @@ function PaymentStep({ cardContainerRef, paymentError, submitting, onSubmit, onB
         <div className="signup-payment-summary">
           <div className="signup-payment-row">
             <span>Yolo Fliers Matchplay Championship — Entry Fee</span>
+            <span>$500.00</span>
+          </div>
+          <div className="signup-payment-row">
+            <span>Processing Fee</span>
+            <span>$19.00</span>
+          </div>
+          <div className="signup-payment-row signup-payment-row-total">
+            <span>Total</span>
             <span>$519.00</span>
           </div>
           <div className="signup-payment-row signup-payment-row-charge">

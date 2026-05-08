@@ -454,7 +454,7 @@ function PulseGolfLeague() {
               onClick={() => setShowSignup(true)}
             >SIGN UP</button>
             <div className="entry-info">
-              <span className="entry-fee">$519 ENTRY</span>
+              <span className="entry-fee">$500 ENTRY</span>
               <span className="entry-note">TOP 32 EARN THEIR MONEY BACK</span>
             </div>
           </div>

@@ -1775,6 +1775,15 @@ html {
   border-top: 1px solid var(--border);
 }
 
+.signup-payment-row-total {
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 0.88rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  padding-top: 12px;
+  border-top: 1px solid var(--border);
+}
+
 .signup-square-wrap {
   margin-bottom: 24px;
   display: flex;
