@@ -65,6 +65,15 @@ function TournamentDetailsStep({ onNext }) {
               alt="Yolo Fliers Matchplay Championship Poster"
               className="signup-poster"
             />
+            <div className="signup-charge-notice signup-charge-notice-top">
+              <span className="signup-charge-notice-icon">ℹ</span>
+              <span>Your card will <strong>not</strong> be charged today. The $500 entry fee (+ $19 processing fee) will be charged on <strong>June 23, 2026</strong>.</span>
+            </div>
+            <div className="signup-actions signup-actions-top">
+              <button className="signup-btn-primary" onClick={onNext}>
+                Continue to Registration →
+              </button>
+            </div>
           </div>
 
           <div className="signup-event-info">
