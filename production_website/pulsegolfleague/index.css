@@ -251,21 +251,20 @@ html {
 .hero-pilot-info-button {
   font-family: 'Space Grotesk', sans-serif;
   display: inline-block;
-  background: transparent;
+  background: var(--accent-red);
   color: var(--text-primary);
-  border: 1px solid rgba(176, 171, 152, 0.45);
-  padding: 14px 48px;
-  font-size: 0.82rem;
-  font-weight: 600;
-  letter-spacing: 5px;
+  border: none;
+  padding: 18px 64px;
+  font-size: 1rem;
+  font-weight: 700;
+  letter-spacing: 6px;
   text-transform: uppercase;
   cursor: pointer;
   transition: all 0.3s;
 }
 
 .hero-pilot-info-button:hover {
-  border-color: var(--text-secondary);
-  color: var(--text-primary);
+  background: #d42828;
   transform: translateY(-2px);
 }
 
@@ -986,21 +985,20 @@ html {
 .tournament-info-button {
   font-family: 'Space Grotesk', sans-serif;
   display: inline-block;
-  background: transparent;
+  background: var(--accent-red);
   color: var(--text-primary);
-  border: 1px solid rgba(176, 171, 152, 0.45);
-  padding: 14px 48px;
-  font-size: 0.82rem;
-  font-weight: 600;
-  letter-spacing: 5px;
+  border: none;
+  padding: 18px 64px;
+  font-size: 1rem;
+  font-weight: 700;
+  letter-spacing: 6px;
   text-transform: uppercase;
   cursor: pointer;
   transition: all 0.3s;
 }
 
 .tournament-info-button:hover {
-  border-color: var(--text-secondary);
-  color: var(--text-primary);
+  background: #d42828;
   transform: translateY(-2px);
 }
 

@@ -446,7 +446,7 @@ function ConfirmationPage({ playerInfo, onBack }) {
         </p>
 
         <button className="signup-btn-primary" onClick={onBack}>
-          ← Back to Site
+          ← Back to Info
         </button>
       </div>
     </div>
@@ -683,7 +683,7 @@ export default function SignUp({ onBack }) {
           <img src={PglLogo} alt="Pulse Golf League" className="logo-image" />
         </div>
         <button className="signup-back-btn" onClick={onBack}>
-          ← Back to Site
+          ← Back to Info
         </button>
       </header>
 

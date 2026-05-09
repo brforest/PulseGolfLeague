@@ -267,7 +267,7 @@ function PulseGolfLeague() {
   }
 
   if (page === 'signup') {
-    return <SignUp onBack={() => navigate('/')} />;
+    return <SignUp onBack={() => navigate('/tournament-info')} />;
   }
 
   if (page === 'tournament-info') {
@@ -327,10 +327,7 @@ function PulseGolfLeague() {
             144 players. 32 advance. One champion. Join the Pulse Golf League for our Pilot event at Yolo Fliers GC this July. High-intensity golf, streamed live to the world.
           </p>
           <div className="hero-cta">
-            <button className="hero-pilot-info-button" onClick={() => navigate('/tournament-info')}>Pilot Event Info</button>
-            <a href="#join" className="hero-join-button" onClick={(e) => handleNavClick(e, '#join')}>
-              Join Now
-            </a>
+            <button className="hero-pilot-info-button" onClick={() => navigate('/tournament-info')}>Pilot Event Info and Sign Up</button>
           </div>
         </div>
         <div className="hero-scroll-indicator">
@@ -462,11 +459,7 @@ function PulseGolfLeague() {
             <button
               className="tournament-info-button"
               onClick={() => navigate('/tournament-info')}
-            >Tournament Info</button>
-            <button
-              className="join-button"
-              onClick={() => navigate('/registration')}
-            >SIGN UP</button>
+            >Tournament Info and Sign Up</button>
             <div className="entry-info">
               <span className="entry-fee">$500 ENTRY</span>
               <span className="entry-note">TOP 32 EARN THEIR MONEY BACK</span>
