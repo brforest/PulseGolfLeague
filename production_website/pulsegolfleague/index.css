@@ -1093,6 +1093,22 @@ html {
   opacity: 0.5;
 }
 
+.footer-instagram {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  border: 1px solid rgba(176, 171, 152, 0.2);
+  padding: 4px 10px;
+  border-radius: 20px;
+  transition: color 0.3s, border-color 0.3s, opacity 0.3s !important;
+}
+
+.footer-instagram:hover {
+  opacity: 1 !important;
+  color: #e1306c !important;
+  border-color: #e1306c !important;
+}
+
 /* ===== ANIMATIONS ===== */
 .animate-on-scroll {
   opacity: 0;
