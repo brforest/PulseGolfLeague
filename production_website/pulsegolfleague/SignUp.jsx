@@ -41,7 +41,7 @@ const WAIVER_SECTIONS = [
   },
   {
     title: 'PAYMENT AUTHORIZATION',
-    body: `By providing your payment information and completing registration, you authorize Pulse Golf League to charge your card in the amount of $519.00 USD, three (3) weeks prior to the event start date (on or around June 23, 2026). You will receive an email confirmation prior to any charge being processed. In the event of tournament cancellation by PGL, a full refund will be issued to your original payment method within 10 business days. Withdrawals made prior to the charge date will not be charged. Withdrawals made after the charge date are non-refundable unless a substitute player is found at PGL's discretion.`,
+    body: `By providing your payment information and completing registration, you authorize Pulse Golf League to charge your card in the amount of $519.00 USD, three (3) weeks prior to the event start date (June 23, 2026). You will receive an email confirmation prior to any charge being processed. In the event of tournament cancellation by PGL, a full refund will be issued to your original payment method within 10 business days. Withdrawals made prior to the charge date will not be charged. Withdrawals made after the charge date are non-refundable unless a substitute player is found at PGL's discretion.`,
   },
 ];
 
@@ -51,7 +51,7 @@ function TournamentDetailsStep({ onNext }) {
     <div className="signup-step-content">
       <div className="signup-card">
         <span className="signup-event-eyebrow">INAUGURAL EVENT · YOLO FLIERS CLUB · WOODLAND, CA</span>
-        <h1 className="signup-event-title">Yolo Fliers Matchplay Championship</h1>
+        <h1 className="signup-event-title">Yolo Fliers Matchplay Championship — Registration</h1>
         <div className="signup-event-dates">
           <span>QUALIFIER: MON, JULY 13</span>
           <span className="signup-date-divider">·</span>
@@ -94,7 +94,7 @@ function TournamentDetailsStep({ onNext }) {
 
         <div className="signup-charge-notice">
           <span className="signup-charge-notice-icon">ℹ</span>
-          <span>Your card will <strong>not</strong> be charged today. The $500 entry fee (+ $19 processing fee) is collected approximately three weeks before the event, on or around <strong>June 23, 2026</strong>.</span>
+          <span>Your card will <strong>not</strong> be charged today. The $500 entry fee (+ $19 processing fee) will be charged on <strong>June 23, 2026</strong>.</span>
         </div>
 
         <div className="signup-actions">
@@ -319,8 +319,7 @@ function PaymentStep({ cardContainerRef, paymentError, submitting, onSubmit, onB
         <h2 className="signup-card-title">Payment Information</h2>
         <p className="signup-card-subtitle">
           Your card will <strong>not</strong> be charged today. A total of{' '}
-          <strong>$519.00</strong> will be collected approximately three weeks before the event,
-          on or around <strong>June 23, 2026</strong>.
+          <strong>$519.00</strong> will be charged on <strong>June 23, 2026</strong>.
         </p>
 
         <div className="signup-payment-summary">
@@ -338,7 +337,7 @@ function PaymentStep({ cardContainerRef, paymentError, submitting, onSubmit, onB
           </div>
           <div className="signup-payment-row signup-payment-row-charge">
             <span>Charge Date</span>
-            <span>~June 23, 2026</span>
+            <span>June 23, 2026</span>
           </div>
         </div>
 
@@ -427,7 +426,7 @@ function ConfirmationPage({ playerInfo, onBack }) {
           </div>
           <div className="signup-confirm-item">
             <span className="signup-confirm-label">PAYMENT</span>
-            <span className="signup-confirm-value">$519.00 to be charged on or around June 23, 2026</span>
+            <span className="signup-confirm-value">$519.00 to be charged on June 23, 2026</span>
           </div>
         </div>
 

@@ -137,9 +137,14 @@ function TournamentBracket() {
 }
 
 function PulseGolfLeague() {
-  const [showSignup, setShowSignup] = useState(false);
-  const [showTournamentInfo, setShowTournamentInfo] = useState(false);
-  const [showAdmin, setShowAdmin] = useState(() => window.location.hash === '#admin');
+  const getPage = () => {
+    const p = window.location.pathname;
+    if (p === '/registration') return 'signup';
+    if (p === '/tournament-info') return 'tournament-info';
+    if (p === '/admin') return 'admin';
+    return 'home';
+  };
+  const [page, setPage] = useState(getPage);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
   const [heartRate, setHeartRate] = useState(82);
@@ -195,7 +200,7 @@ function PulseGolfLeague() {
     });
 
     return () => observer.disconnect();
-  }, [showSignup, showTournamentInfo]);  // re-observe fresh DOM nodes whenever main page re-appears
+  }, [page]);  // re-observe fresh DOM nodes whenever main page re-appears
 
   useEffect(() => {
     const interval = setInterval(() => {
@@ -237,6 +242,12 @@ function PulseGolfLeague() {
     return () => window.removeEventListener('scroll', onScroll);
   }, []);
 
+  useEffect(() => {
+    const onPopState = () => setPage(getPage());
+    window.addEventListener('popstate', onPopState);
+    return () => window.removeEventListener('popstate', onPopState);
+  }, []);
+
   const handleNavClick = (e, id) => {
     e.preventDefault();
     document.querySelector(id)?.scrollIntoView({ behavior: 'smooth' });
@@ -245,22 +256,25 @@ function PulseGolfLeague() {
 
   const toggleMenu = () => setIsMenuOpen(!isMenuOpen);
 
-  const openAdmin = () => { window.location.hash = '#admin'; setShowAdmin(true); };
-  const closeAdmin = () => { history.replaceState(null, '', window.location.pathname); setShowAdmin(false); window.scrollTo(0, 0); };
+  const navigate = (path) => {
+    history.pushState(null, '', path);
+    setPage(getPage());
+    window.scrollTo(0, 0);
+  };
 
-  if (showAdmin) {
-    return <Admin onBack={closeAdmin} />;
+  if (page === 'admin') {
+    return <Admin onBack={() => navigate('/')} />;
   }
 
-  if (showSignup) {
-    return <SignUp onBack={() => { setShowSignup(false); window.scrollTo(0, 0); }} />;
+  if (page === 'signup') {
+    return <SignUp onBack={() => navigate('/')} />;
   }
 
-  if (showTournamentInfo) {
+  if (page === 'tournament-info') {
     return (
       <TournamentInfo
-        onRegister={() => { setShowTournamentInfo(false); setShowSignup(true); }}
-        onBack={() => { setShowTournamentInfo(false); window.scrollTo(0, 0); }}
+        onRegister={() => navigate('/registration')}
+        onBack={() => navigate('/')}
       />
     );
   }
@@ -313,7 +327,7 @@ function PulseGolfLeague() {
             144 players. 32 advance. One champion. Join the Pulse Golf League for our Pilot event at Yolo Fliers GC this July. High-intensity golf, streamed live to the world.
           </p>
           <div className="hero-cta">
-            <button className="hero-pilot-info-button" onClick={() => setShowTournamentInfo(true)}>Pilot Event Info</button>
+            <button className="hero-pilot-info-button" onClick={() => navigate('/tournament-info')}>Pilot Event Info</button>
             <a href="#join" className="hero-join-button" onClick={(e) => handleNavClick(e, '#join')}>
               Join Now
             </a>
@@ -447,11 +461,11 @@ function PulseGolfLeague() {
           <div className="matchday-cta">
             <button
               className="tournament-info-button"
-              onClick={() => setShowTournamentInfo(true)}
+              onClick={() => navigate('/tournament-info')}
             >Tournament Info</button>
             <button
               className="join-button"
-              onClick={() => setShowSignup(true)}
+              onClick={() => navigate('/registration')}
             >SIGN UP</button>
             <div className="entry-info">
               <span className="entry-fee">$500 ENTRY</span>
@@ -464,7 +478,7 @@ function PulseGolfLeague() {
       {/* Footer */}
       <footer className="footer">
         <div className="footer-content">
-          <span className="footer-logo" onClick={openAdmin} style={{ cursor: 'default' }}>PGL</span>
+          <span className="footer-logo" onClick={() => navigate('/admin')} style={{ cursor: 'default' }}>PGL</span>
           <p>© 2026 Pulse Golf League. All rights reserved.</p>
           <div className="footer-links">
             <a href="#manifesto">Manifesto</a>
