@@ -1553,12 +1553,12 @@ html {
 }
 
 .signup-charge-notice-top {
-  margin-top: 16px;
-  margin-bottom: 12px;
+  margin-top: 0;
+  margin-bottom: 40px;
 }
 
 .signup-actions-top {
-  margin-bottom: 0;
+  margin-bottom: 36px;
 }
 
 .signup-charge-notice strong {
