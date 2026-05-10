@@ -26,6 +26,46 @@ export async function sendChargeEmail(playerInfo, { amountFormatted, paymentId }
   if (error) throw error;
 }
 
+export async function sendAdminAlertEmail({ subject, errorType, playerEmail, detail, raw }) {
+  const to = process.env.ADMIN_ALERT_EMAIL;
+  if (!to) return; // silently skip if not configured
+
+  const ts = new Date().toISOString();
+  const detailHtml = detail ? `<p><strong>Detail:</strong> ${esc(detail)}</p>` : '';
+  const rawHtml = raw
+    ? `<pre style="background:#111;color:#f0ece0;padding:16px;border-radius:4px;font-size:0.8rem;overflow-x:auto;white-space:pre-wrap;">${esc(
+        typeof raw === 'string' ? raw : JSON.stringify(raw, null, 2)
+      )}</pre>`
+    : '';
+
+  await getClient().emails.send({
+    from: FROM(),
+    to: [to],
+    subject: `[PGL Alert] ${subject}`,
+    html: `<!DOCTYPE html>
+<html lang="en">
+<head><meta charset="utf-8" /></head>
+<body style="margin:0;padding:32px 24px;background:#1e2418;font-family:Arial,sans-serif;color:#f0ece0;">
+  <table width="100%" cellpadding="0" cellspacing="0" style="max-width:600px;margin:0 auto;background:#2a3020;border:1px solid #c42020;border-radius:8px;overflow:hidden;">
+    <tr><td style="background:#c42020;padding:20px 32px;">
+      <p style="margin:0;font-size:0.65rem;letter-spacing:6px;color:#f0ece0;">PULSE GOLF LEAGUE — REGISTRATION ALERT</p>
+      <h1 style="margin:8px 0 0;font-size:1.3rem;color:#f0ece0;">${esc(subject)}</h1>
+    </td></tr>
+    <tr><td style="padding:28px 32px;">
+      <p><strong>Time:</strong> ${ts}</p>
+      <p><strong>Error type:</strong> ${esc(errorType)}</p>
+      <p><strong>Attempted by:</strong> ${playerEmail ? esc(playerEmail) : '<em>unknown</em>'}</p>
+      ${detailHtml}
+      ${rawHtml}
+      <hr style="border:none;border-top:1px solid rgba(176,171,152,0.2);margin:24px 0;" />
+      <p style="font-size:0.75rem;color:#706c58;">Check <code>pm2 logs pgl-api</code> for full stack traces.</p>
+    </td></tr>
+  </table>
+</body>
+</html>`,
+  });
+}
+
 // ─── Templates ────────────────────────────────────────────────────────────────
 
 function confirmationHtml(p) {

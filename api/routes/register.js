@@ -1,7 +1,7 @@
 import { Router } from 'express';
 import pool from '../db/index.js';
 import { createOrFindCustomer, saveCardOnFile } from '../services/square.js';
-import { sendConfirmationEmail } from '../services/email.js';
+import { sendConfirmationEmail, sendAdminAlertEmail } from '../services/email.js';
 
 export const registerRoute = Router();
 
@@ -51,6 +51,12 @@ registerRoute.post('/register', async (req, res) => {
     );
   } catch (err) {
     console.error('DB connection error during duplicate check:', err);
+    sendAdminAlertEmail({
+      subject: 'DB connection error during registration',
+      errorType: 'Database',
+      playerEmail: playerInfo.email,
+      detail: err.message,
+    }).catch(() => {});
     return res.status(503).json({
       error: 'Registration is temporarily unavailable. Please try again in a moment.',
     });
@@ -67,8 +73,29 @@ registerRoute.post('/register', async (req, res) => {
     customerId = await createOrFindCustomer(playerInfo);
   } catch (err) {
     console.error(`Square customer error for ${playerInfo.email}:`, err);
+    const firstError = err?.errors?.[0] ?? err?.body?.errors?.[0];
+    // AUTHENTICATION_ERROR = bad API credentials — not the user's fault
+    if (firstError?.category === 'AUTHENTICATION_ERROR') {
+      sendAdminAlertEmail({
+        subject: 'Square authentication error — check API credentials',
+        errorType: 'Square AUTHENTICATION_ERROR (customer step)',
+        playerEmail: playerInfo.email,
+        detail: firstError?.detail,
+        raw: err?.body,
+      }).catch(() => {});
+      return res.status(502).json({
+        error: 'Payment system configuration error. Please contact info@pulsegolfleague.com.',
+      });
+    }
+    sendAdminAlertEmail({
+      subject: `Square customer error for ${playerInfo.email}`,
+      errorType: `Square ${firstError?.category ?? 'unknown'} (customer step)`,
+      playerEmail: playerInfo.email,
+      detail: firstError?.detail,
+      raw: err?.body,
+    }).catch(() => {});
     return res.status(502).json({
-      error: 'Could not create payment customer. Please try again.',
+      error: firstError?.detail || 'Could not set up payment profile. Please check your details and try again.',
     });
   }
 
@@ -83,10 +110,31 @@ registerRoute.post('/register', async (req, res) => {
     cardId = await saveCardOnFile(nonce, customerId, playerInfo);
   } catch (err) {
     console.error(`Square card error for ${playerInfo.email}:`, err);
-    // Surface Square's own message when available (e.g. "Card number is invalid")
-    const squareMsg = err?.errors?.[0]?.detail;
+    const firstError = err?.errors?.[0] ?? err?.body?.errors?.[0];
+    if (firstError?.category === 'AUTHENTICATION_ERROR') {
+      sendAdminAlertEmail({
+        subject: 'Square authentication error — check API credentials',
+        errorType: 'Square AUTHENTICATION_ERROR (card step)',
+        playerEmail: playerInfo.email,
+        detail: firstError?.detail,
+        raw: err?.body,
+      }).catch(() => {});
+      return res.status(502).json({
+        error: 'Payment system configuration error. Please contact info@pulsegolfleague.com.',
+      });
+    }
+    // Card errors from INVALID_REQUEST_ERROR are usually bad card data entered by user—
+    // still alert so you know when someone is struggling to get through.
+    sendAdminAlertEmail({
+      subject: `Card save failed for ${playerInfo.email}`,
+      errorType: `Square ${firstError?.category ?? 'unknown'} (card step)`,
+      playerEmail: playerInfo.email,
+      detail: firstError?.detail,
+      raw: err?.body,
+    }).catch(() => {});
+    // Surface Square's own detail (e.g. "Card number is invalid", "Card declined")
     return res.status(502).json({
-      error: squareMsg || 'Could not save payment card. Please check your card details.',
+      error: firstError?.detail || 'Could not save payment card. Please check your card details.',
     });
   }
 
@@ -136,6 +184,12 @@ registerRoute.post('/register', async (req, res) => {
     );
   } catch (err) {
     console.error(`DB insert error for ${playerInfo.email}:`, err);
+    sendAdminAlertEmail({
+      subject: `DB insert failed for ${playerInfo.email}`,
+      errorType: 'Database insert',
+      playerEmail: playerInfo.email,
+      detail: err.message,
+    }).catch(() => {});
     return res.status(500).json({
       error: 'Registration could not be saved. Please contact info@pulsegolfleague.com.',
     });
