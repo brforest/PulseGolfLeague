@@ -637,15 +637,25 @@ export default function SignUp({ onBack }) {
         const nonce = result.token;
 
         const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:3001';
-        const res = await fetch(`${apiUrl}/api/register`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ nonce, playerInfo }),
-        });
+        let res;
+        try {
+          res = await fetch(`${apiUrl}/api/register`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ nonce, playerInfo }),
+          });
+        } catch (networkErr) {
+          console.error('[PGL] Network error during registration:', networkErr);
+          setPaymentError('Could not reach the server. Please check your connection and try again.');
+          return;
+        }
 
         if (!res.ok) {
           const data = await res.json().catch(() => ({}));
-          throw new Error(data.error || 'Registration failed. Please try again.');
+          const msg = data.error || `Registration failed (HTTP ${res.status}). Please try again.`;
+          console.error('[PGL] Registration API error:', res.status, msg);
+          setPaymentError(msg);
+          return;
         }
 
         setSubmitted(true);
@@ -656,8 +666,8 @@ export default function SignUp({ onBack }) {
         setPaymentError(msg);
       }
     } catch (err) {
-      setPaymentError('An unexpected error occurred. Please try again.');
-      console.error(err);
+      console.error('[PGL] Unexpected registration error:', err);
+      setPaymentError(err.message || 'An unexpected error occurred. Please try again.');
     } finally {
       setSubmitting(false);
     }

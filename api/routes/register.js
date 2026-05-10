@@ -43,10 +43,18 @@ registerRoute.post('/register', async (req, res) => {
 
   // ── Duplicate check ─────────────────────────────────────
 
-  const existing = await pool.query(
-    'SELECT id FROM registrations WHERE email = $1',
-    [playerInfo.email.toLowerCase().trim()]
-  );
+  let existing;
+  try {
+    existing = await pool.query(
+      'SELECT id FROM registrations WHERE email = $1',
+      [playerInfo.email.toLowerCase().trim()]
+    );
+  } catch (err) {
+    console.error('DB connection error during duplicate check:', err);
+    return res.status(503).json({
+      error: 'Registration is temporarily unavailable. Please try again in a moment.',
+    });
+  }
 
   if (existing.rows.length > 0) {
     return res.status(409).json({ error: 'This email address is already registered.' });
@@ -58,7 +66,7 @@ registerRoute.post('/register', async (req, res) => {
   try {
     customerId = await createOrFindCustomer(playerInfo);
   } catch (err) {
-    console.error('Square customer error:', err);
+    console.error(`Square customer error for ${playerInfo.email}:`, err);
     return res.status(502).json({
       error: 'Could not create payment customer. Please try again.',
     });
@@ -74,7 +82,7 @@ registerRoute.post('/register', async (req, res) => {
   try {
     cardId = await saveCardOnFile(nonce, customerId, playerInfo);
   } catch (err) {
-    console.error('Square card error:', err);
+    console.error(`Square card error for ${playerInfo.email}:`, err);
     // Surface Square's own message when available (e.g. "Card number is invalid")
     const squareMsg = err?.errors?.[0]?.detail;
     return res.status(502).json({
@@ -127,7 +135,7 @@ registerRoute.post('/register', async (req, res) => {
       ]
     );
   } catch (err) {
-    console.error('DB insert error:', err);
+    console.error(`DB insert error for ${playerInfo.email}:`, err);
     return res.status(500).json({
       error: 'Registration could not be saved. Please contact info@pulsegolfleague.com.',
     });
