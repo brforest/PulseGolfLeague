@@ -510,6 +510,7 @@ export default function SignUp({ onBack }) {
   const [paymentError, setPaymentError] = useState('');
   const [submitting, setSubmitting] = useState(false);
   const [submitted, setSubmitted] = useState(false);
+  const [cardKey, setCardKey] = useState(0);
 
   const squareCardRef = useRef(null);
   const squarePaymentsRef = useRef(null);
@@ -619,7 +620,7 @@ export default function SignUp({ onBack }) {
         squareCardRef.current = null;
       }
     };
-  }, [step]);
+  }, [step, cardKey]);
 
   const handleSubmit = async () => {
     if (!squareCardRef.current) {
@@ -654,6 +655,9 @@ export default function SignUp({ onBack }) {
           const data = await res.json().catch(() => ({}));
           const msg = data.error || `Registration failed (HTTP ${res.status}). Please try again.`;
           console.error('[PGL] Registration API error:', res.status, msg);
+          // Nonce was consumed by the API attempt — must re-initialize the card
+          // widget so the next submit generates a fresh token.
+          setCardKey((k) => k + 1);
           setPaymentError(msg);
           return;
         }
@@ -663,10 +667,12 @@ export default function SignUp({ onBack }) {
         const msg =
           result.errors?.map((e) => e.message).join(' ') ||
           'Card tokenization failed. Please check your card details.';
+        // tokenize() failed — nonce was not generated, no need to reset widget
         setPaymentError(msg);
       }
     } catch (err) {
       console.error('[PGL] Unexpected registration error:', err);
+      setCardKey((k) => k + 1);
       setPaymentError(err.message || 'An unexpected error occurred. Please try again.');
     } finally {
       setSubmitting(false);
