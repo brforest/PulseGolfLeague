@@ -2286,6 +2286,12 @@ html {
   background: linear-gradient(to bottom, transparent, var(--bg-dark));
   pointer-events: none;
   border-radius: 0 0 6px 6px;
+  opacity: 0;
+  transition: opacity 0.3s;
+}
+
+.tinfo-player-table-outer.tinfo-faded::after {
+  opacity: 1;
 }
 
 .tinfo-scroll-hint {

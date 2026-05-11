@@ -13,6 +13,20 @@ const client = new SquareClient({
  * Find an existing Square Customer by email, or create a new one.
  * Returns the Square customer ID string.
  */
+/**
+ * Normalise a phone number to E.164 format (+1XXXXXXXXXX for US/CA).
+ * Strips all non-digit characters, then prepends +1 if 10 digits remain.
+ * If 11 digits and starts with 1, prepends +.
+ * Falls back to the original trimmed string so Square can surface its own error.
+ */
+function normalizePhone(raw) {
+  const digits = raw.replace(/\D/g, '');
+  if (digits.length === 10) return `+1${digits}`;
+  if (digits.length === 11 && digits.startsWith('1')) return `+${digits}`;
+  // Already has country code or non-US — return as-is with + prefix if missing
+  return digits.length > 0 ? `+${digits}` : raw.trim();
+}
+
 export async function createOrFindCustomer(playerInfo) {
   // Search first to avoid duplicates
   const searchResponse = await client.customers.search({
@@ -32,7 +46,7 @@ export async function createOrFindCustomer(playerInfo) {
     emailAddress: playerInfo.email.toLowerCase().trim(),
     givenName: playerInfo.firstName.trim(),
     familyName: playerInfo.lastName.trim(),
-    phoneNumber: playerInfo.phone.trim(),
+    phoneNumber: normalizePhone(playerInfo.phone),
     address: {
       addressLine1: playerInfo.address.trim(),
       locality: playerInfo.city.trim(),

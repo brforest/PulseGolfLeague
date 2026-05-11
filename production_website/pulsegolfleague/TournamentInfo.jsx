@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 
 const PglLogo = '/images/pgl_logo.png';
 const EventPoster = '/images/yolo_fliers_matchplay_championship_poster.png';
@@ -26,6 +26,19 @@ export default function TournamentInfo({ onRegister, onBack }) {
   const [players, setPlayers] = useState([]);
   const [loadingPlayers, setLoadingPlayers] = useState(true);
   const [playerError, setPlayerError] = useState('');
+  const [tableScrolled, setTableScrolled] = useState(false);
+  const tableWrapRef = useRef(null);
+
+  // Hide fade once user scrolls to (or near) the bottom
+  useEffect(() => {
+    const el = tableWrapRef.current;
+    if (!el) return;
+    const onScroll = () => {
+      setTableScrolled(el.scrollTop + el.clientHeight >= el.scrollHeight - 8);
+    };
+    el.addEventListener('scroll', onScroll, { passive: true });
+    return () => el.removeEventListener('scroll', onScroll);
+  }, [players]);
 
   useEffect(() => {
     window.scrollTo(0, 0);
@@ -205,8 +218,8 @@ export default function TournamentInfo({ onRegister, onBack }) {
           )}
 
           {!loadingPlayers && !playerError && players.length > 0 && (
-            <div className="tinfo-player-table-outer">
-              <div className="tinfo-player-table-wrap">
+            <div className={`tinfo-player-table-outer${players.length > 7 && !tableScrolled ? ' tinfo-faded' : ''}`}>
+              <div className="tinfo-player-table-wrap" ref={tableWrapRef}>
               <table className="tinfo-player-table">
                 <thead>
                   <tr>
@@ -237,7 +250,7 @@ export default function TournamentInfo({ onRegister, onBack }) {
                 </tbody>
               </table>
               </div>
-              {players.length > 7 && (
+              {players.length > 7 && !tableScrolled && (
                 <div className="tinfo-scroll-hint">↓ scroll for more</div>
               )}
             </div>
