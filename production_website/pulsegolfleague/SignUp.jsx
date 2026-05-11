@@ -667,7 +667,9 @@ export default function SignUp({ onBack }) {
         const msg =
           result.errors?.map((e) => e.message).join(' ') ||
           'Card tokenization failed. Please check your card details.';
-        // tokenize() failed — nonce was not generated, no need to reset widget
+        // tokenize() failed — Square widget blanks out after an error, so
+        // re-initialize it so the user can re-enter their card details.
+        setCardKey((k) => k + 1);
         setPaymentError(msg);
       }
     } catch (err) {
