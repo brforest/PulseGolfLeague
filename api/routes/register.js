@@ -55,6 +55,7 @@ registerRoute.post('/register', async (req, res) => {
       subject: 'DB connection error during registration',
       errorType: 'Database',
       playerEmail: playerInfo.email,
+      playerInfo,
       detail: err.message,
     }).catch(() => {});
     return res.status(503).json({
@@ -80,6 +81,7 @@ registerRoute.post('/register', async (req, res) => {
         subject: 'Square authentication error — check API credentials',
         errorType: 'Square AUTHENTICATION_ERROR (customer step)',
         playerEmail: playerInfo.email,
+        playerInfo,
         detail: firstError?.detail,
         raw: err?.body,
       }).catch(() => {});
@@ -91,6 +93,7 @@ registerRoute.post('/register', async (req, res) => {
       subject: `Square customer error for ${playerInfo.email}`,
       errorType: `Square ${firstError?.category ?? 'unknown'} (customer step)`,
       playerEmail: playerInfo.email,
+      playerInfo,
       detail: firstError?.detail,
       raw: err?.body,
     }).catch(() => {});
@@ -116,6 +119,7 @@ registerRoute.post('/register', async (req, res) => {
         subject: 'Square authentication error — check API credentials',
         errorType: 'Square AUTHENTICATION_ERROR (card step)',
         playerEmail: playerInfo.email,
+        playerInfo,
         detail: firstError?.detail,
         raw: err?.body,
       }).catch(() => {});
@@ -129,6 +133,7 @@ registerRoute.post('/register', async (req, res) => {
       subject: `Card save failed for ${playerInfo.email}`,
       errorType: `Square ${firstError?.category ?? 'unknown'} (card step)`,
       playerEmail: playerInfo.email,
+      playerInfo,
       detail: firstError?.detail,
       raw: err?.body,
     }).catch(() => {});
@@ -188,6 +193,7 @@ registerRoute.post('/register', async (req, res) => {
       subject: `DB insert failed for ${playerInfo.email}`,
       errorType: 'Database insert',
       playerEmail: playerInfo.email,
+      playerInfo,
       detail: err.message,
     }).catch(() => {});
     return res.status(500).json({

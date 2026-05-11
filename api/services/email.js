@@ -26,17 +26,30 @@ export async function sendChargeEmail(playerInfo, { amountFormatted, paymentId }
   if (error) throw error;
 }
 
-export async function sendAdminAlertEmail({ subject, errorType, playerEmail, detail, raw }) {
+export async function sendAdminAlertEmail({ subject, errorType, playerEmail, playerInfo, detail, raw }) {
   const to = process.env.ADMIN_ALERT_EMAIL;
   if (!to) return; // silently skip if not configured
 
   const ts = new Date().toISOString();
-  const detailHtml = detail ? `<p><strong>Detail:</strong> ${esc(detail)}</p>` : '';
+  const detailHtml = detail ? `<p style="margin:0 0 8px;"><strong>Detail:</strong> ${esc(detail)}</p>` : '';
   const rawHtml = raw
     ? `<pre style="background:#111;color:#f0ece0;padding:16px;border-radius:4px;font-size:0.8rem;overflow-x:auto;white-space:pre-wrap;">${esc(
         typeof raw === 'string' ? raw : JSON.stringify(raw, null, 2)
       )}</pre>`
     : '';
+
+  const p = playerInfo ?? {};
+  const fullName = [p.firstName, p.lastName].filter(Boolean).join(' ');
+  const addressLine = [p.address, p.city, p.state, p.zip, p.country].filter(Boolean).join(', ');
+  const contactHtml = (fullName || p.email || p.phone || addressLine) ? `
+    <table width="100%" cellpadding="0" cellspacing="0"
+           style="background:rgba(0,0,0,0.2);border-radius:4px;padding:16px;margin-bottom:20px;">
+      <tr><td style="padding:4px 0;"><strong style="color:#b0ab98;font-size:0.7rem;letter-spacing:2px;">PLAYER CONTACT</strong></td></tr>
+      ${fullName   ? `<tr><td style="padding:4px 0;"><strong>Name:</strong> ${esc(fullName)}</td></tr>` : ''}
+      ${p.email    ? `<tr><td style="padding:4px 0;"><strong>Email:</strong> <a href="mailto:${esc(p.email)}" style="color:#c42020;">${esc(p.email)}</a></td></tr>` : ''}
+      ${p.phone    ? `<tr><td style="padding:4px 0;"><strong>Phone:</strong> ${esc(p.phone)}</td></tr>` : ''}
+      ${addressLine ? `<tr><td style="padding:4px 0;"><strong>Address:</strong> ${esc(addressLine)}</td></tr>` : ''}
+    </table>` : '';
 
   await getClient().emails.send({
     from: FROM(),
@@ -52,9 +65,9 @@ export async function sendAdminAlertEmail({ subject, errorType, playerEmail, det
       <h1 style="margin:8px 0 0;font-size:1.3rem;color:#f0ece0;">${esc(subject)}</h1>
     </td></tr>
     <tr><td style="padding:28px 32px;">
-      <p><strong>Time:</strong> ${ts}</p>
-      <p><strong>Error type:</strong> ${esc(errorType)}</p>
-      <p><strong>Attempted by:</strong> ${playerEmail ? esc(playerEmail) : '<em>unknown</em>'}</p>
+      <p style="margin:0 0 8px;"><strong>Time:</strong> ${ts}</p>
+      <p style="margin:0 0 20px;"><strong>Error type:</strong> ${esc(errorType)}</p>
+      ${contactHtml}
       ${detailHtml}
       ${rawHtml}
       <hr style="border:none;border-top:1px solid rgba(176,171,152,0.2);margin:24px 0;" />
