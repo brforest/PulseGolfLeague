@@ -187,12 +187,15 @@ export default function TournamentInfo({ onRegister, onBack }) {
 
         {/* Player List */}
         <section className="tinfo-section tinfo-players">
-          <h2 className="tinfo-section-title">
-            Registered Players
-            {!loadingPlayers && !playerError && (
-              <span className="tinfo-player-count">{players.length} / 144</span>
-            )}
-          </h2>
+          <h2 className="tinfo-section-title">Registered Players</h2>
+
+          {!loadingPlayers && !playerError && (
+            <div className="tinfo-player-stat">
+              <span className="tinfo-player-stat-num">{players.length}</span>
+              <span className="tinfo-player-stat-denom">/ 144</span>
+              <span className="tinfo-player-stat-label">spots filled</span>
+            </div>
+          )}
 
           {loadingPlayers && <p className="tinfo-loading">Loading player list…</p>}
           {playerError && <p className="tinfo-error">{playerError}</p>}
@@ -202,7 +205,8 @@ export default function TournamentInfo({ onRegister, onBack }) {
           )}
 
           {!loadingPlayers && !playerError && players.length > 0 && (
-            <div className="tinfo-player-table-wrap">
+            <div className="tinfo-player-table-outer">
+              <div className="tinfo-player-table-wrap">
               <table className="tinfo-player-table">
                 <thead>
                   <tr>
@@ -232,6 +236,10 @@ export default function TournamentInfo({ onRegister, onBack }) {
                   ))}
                 </tbody>
               </table>
+              </div>
+              {players.length > 7 && (
+                <div className="tinfo-scroll-hint">↓ scroll for more</div>
+              )}
             </div>
           )}
         </section>

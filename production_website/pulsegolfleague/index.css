@@ -2239,6 +2239,64 @@ html {
   color: var(--text-muted);
 }
 
+.tinfo-player-stat {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  margin-bottom: 24px;
+}
+
+.tinfo-player-stat-num {
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: clamp(2.4rem, 6vw, 3.6rem);
+  font-weight: 700;
+  color: var(--accent-red);
+  line-height: 1;
+  letter-spacing: -1px;
+}
+
+.tinfo-player-stat-denom {
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: clamp(1.2rem, 3vw, 1.8rem);
+  font-weight: 500;
+  color: var(--text-muted);
+  line-height: 1;
+}
+
+.tinfo-player-stat-label {
+  font-size: 0.7rem;
+  font-weight: 600;
+  letter-spacing: 3px;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  margin-left: 4px;
+}
+
+.tinfo-player-table-outer {
+  position: relative;
+}
+
+.tinfo-player-table-outer::after {
+  content: '';
+  position: absolute;
+  bottom: 28px; /* sits above the scroll hint */
+  left: 0;
+  right: 0;
+  height: 48px;
+  background: linear-gradient(to bottom, transparent, var(--bg-dark));
+  pointer-events: none;
+  border-radius: 0 0 6px 6px;
+}
+
+.tinfo-scroll-hint {
+  text-align: center;
+  font-size: 0.65rem;
+  letter-spacing: 2.5px;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  padding: 8px 0 2px;
+}
+
 /* Overview 2-column layout */
 .tinfo-overview {
   display: grid;
