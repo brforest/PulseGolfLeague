@@ -1,9 +1,10 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 
 const PglLogo = '/images/pgl_logo.png';
 const API_BASE = import.meta.env.VITE_API_URL || '';
 
 export default function Contact({ onBack }) {
+  useEffect(() => { window.scrollTo(0, 0); }, []);
   const [form, setForm] = useState({ name: '', email: '', message: '' });
   const [status, setStatus] = useState('idle'); // idle | sending | success | error
   const [errorMsg, setErrorMsg] = useState('');

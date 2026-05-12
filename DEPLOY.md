@@ -2,6 +2,8 @@ Deploy frontend changes:
 ```
 cd ~/pulsegolfleague/PulseGolfLeague
 rm production_website/pulsegolfleague/dist/index.html
+rm production_website/pulsegolfleague/dist/images/athlesign_logo.jpg
+rm production_website/pulsegolfleague/dist/images/fairway_hunters_logo.png
 git pull
 cd production_website/pulsegolfleague
 npm install && npm run build

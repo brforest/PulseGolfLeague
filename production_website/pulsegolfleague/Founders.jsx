@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 
 const PglLogo = '/images/pgl_logo.png';
 
@@ -34,6 +34,7 @@ const FOUNDERS = [
 ];
 
 export default function Founders({ onBack, onContact }) {
+  useEffect(() => { window.scrollTo(0, 0); }, []);
   return (
     <div className="founders-page">
       <header className="tinfo-header">
