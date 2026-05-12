@@ -2682,6 +2682,17 @@ html {
   color: var(--text-secondary);
 }
 
+@media (max-width: 980px) {
+  .tinfo-overview {
+    grid-template-columns: 1fr;
+    gap: 28px;
+  }
+
+  .tinfo-poster-wrap {
+    max-width: 380px;
+  }
+}
+
 /* Responsive */
 @media (max-width: 700px) {
   .tinfo-poster-wrap { max-width: 320px; }
