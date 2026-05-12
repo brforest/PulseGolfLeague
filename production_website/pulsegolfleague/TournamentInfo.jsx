@@ -274,6 +274,19 @@ export default function TournamentInfo({ onRegister, onBack }) {
               />
               <span className="tinfo-sponsor-name">Fairway Hunters</span>
             </a>
+            <a
+              href="https://athlesign.com"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="tinfo-sponsor-tile"
+            >
+              <img
+                src="/images/athlesign_logo.jpg"
+                alt="Athlesign"
+                className="tinfo-sponsor-logo"
+              />
+              <span className="tinfo-sponsor-name">Athlesign</span>
+            </a>
           </div>
         </section>
 
