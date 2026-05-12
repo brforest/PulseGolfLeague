@@ -268,6 +268,27 @@ html {
   transform: translateY(-2px);
 }
 
+.hero-founders-button {
+  font-family: 'Space Grotesk', sans-serif;
+  display: inline-block;
+  background: transparent;
+  color: var(--text-primary);
+  border: 1px solid rgba(240, 236, 224, 0.35);
+  padding: 16px 48px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  letter-spacing: 5px;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: all 0.3s;
+}
+
+.hero-founders-button:hover {
+  border-color: rgba(240, 236, 224, 0.7);
+  background: rgba(240, 236, 224, 0.06);
+  transform: translateY(-2px);
+}
+
 .hero-scroll-indicator {
   position: absolute;
   bottom: 40px;
@@ -1107,6 +1128,496 @@ html {
   opacity: 1 !important;
   color: #e1306c !important;
   border-color: #e1306c !important;
+}
+
+.footer-founders-link {
+  background: none;
+  border: none;
+  color: var(--text-secondary);
+  font-size: 0.7rem;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  cursor: pointer;
+  padding: 0;
+  font-family: inherit;
+  transition: opacity 0.3s;
+}
+
+.footer-founders-link:hover {
+  opacity: 0.5;
+}
+
+/* ================================================================
+   FOUNDERS PAGE
+   ================================================================ */
+
+.founders-page {
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+  background: var(--bg-dark);
+  color: var(--text-primary);
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Hero */
+.founders-hero {
+  position: relative;
+  padding: 100px 48px 72px;
+  background-color: #12160f;
+  background-image: url('/images/founders_bg_a.jpg');
+  background-size: cover;
+  background-position: center 40%;
+  overflow: hidden;
+}
+
+.founders-hero-overlay {
+  position: absolute;
+  inset: 0 0 -2px 0;
+  background:
+    linear-gradient(to bottom, rgba(18, 22, 15, 0.78) 0%, rgba(18, 22, 15, 0.65) 55%, rgba(18, 22, 15, 1) 92%, rgba(18, 22, 15, 1) 100%),
+    radial-gradient(ellipse at 60% 40%, rgba(196, 32, 32, 0.08) 0%, transparent 65%);
+  pointer-events: none;
+}
+
+.founders-hero-content {
+  position: relative;
+  max-width: 760px;
+  margin: 0 auto;
+  text-align: center;
+}
+
+.founders-eyebrow {
+  display: block;
+  font-size: 0.62rem;
+  font-weight: 600;
+  letter-spacing: 5px;
+  text-transform: uppercase;
+  color: var(--accent-red);
+  margin-bottom: 18px;
+}
+
+.founders-title {
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: clamp(2.4rem, 5vw, 4rem);
+  font-weight: 700;
+  letter-spacing: -1px;
+  line-height: 1.1;
+  margin-bottom: 20px;
+}
+
+.founders-subtitle {
+  font-size: 1rem;
+  color: var(--text-secondary);
+  line-height: 1.7;
+  max-width: 600px;
+  margin: 0 auto;
+}
+
+/* Body */
+.founders-body {
+  flex: 1;
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 64px 48px 80px;
+  display: flex;
+  flex-direction: column;
+  gap: 72px;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+/* Origin story */
+.founders-origin {
+  border-left: 3px solid var(--accent-red);
+  padding-left: 32px;
+}
+
+.founders-origin-eyebrow {
+  display: block;
+  font-size: 0.6rem;
+  font-weight: 700;
+  letter-spacing: 5px;
+  color: var(--accent-red);
+  text-transform: uppercase;
+  margin-bottom: 12px;
+}
+
+.founders-origin-heading {
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 1.5rem;
+  font-weight: 700;
+  margin-bottom: 20px;
+}
+
+.founders-origin p {
+  color: var(--text-secondary);
+  font-size: 0.95rem;
+  line-height: 1.8;
+  margin-bottom: 16px;
+}
+
+.founders-origin p:last-child { margin-bottom: 0; }
+
+/* Profiles */
+.founders-profiles {
+  display: flex;
+  flex-direction: column;
+  gap: 60px;
+}
+
+.founders-card {
+  display: grid;
+  grid-template-columns: 280px 1fr;
+  gap: 52px;
+  align-items: start;
+  padding-bottom: 60px;
+  border-bottom: 1px solid var(--border);
+}
+
+.founders-card:last-child {
+  border-bottom: none;
+  padding-bottom: 0;
+}
+
+.founders-card-photo-col {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  align-items: flex-start;
+}
+
+.founders-photo-wrap {
+  width: 100%;
+  border-radius: 4px;
+  overflow: hidden;
+  border: 1px solid var(--border);
+  aspect-ratio: 3 / 4;
+}
+
+.founders-photo {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: top center;
+  display: block;
+}
+
+.founders-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.founders-tag {
+  font-size: 0.58rem;
+  font-weight: 700;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  padding: 4px 10px;
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  color: var(--text-muted);
+}
+
+/* Card info */
+.founders-card-info {
+  display: flex;
+  flex-direction: column;
+  gap: 28px;
+}
+
+.founders-name-block {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding-bottom: 20px;
+  border-bottom: 1px solid var(--border);
+}
+
+.founders-name {
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: clamp(1.8rem, 3vw, 2.6rem);
+  font-weight: 700;
+  letter-spacing: -0.5px;
+  line-height: 1.1;
+}
+
+.founders-role {
+  font-size: 0.65rem;
+  font-weight: 700;
+  letter-spacing: 4px;
+  text-transform: uppercase;
+  color: var(--accent-red);
+}
+
+.founders-hometown {
+  font-size: 0.78rem;
+  color: var(--text-muted);
+  letter-spacing: 1px;
+}
+
+.founders-details {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin: 0;
+}
+
+.founders-detail-row {
+  display: grid;
+  grid-template-columns: 130px 1fr;
+  gap: 8px;
+  align-items: baseline;
+}
+
+.founders-detail-row dt {
+  font-size: 0.6rem;
+  font-weight: 700;
+  letter-spacing: 3px;
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+
+.founders-detail-row dd {
+  font-size: 0.9rem;
+  color: var(--text-secondary);
+  margin: 0;
+}
+
+.founders-current {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-left: 3px solid var(--accent-red);
+  border-radius: 4px;
+  padding: 18px 20px;
+}
+
+.founders-current p {
+  font-size: 0.9rem;
+  color: var(--text-secondary);
+  line-height: 1.75;
+  margin: 0;
+}
+
+/* Responsive */
+@media (max-width: 860px) {
+  .founders-card {
+    grid-template-columns: 1fr;
+    gap: 28px;
+  }
+
+  .founders-card-photo-col {
+    flex-direction: row;
+    align-items: flex-start;
+    gap: 20px;
+  }
+
+  .founders-photo-wrap {
+    width: 160px;
+    flex-shrink: 0;
+  }
+
+  .founders-tags {
+    padding-top: 4px;
+  }
+
+  .founders-hero {
+    padding: 72px 24px 52px;
+  }
+
+  .founders-body {
+    padding: 48px 24px 60px;
+    gap: 52px;
+  }
+}
+
+/* ===== CONTACT PAGE ===== */
+.contact-page {
+  min-height: 100vh;
+  background: var(--bg-dark);
+  display: flex;
+  flex-direction: column;
+}
+
+.contact-body {
+  flex: 1;
+  max-width: 960px;
+  margin: 0 auto;
+  width: 100%;
+  padding: 72px 48px 80px;
+  display: grid;
+  grid-template-columns: 1fr 1.2fr;
+  gap: 64px;
+  align-items: start;
+}
+
+.contact-intro {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  position: sticky;
+  top: 80px;
+}
+
+.contact-title {
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: clamp(2rem, 4vw, 3rem);
+  font-weight: 700;
+  letter-spacing: -0.5px;
+  color: var(--text-primary);
+  margin: 0;
+  line-height: 1.1;
+}
+
+.contact-subtitle {
+  font-size: 0.95rem;
+  color: var(--text-secondary);
+  line-height: 1.7;
+  margin: 0;
+}
+
+.contact-email-link {
+  display: inline-block;
+  margin-top: 8px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--accent-red);
+  text-decoration: none;
+  letter-spacing: 0.3px;
+}
+
+.contact-email-link:hover {
+  text-decoration: underline;
+}
+
+.contact-form-wrap {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 36px;
+}
+
+.contact-form {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.contact-field {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.contact-field label {
+  font-size: 0.62rem;
+  font-weight: 700;
+  letter-spacing: 3px;
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+
+.contact-field input,
+.contact-field textarea {
+  background: var(--bg-dark);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  padding: 12px 14px;
+  font-size: 0.9rem;
+  font-family: 'Inter', sans-serif;
+  color: var(--text-primary);
+  outline: none;
+  resize: vertical;
+  transition: border-color 0.2s;
+}
+
+.contact-field input::placeholder,
+.contact-field textarea::placeholder {
+  color: var(--text-muted);
+}
+
+.contact-field input:focus,
+.contact-field textarea:focus {
+  border-color: rgba(176, 171, 152, 0.5);
+}
+
+.contact-error {
+  font-size: 0.85rem;
+  color: var(--accent-red);
+  margin: 0;
+}
+
+.contact-submit {
+  align-self: flex-start;
+  background: var(--accent-red);
+  color: #fff;
+  border: none;
+  border-radius: 4px;
+  padding: 12px 28px;
+  font-size: 0.85rem;
+  font-family: 'Space Grotesk', sans-serif;
+  font-weight: 700;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: opacity 0.2s;
+}
+
+.contact-submit:hover:not(:disabled) {
+  opacity: 0.85;
+}
+
+.contact-submit:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.contact-success {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  padding: 48px 24px;
+  text-align: center;
+}
+
+.contact-success-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 52px;
+  height: 52px;
+  border-radius: 50%;
+  background: rgba(74, 96, 48, 0.3);
+  border: 1px solid rgba(74, 96, 48, 0.6);
+  font-size: 1.4rem;
+  color: #7ab060;
+}
+
+.contact-success h2 {
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 1.4rem;
+  color: var(--text-primary);
+  margin: 0;
+}
+
+.contact-success p {
+  font-size: 0.9rem;
+  color: var(--text-secondary);
+  margin: 0;
+}
+
+@media (max-width: 700px) {
+  .contact-body {
+    grid-template-columns: 1fr;
+    gap: 40px;
+    padding: 48px 24px 60px;
+  }
+
+  .contact-intro {
+    position: static;
+  }
 }
 
 /* ===== ANIMATIONS ===== */
@@ -2398,6 +2909,26 @@ html {
   font-size: 0.9rem;
   color: var(--text-secondary);
   line-height: 1.65;
+}
+
+.tinfo-founders-inline-btn {
+  display: inline-block;
+  margin-top: 20px;
+  background: none;
+  border: none;
+  padding: 0;
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 0.8rem;
+  font-weight: 700;
+  letter-spacing: 3px;
+  text-transform: uppercase;
+  color: var(--accent-red);
+  cursor: pointer;
+  transition: opacity 0.2s;
+}
+
+.tinfo-founders-inline-btn:hover {
+  opacity: 0.75;
 }
 
 /* Purse */

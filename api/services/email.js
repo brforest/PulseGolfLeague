@@ -26,6 +26,34 @@ export async function sendChargeEmail(playerInfo, { amountFormatted, paymentId }
   if (error) throw error;
 }
 
+export async function sendContactEmail({ name, email, message }) {
+  const to = process.env.ADMIN_ALERT_EMAIL || 'info@pulsegolfleague.com';
+  const { error } = await getClient().emails.send({
+    from: FROM(),
+    to: [to],
+    reply_to: email,
+    subject: `[PGL Contact] Message from ${name}`,
+    html: `<!DOCTYPE html>
+<html lang="en">
+<head><meta charset="utf-8" /></head>
+<body style="background:#1e2418;color:#f0ece0;font-family:Inter,sans-serif;padding:32px;max-width:600px;margin:0 auto;">
+  <h2 style="color:#c42020;margin-bottom:8px;">New Contact Form Message</h2>
+  <p style="color:#b0ab98;margin-bottom:24px;font-size:0.85rem;">${new Date().toISOString()}</p>
+  <table width="100%" cellpadding="0" cellspacing="0"
+         style="background:rgba(0,0,0,0.2);border-radius:4px;padding:16px;margin-bottom:20px;">
+    <tr><td style="padding:6px 0;"><strong style="color:#b0ab98;">Name:</strong> ${esc(name)}</td></tr>
+    <tr><td style="padding:6px 0;"><strong style="color:#b0ab98;">Email:</strong>
+      <a href="mailto:${esc(email)}" style="color:#c42020;">${esc(email)}</a></td></tr>
+  </table>
+  <div style="background:rgba(0,0,0,0.2);border-radius:4px;padding:16px;white-space:pre-wrap;line-height:1.6;">
+    ${esc(message)}
+  </div>
+</body>
+</html>`,
+  });
+  if (error) throw error;
+}
+
 export async function sendAdminAlertEmail({ subject, errorType, playerEmail, playerInfo, detail, raw }) {
   const to = process.env.ADMIN_ALERT_EMAIL;
   if (!to) return; // silently skip if not configured

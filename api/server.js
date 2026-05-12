@@ -6,6 +6,7 @@ import rateLimit from 'express-rate-limit';
 import { registerRoute } from './routes/register.js';
 import { playersRoute } from './routes/players.js';
 import { adminRoute } from './routes/admin.js';
+import { contactRoute } from './routes/contact.js';
 import { startChargeJob } from './jobs/chargeRegistrations.js';
 
 const app = express();
@@ -70,6 +71,7 @@ const adminLimiter = rateLimit({
 app.get('/api/health', (_req, res) => res.json({ status: 'ok', ts: new Date().toISOString() }));
 app.use('/api', publicReadLimiter, playersRoute);
 app.use('/api', registrationLimiter, registerRoute);
+app.use('/api', registrationLimiter, contactRoute);
 app.use('/api/admin', adminLimiter, adminRoute);
 
 // ── 404 fallthrough ───────────────────────────────────────
