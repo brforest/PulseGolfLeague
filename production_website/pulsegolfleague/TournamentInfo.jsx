@@ -250,11 +250,31 @@ export default function TournamentInfo({ onRegister, onBack }) {
                 </tbody>
               </table>
               </div>
-              {players.length > 7 && !tableScrolled && (
-                <div className="tinfo-scroll-hint">↓ scroll for more</div>
+              {players.length > 7 && (
+                <div className={`tinfo-scroll-hint${tableScrolled ? ' tinfo-scroll-hint-hidden' : ''}`}>↓ scroll for more</div>
               )}
             </div>
           )}
+        </section>
+
+        {/* Sponsors */}
+        <section className="tinfo-section tinfo-sponsors">
+          <h2 className="tinfo-section-title">Sponsors</h2>
+          <div className="tinfo-sponsor-grid">
+            <a
+              href="https://fairwayhunters.net"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="tinfo-sponsor-tile"
+            >
+              <img
+                src="/images/fairway_hunters_logo.png"
+                alt="Fairway Hunters"
+                className="tinfo-sponsor-logo"
+              />
+              <span className="tinfo-sponsor-name">Fairway Hunters</span>
+            </a>
+          </div>
         </section>
 
         {/* CTA */}

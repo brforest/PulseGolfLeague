@@ -2303,6 +2303,10 @@ html {
   padding: 8px 0 2px;
 }
 
+.tinfo-scroll-hint-hidden {
+  visibility: hidden;
+}
+
 /* Overview 2-column layout */
 .tinfo-overview {
   display: grid;
@@ -2632,11 +2636,54 @@ html {
   transform: translateY(-2px);
 }
 
+/* ── Sponsors ── */
+.tinfo-sponsors .tinfo-section-title {
+  margin-bottom: 28px;
+}
+
+.tinfo-sponsor-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 24px;
+}
+
+.tinfo-sponsor-tile {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  padding: 24px 32px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  text-decoration: none;
+  transition: border-color 0.2s, background 0.2s;
+}
+
+.tinfo-sponsor-tile:hover {
+  border-color: rgba(176, 171, 152, 0.45);
+  background: var(--surface-light);
+}
+
+.tinfo-sponsor-logo {
+  width: 120px;
+  height: 120px;
+  object-fit: contain;
+  border-radius: 50%;
+  display: block;
+}
+
+.tinfo-sponsor-name {
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: var(--text-secondary);
+}
+
 /* Responsive */
 @media (max-width: 700px) {
-  .tinfo-overview {
-    grid-template-columns: 1fr;
-  }
   .tinfo-poster-wrap { max-width: 320px; }
   .tinfo-key-facts { grid-template-columns: 1fr; }
   .tinfo-schedule-item { gap: 16px; flex-direction: column; }
