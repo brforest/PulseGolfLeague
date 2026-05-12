@@ -314,7 +314,7 @@ function PulseGolfLeague() {
         </button>
         <nav className={`nav ${isMenuOpen ? 'open' : ''}`}>
           <ul className="nav-list">
-            {['Manifesto', 'Format', 'Live', 'Join'].map((item) => (
+            {['Mission', 'Format', 'Live', 'Join'].map((item) => (
               <li key={item}>
                 <a
                   href={`#${item.toLowerCase()}`}
@@ -329,8 +329,8 @@ function PulseGolfLeague() {
         </nav>
       </header>
 
-      {/* Hero / Manifesto */}
-      <section id="manifesto" className="hero">
+      {/* Hero / Mission */}
+      <section id="mission" className="hero">
         <div className="section-bg hero-bg"></div>
         <div className="section-overlay"></div>
         <div className="hero-grain"></div>
@@ -491,7 +491,7 @@ function PulseGolfLeague() {
           <span className="footer-logo" onClick={() => navigate('/admin')} style={{ cursor: 'default' }}>PGL</span>
           <p>© 2026 Pulse Golf League. All rights reserved.</p>
           <div className="footer-links">
-            <a href="#manifesto">Manifesto</a>
+            <a href="#mission">Mission</a>
             <a href="#format">Format</a>
             <a href="#live">Live</a>
             <a href="#join">Join</a>
