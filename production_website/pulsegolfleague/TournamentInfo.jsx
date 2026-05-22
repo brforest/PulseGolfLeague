@@ -161,39 +161,39 @@ export default function TournamentInfo({ onRegister, onBack, onFounders, onConta
           <h2 className="tinfo-section-title">Schedule</h2>
           <div className="tinfo-schedule-list">
             <div className="tinfo-schedule-item">
-              <span className="tinfo-schedule-date">MON · JUL 13</span>
+              <span className="tinfo-schedule-date">TUE · SEP 08</span>
               <div>
                 <div className="tinfo-schedule-name">18-Hole Stroke Play Qualifier</div>
                 <div className="tinfo-schedule-desc">All 144 players compete. Low 32 advance to match play.</div>
               </div>
             </div>
             <div className="tinfo-schedule-item">
-              <span className="tinfo-schedule-date">TUE · JUL 14</span>
+              <span className="tinfo-schedule-date">WED · SEP 09</span>
               <div>
                 <div className="tinfo-schedule-name">Round of 32</div>
                 <div className="tinfo-schedule-desc">Single-elimination match play begins.</div>
               </div>
             </div>
             <div className="tinfo-schedule-item">
-              <span className="tinfo-schedule-date">WED · JUL 15 AM</span>
+              <span className="tinfo-schedule-date">THU · SEP 10 AM</span>
               <div>
                 <div className="tinfo-schedule-name">Round of 16</div>
               </div>
             </div>
             <div className="tinfo-schedule-item">
-              <span className="tinfo-schedule-date">WED · JUL 15 PM</span>
+              <span className="tinfo-schedule-date">THU · SEP 10 PM</span>
               <div>
                 <div className="tinfo-schedule-name">Quarterfinals</div>
               </div>
             </div>
             <div className="tinfo-schedule-item">
-              <span className="tinfo-schedule-date">THU · JUL 16 AM</span>
+              <span className="tinfo-schedule-date">FRI · SEP 11 AM</span>
               <div>
                 <div className="tinfo-schedule-name">Semi-Finals</div>
               </div>
             </div>
             <div className="tinfo-schedule-item tinfo-schedule-final">
-              <span className="tinfo-schedule-date">THU · JUL 16 PM</span>
+              <span className="tinfo-schedule-date">FRI · SEP 11 PM</span>
               <div>
                 <div className="tinfo-schedule-name">Final — Champion Crowned</div>
                 <div className="tinfo-schedule-desc">Live-streamed to the world. $15,000* to the winner.</div>

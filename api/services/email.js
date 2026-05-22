@@ -382,8 +382,8 @@ function sanitizeForEmail(html) {
 function normalizeEmailHtmlForReply(html) {
   return html
     .replace(/<div>\s*<br\s*\/?>\s*<\/div>/gi, '<br>')
-    .replace(/<div>/gi, '<p style="margin:0 0 16px;font-size:14px;color:#222222;line-height:1.6;">')
-    .replace(/<\/div>/gi, '</p>');
+    .replace(/<\/div>/gi, '')
+    .replace(/<div>/gi, '<br>');
 }
 
 /**
@@ -413,16 +413,15 @@ function replyEmailHtmlFromHtml(bodyHtml) {
 }
 
 /**
- * Normalize contentEditable HTML output into email-safe paragraph markup.
- * Chrome wraps each paragraph in a <div>; convert those to styled <p> tags.
+ * Normalize contentEditable HTML output into email-safe line-break markup.
+ * Chrome wraps each paragraph in a <div>; convert those to <br> separators
+ * so spacing is uniform regardless of whether the user pressed Enter once or twice.
  */
 function normalizeEmailHtml(html) {
   return html
-    // Empty <div><br></div> or <div><br/></div> → paragraph spacer
     .replace(/<div>\s*<br\s*\/?>\s*<\/div>/gi, '<br>')
-    // Wrap remaining divs as paragraphs with email-appropriate styling
-    .replace(/<div>/gi, '<p style="margin:0 0 18px;font-size:0.95rem;color:#b0ab98;line-height:1.7;">')
-    .replace(/<\/div>/gi, '</p>');
+    .replace(/<\/div>/gi, '')
+    .replace(/<div>/gi, '<br>');
 }
 
 /**

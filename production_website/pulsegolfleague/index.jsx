@@ -12,7 +12,7 @@ function TournamentBracket() {
   const SW = 120, SH = 30, HH = 50, UNIT = 40;
   const cx = [0, 160, 320, 480, 640];
   const rounds = ['R32', 'R16', 'QUARTERS', 'SEMIS', 'FINAL'];
-  const dates  = ['JUL 14', 'JUL 15 AM', 'JUL 15 PM', 'JUL 16 AM', 'JUL 16 PM'];
+  const dates  = ['SEP 9', 'SEP 10 AM', 'SEP 10 PM', 'SEP 11 AM', 'SEP 11 PM'];
 
   const r1y = Array.from({ length: 8 }, (_, i) => UNIT / 2 + i * UNIT);
   const r2y = Array.from({ length: 4 }, (_, i) => (r1y[i * 2] + r1y[i * 2 + 1]) / 2);
