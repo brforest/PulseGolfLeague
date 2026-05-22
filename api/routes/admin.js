@@ -256,19 +256,15 @@ adminRoute.post('/emails/send', async (req, res) => {
   const trimmedSubject = subject.trim();
 
   // Send individually so each recipient's To: header shows only their address.
-  // Process in concurrent batches of 10 to avoid overwhelming Resend.
-  for (let i = 0; i < recipients.length; i += 10) {
-    const batch = recipients.slice(i, i + 10);
-    await Promise.all(
-      batch.map((to) => {
-        const sendFn = (isReply && useHtml)
-          ? sendCustomEmailReply({ to, subject: trimmedSubject, bodyHtml, inReplyTo })
-          : useHtml
-            ? sendCustomEmailHtml({ to, subject: trimmedSubject, bodyHtml })
-            : sendCustomEmail({ to, subject: trimmedSubject, bodyText: body });
-        return sendFn.catch((err) => { errors.push(`${to}: ${err.message}`); });
-      })
-    );
+  // Throttled to one per 200ms to stay under Resend's 5 req/sec rate limit.
+  for (const to of recipients) {
+    const sendFn = (isReply && useHtml)
+      ? sendCustomEmailReply({ to, subject: trimmedSubject, bodyHtml, inReplyTo })
+      : useHtml
+        ? sendCustomEmailHtml({ to, subject: trimmedSubject, bodyHtml })
+        : sendCustomEmail({ to, subject: trimmedSubject, bodyText: body });
+    await sendFn.catch((err) => { errors.push(`${to}: ${err.message}`); });
+    await new Promise((resolve) => setTimeout(resolve, 200));
   }
 
   if (errors.length === recipients.length) {
