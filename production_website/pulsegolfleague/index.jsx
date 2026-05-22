@@ -340,7 +340,7 @@ function PulseGolfLeague() {
             <span className="hero-title-accent">RESTART THE PULSE.</span>
           </h1>
           <p className="hero-subheading">
-            144 players. 32 advance. One champion. Join the Pulse Golf League for our Pilot event at Yolo Fliers GC this July. High-intensity golf, streamed live to the world.
+            144 players. 32 advance. One champion. Join the Pulse Golf League for our Pilot event at Yolo Fliers GC this September. High-intensity golf, streamed live to the world.
           </p>
           <div className="hero-cta">
             <button className="hero-pilot-info-button" onClick={() => navigate('/tournament-info')}>Pilot Event Info and Sign Up</button>
@@ -398,7 +398,7 @@ function PulseGolfLeague() {
               <span className="hr-icon">♥</span>
             </div>
           </div>
-          <p className="live-streaming">STREAMING LIVE JULY 2026</p>
+          <p className="live-streaming">STREAMING LIVE SEPTEMBER 2026</p>
           <div className="live-chat">
             <div className="chat-heading">Live Chat</div>
             {chatMessages.map((message) => (
@@ -459,7 +459,7 @@ function PulseGolfLeague() {
           <div className="matchday-info">
             <div className="matchday-detail">
               <span className="matchday-label">Match Dates</span>
-              <span className="matchday-value">July 13-16</span>
+              <span className="matchday-value">September 8-11</span>
             </div>
             <div className="matchday-detail">
               <span className="matchday-label">Venue</span>

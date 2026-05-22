@@ -148,12 +148,12 @@ function confirmationHtml(p) {
             <!-- Detail rows -->
             <table width="100%" cellpadding="0" cellspacing="0" style="margin-bottom:32px;">
               ${row('Event', 'Yolo Fliers Matchplay Championship')}
-              ${row('Qualifier', 'Monday, July 13, 2026')}
-              ${row('Match Play', 'July 14–16, 2026')}
+              ${row('Qualifier', 'Monday, September 8, 2026')}
+              ${row('Match Play', 'September 9–11, 2026')}
               ${row('Venue', 'Yolo Fliers Club — Woodland, CA')}
               ${row('Playing Status', esc(p.playingStatus))}
               ${row('Entry Fee', '$519.00 USD')}
-              ${row('Charge Date', 'On or around June 23, 2026')}
+              ${row('Charge Date', 'On or around August 25, 2026')}
             </table>
 
             <!-- Charge notice -->
@@ -162,8 +162,8 @@ function confirmationHtml(p) {
                 <td style="padding:16px 20px;background:rgba(0,0,0,0.25);border-left:2px solid #c42020;
                            font-size:0.85rem;color:#b0ab98;line-height:1.7;border-radius:0 4px 4px 0;">
                   Your card will <strong style="color:#f0ece0;">not</strong> be charged today.
-                  The $519 entry fee will be collected approximately three weeks before the event,
-                  on or around <strong style="color:#f0ece0;">June 23, 2026</strong>.
+                  The $519 entry fee will be collected approximately two weeks before the event,
+                  on or around <strong style="color:#f0ece0;">August 25, 2026</strong>.
                   You'll receive another email when your card is charged.
                 </td>
               </tr>
@@ -227,8 +227,8 @@ function chargeHtml(p, { amountFormatted, paymentId }) {
               ${row('Amount Charged', esc(amountFormatted))}
               ${row('Payment ID', esc(paymentId))}
               ${row('Event', 'Yolo Fliers Matchplay Championship')}
-              ${row('Qualifier', 'Monday, July 13, 2026')}
-              ${row('Match Play', 'July 14–16, 2026')}
+              ${row('Qualifier', 'Monday, September 8, 2026')}
+              ${row('Match Play', 'September 9–11, 2026')}
               ${row('Venue', 'Yolo Fliers Club — Woodland, CA')}
             </table>
 

@@ -145,7 +145,7 @@ registerRoute.post('/register', async (req, res) => {
 
   // ── Persist registration ────────────────────────────────
 
-  const chargeDate = process.env.CHARGE_DATE || '2026-06-23';
+  const chargeDate = process.env.CHARGE_DATE || '2026-08-25';
 
   try {
     await pool.query(

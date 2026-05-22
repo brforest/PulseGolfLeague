@@ -160,7 +160,7 @@ EMAIL_FROM=PGL <noreply@pulsegolfleague.com>
 
 FRONTEND_URL=https://pulsegolfleague.com,https://www.pulsegolfleague.com
 
-CHARGE_DATE=2026-06-23
+CHARGE_DATE=2026-08-25
 ```
 
 Save and close.
@@ -317,7 +317,7 @@ pm2 restart pgl-api
 ## 13. Ongoing: Monitoring Charges
 
 The charge job runs automatically every day at 9:00 AM Pacific.
-On June 23, 2026 it will charge all pending registrations.
+On August 25, 2026 it will charge all pending registrations.
 
 To check the status of all registrations at any time:
 ```bash

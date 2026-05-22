@@ -39,7 +39,7 @@ CREATE TABLE IF NOT EXISTS registrations (
   charge_status           TEXT        NOT NULL DEFAULT 'pending'
                             CHECK (charge_status IN ('pending', 'charged', 'failed', 'withdrawn')),
   charge_amount_cents     INTEGER     NOT NULL DEFAULT 51900,   -- $519.00
-  scheduled_charge_date   DATE        NOT NULL DEFAULT '2026-06-23',
+  scheduled_charge_date   DATE        NOT NULL DEFAULT '2026-08-25',
   charged_at              TIMESTAMPTZ,
   square_payment_id       TEXT,
   charge_error            TEXT,

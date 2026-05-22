@@ -70,9 +70,9 @@ export default function TournamentInfo({ onRegister, onBack, onFounders, onConta
           <span className="tinfo-eyebrow">INAUGURAL EVENT · YOLO FLIERS CLUB · WOODLAND, CA</span>
           <h1 className="tinfo-event-title">Yolo Fliers Matchplay Championship</h1>
           <div className="tinfo-dates">
-            <span>QUALIFIER: MON, JULY 13</span>
+            <span>QUALIFIER: MON, SEPT 8</span>
             <span className="tinfo-date-dot">·</span>
-            <span>MATCH PLAY: JULY 14–16</span>
+            <span>MATCH PLAY: SEPT 9–11</span>
           </div>
         </div>
       </div>
@@ -86,7 +86,7 @@ export default function TournamentInfo({ onRegister, onBack, onFounders, onConta
           </div>
           <div className="tinfo-overview-text">
             <h2 className="tinfo-section-title">About the Event</h2>
-            <p>Welcome to the inaugural event of the Pulse Golf League — The Yolo Fliers Match Play Championship! One-day, 18-hole qualifier on Monday, July 13; top 32 make it on to Single Elimination Match Play starting on Tuesday, July 14.</p>
+            <p>Welcome to the inaugural event of the Pulse Golf League — The Yolo Fliers Match Play Championship! One-day, 18-hole qualifier on Monday, September 8; top 32 make it on to Single Elimination Match Play starting on Tuesday, September 9.</p>
             <p>Hosted at Yolo Fliers Club, one of the premiere private courses in the California Central Valley, and home to PGA Tour Q-School, PGA Tour Pre-Qualifiers and Monday Qualifiers, AJGA events, and more. Located in Woodland, CA, less than 30 minutes from downtown Sacramento and even closer to Sacramento International Airport (SMF).</p>
 
             <div className="tinfo-key-facts">
@@ -100,11 +100,11 @@ export default function TournamentInfo({ onRegister, onBack, onFounders, onConta
               </div>
               <div className="tinfo-fact">
                 <span className="tinfo-fact-label">QUALIFIER</span>
-                <span className="tinfo-fact-value">Monday, July 13, 2026</span>
+                <span className="tinfo-fact-value">Monday, September 8, 2026</span>
               </div>
               <div className="tinfo-fact">
                 <span className="tinfo-fact-label">MATCH PLAY</span>
-                <span className="tinfo-fact-value">July 14–16, 2026</span>
+                <span className="tinfo-fact-value">September 9–11, 2026</span>
               </div>
               <div className="tinfo-fact">
                 <span className="tinfo-fact-label">VENUE</span>
@@ -112,7 +112,7 @@ export default function TournamentInfo({ onRegister, onBack, onFounders, onConta
               </div>
               <div className="tinfo-fact">
                 <span className="tinfo-fact-label">ENTRY FEE</span>
-                <span className="tinfo-fact-value">$500 · Charged June 23, 2026</span>
+                <span className="tinfo-fact-value">$500 · Charged August 25, 2026</span>
               </div>
               <div className="tinfo-fact">
                 <span className="tinfo-fact-label">SIGNUP DEADLINE</span>
