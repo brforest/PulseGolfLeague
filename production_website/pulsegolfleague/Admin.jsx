@@ -168,6 +168,359 @@ function EditModal({ reg, password, onSave, onClose }) {
   );
 }
 
+// ── Email Tab ─────────────────────────────────────────────────────────────────
+function EmailsTab({ registrations, password }) {
+  // Sent emails list
+  const [emails, setEmails] = useState([]);
+  const [emailsLoading, setEmailsLoading] = useState(false);
+  const [emailsError, setEmailsError] = useState('');
+  const [detailEmail, setDetailEmail] = useState(null);
+
+  // Compose
+  const [selectedPlayers, setSelectedPlayers] = useState(new Set());
+  const [customTo, setCustomTo] = useState('');
+  const [subject, setSubject] = useState('');
+  const [body, setBody] = useState('');
+  const [sending, setSending] = useState(false);
+  const [sendResult, setSendResult] = useState(null);
+  const [sendError, setSendError] = useState('');
+  const [showConfirm, setShowConfirm] = useState(false);
+  const [confirmRecipients, setConfirmRecipients] = useState([]);
+
+  const loadEmails = useCallback(async () => {
+    setEmailsLoading(true);
+    setEmailsError('');
+    try {
+      const res = await fetch(`${API_URL}/api/admin/emails?limit=50`, {
+        headers: { Authorization: `Bearer ${password}` },
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Failed to load emails.');
+      setEmails(data.data || []);
+    } catch (err) {
+      setEmailsError(err.message);
+    } finally {
+      setEmailsLoading(false);
+    }
+  }, [password]);
+
+  useEffect(() => { loadEmails(); }, [loadEmails]);
+
+  const loadDetail = async (emailId) => {
+    setDetailEmail({ id: emailId, _loading: true });
+    try {
+      const res = await fetch(`${API_URL}/api/admin/emails/${emailId}`, {
+        headers: { Authorization: `Bearer ${password}` },
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Failed to load email.');
+      setDetailEmail(data);
+    } catch (err) {
+      setDetailEmail({ _error: err.message });
+    }
+  };
+
+  const togglePlayer = (email) => {
+    setSelectedPlayers((prev) => {
+      const next = new Set(prev);
+      if (next.has(email)) next.delete(email);
+      else next.add(email);
+      return next;
+    });
+  };
+
+  const quickSelect = (filterType) => {
+    const addrs = registrations
+      .filter((r) => {
+        if (filterType === 'all') return true;
+        if (filterType === 'active') return r.charge_status === 'pending' || r.charge_status === 'charged';
+        return r.charge_status === filterType;
+      })
+      .map((r) => r.email);
+    setSelectedPlayers(new Set(addrs));
+  };
+
+  const getRecipients = () => {
+    const custom = customTo
+      .split(/[\s,]+/)
+      .map((s) => s.trim())
+      .filter((s) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(s));
+    return [...new Set([...selectedPlayers, ...custom])];
+  };
+
+  const handleSendClick = () => {
+    const recipients = getRecipients();
+    if (recipients.length === 0) { setSendError('Select at least one recipient.'); return; }
+    if (!subject.trim()) { setSendError('Subject is required.'); return; }
+    if (!body.trim()) { setSendError('Message body is required.'); return; }
+    setSendError('');
+    setConfirmRecipients(recipients);
+    setShowConfirm(true);
+  };
+
+  const handleSendConfirm = async () => {
+    setShowConfirm(false);
+    setSending(true);
+    setSendResult(null);
+    setSendError('');
+    try {
+      const res = await fetch(`${API_URL}/api/admin/emails/send`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${password}`,
+        },
+        body: JSON.stringify({ recipients: confirmRecipients, subject: subject.trim(), body }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Send failed.');
+      setSendResult(data);
+      setSubject('');
+      setBody('');
+      setSelectedPlayers(new Set());
+      setCustomTo('');
+      loadEmails();
+    } catch (err) {
+      setSendError(err.message);
+    } finally {
+      setSending(false);
+    }
+  };
+
+  const recipientCount = getRecipients().length;
+
+  return (
+    <div className="admin-email-tab">
+
+      {/* ── Sent Emails ── */}
+      <section className="admin-email-section">
+        <div className="admin-email-section-header">
+          <h3 className="admin-email-section-title">Sent Emails</h3>
+          <button
+            className="admin-btn admin-btn-secondary"
+            onClick={loadEmails}
+            disabled={emailsLoading}
+          >
+            {emailsLoading ? 'Loading…' : 'Refresh'}
+          </button>
+        </div>
+        {emailsError && <p className="admin-load-error" style={{ margin: '12px 24px 0' }}>{emailsError}</p>}
+        <div className="admin-table-wrap" style={{ borderRadius: 0, borderLeft: 'none', borderRight: 'none', borderBottom: 'none' }}>
+          <table className="admin-table">
+            <thead>
+              <tr>
+                <th>To</th>
+                <th>Subject</th>
+                <th>Sent</th>
+                <th>Status</th>
+              </tr>
+            </thead>
+            <tbody>
+              {emailsLoading && (
+                <tr><td colSpan={4} className="admin-empty-row">Loading…</td></tr>
+              )}
+              {!emailsLoading && emails.length === 0 && (
+                <tr><td colSpan={4} className="admin-empty-row">No emails found.</td></tr>
+              )}
+              {emails.map((e) => (
+                <tr
+                  key={e.id}
+                  className="admin-row admin-email-row"
+                  onClick={() => loadDetail(e.id)}
+                >
+                  <td className="admin-email-to">{Array.isArray(e.to) ? e.to.join(', ') : e.to}</td>
+                  <td>{e.subject}</td>
+                  <td className="admin-email-date">
+                    {e.created_at
+                      ? new Date(e.created_at).toLocaleString('en-US', {
+                          month: 'short', day: 'numeric', year: 'numeric',
+                          hour: 'numeric', minute: '2-digit',
+                        })
+                      : '—'}
+                  </td>
+                  <td>
+                    <span className={`admin-email-event admin-email-event-${e.last_event}`}>
+                      {e.last_event || '—'}
+                    </span>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      {/* ── Compose ── */}
+      <section className="admin-email-section">
+        <div className="admin-email-section-header">
+          <h3 className="admin-email-section-title">Compose</h3>
+        </div>
+
+        {/* Recipients */}
+        <div className="admin-compose-block">
+          <div className="admin-compose-label">Recipients</div>
+          <div className="admin-compose-quickbtns">
+            <button className="admin-btn admin-btn-secondary admin-btn-xs" onClick={() => quickSelect('all')}>All</button>
+            <button className="admin-btn admin-btn-secondary admin-btn-xs" onClick={() => quickSelect('active')}>Active (Pending + Charged)</button>
+            <button className="admin-btn admin-btn-secondary admin-btn-xs" onClick={() => quickSelect('pending')}>Pending</button>
+            <button className="admin-btn admin-btn-secondary admin-btn-xs" onClick={() => quickSelect('charged')}>Charged</button>
+            <button className="admin-btn admin-btn-secondary admin-btn-xs" onClick={() => setSelectedPlayers(new Set())}>Clear</button>
+          </div>
+          <div className="admin-compose-player-list">
+            {registrations.length === 0 && (
+              <p className="admin-compose-empty">No registered players.</p>
+            )}
+            {registrations.map((r) => (
+              <label key={r.id} className="admin-compose-player-row">
+                <input
+                  type="checkbox"
+                  checked={selectedPlayers.has(r.email)}
+                  onChange={() => togglePlayer(r.email)}
+                />
+                <span className="admin-compose-player-name">{r.first_name} {r.last_name}</span>
+                <span className="admin-compose-player-email">{r.email}</span>
+                <span className={`admin-status-badge ${statusColor(r.charge_status)} admin-compose-badge`}>
+                  {r.charge_status}
+                </span>
+              </label>
+            ))}
+          </div>
+          <input
+            className="admin-edit-input admin-compose-custom-input"
+            type="text"
+            placeholder="Custom recipients (comma-separated): extra@example.com, other@example.com"
+            value={customTo}
+            onChange={(e) => setCustomTo(e.target.value)}
+          />
+          <p className="admin-compose-count">
+            {recipientCount} recipient{recipientCount !== 1 ? 's' : ''} selected
+          </p>
+        </div>
+
+        {/* Subject */}
+        <div className="admin-compose-block">
+          <label className="admin-compose-label">Subject</label>
+          <input
+            className="admin-edit-input"
+            type="text"
+            placeholder="Tournament update — Yolo Fliers Matchplay Championship"
+            value={subject}
+            onChange={(e) => setSubject(e.target.value)}
+            maxLength={200}
+          />
+        </div>
+
+        {/* Body */}
+        <div className="admin-compose-block">
+          <label className="admin-compose-label">Message</label>
+          <p className="admin-compose-hint">Separate paragraphs with a blank line. Sent in the PGL branded email template.</p>
+          <textarea
+            className="admin-compose-body"
+            value={body}
+            onChange={(e) => setBody(e.target.value)}
+            rows={10}
+            placeholder={'Write your message here.\n\nStart a new paragraph by adding a blank line between sections.'}
+          />
+        </div>
+
+        {sendError && <p className="admin-load-error" style={{ margin: '0 24px 12px' }}>{sendError}</p>}
+        {sendResult && (
+          <div className="admin-compose-success">
+            ✓ Sent to {sendResult.sent} recipient{sendResult.sent !== 1 ? 's' : ''}.
+            {sendResult.failed > 0 && ` ${sendResult.failed} failed.`}
+          </div>
+        )}
+
+        <div className="admin-compose-actions">
+          <button
+            className="admin-btn admin-btn-primary"
+            onClick={handleSendClick}
+            disabled={sending}
+          >
+            {sending ? 'Sending…' : 'Send Email →'}
+          </button>
+        </div>
+      </section>
+
+      {/* ── Email Detail Modal ── */}
+      {detailEmail && (
+        <div className="admin-modal-overlay" onClick={() => setDetailEmail(null)}>
+          <div className="admin-modal admin-email-modal" onClick={(e) => e.stopPropagation()}>
+            <div className="admin-modal-header">
+              <h3 className="admin-modal-title">
+                {detailEmail._loading ? 'Loading…' : detailEmail._error ? 'Error' : (detailEmail.subject || 'Email Detail')}
+              </h3>
+              <button className="admin-modal-close" onClick={() => setDetailEmail(null)}>✕</button>
+            </div>
+            {detailEmail._loading && (
+              <div className="admin-modal-body"><p>Loading email content…</p></div>
+            )}
+            {detailEmail._error && (
+              <div className="admin-modal-error" style={{ margin: '16px' }}>{detailEmail._error}</div>
+            )}
+            {!detailEmail._loading && !detailEmail._error && (
+              <>
+                <div className="admin-email-meta">
+                  <div><strong>To:</strong> {Array.isArray(detailEmail.to) ? detailEmail.to.join(', ') : detailEmail.to}</div>
+                  <div><strong>From:</strong> {detailEmail.from}</div>
+                  <div><strong>Sent:</strong> {detailEmail.created_at ? new Date(detailEmail.created_at).toLocaleString() : '—'}</div>
+                  <div><strong>Status:</strong> {detailEmail.last_event || '—'}</div>
+                </div>
+                {detailEmail.html ? (
+                  <iframe
+                    className="admin-email-frame"
+                    srcDoc={detailEmail.html}
+                    sandbox="allow-same-origin"
+                    title="Email preview"
+                  />
+                ) : (
+                  <div className="admin-email-text">{detailEmail.text || 'No content.'}</div>
+                )}
+              </>
+            )}
+          </div>
+        </div>
+      )}
+
+      {/* ── Send Confirmation Modal ── */}
+      {showConfirm && (
+        <div className="admin-modal-overlay" onClick={() => setShowConfirm(false)}>
+          <div className="admin-modal admin-modal-small" onClick={(e) => e.stopPropagation()}>
+            <div className="admin-modal-header">
+              <h3 className="admin-modal-title">Confirm Send</h3>
+              <button className="admin-modal-close" onClick={() => setShowConfirm(false)}>✕</button>
+            </div>
+            <div className="admin-modal-body">
+              <p>
+                Send <strong>"{subject}"</strong> to{' '}
+                <strong>{confirmRecipients.length} recipient{confirmRecipients.length !== 1 ? 's' : ''}</strong>?
+              </p>
+              <div className="admin-confirm-list">
+                {confirmRecipients.slice(0, 8).map((addr) => (
+                  <div key={addr} className="admin-confirm-addr">{addr}</div>
+                ))}
+                {confirmRecipients.length > 8 && (
+                  <div className="admin-confirm-addr admin-confirm-more">
+                    …and {confirmRecipients.length - 8} more
+                  </div>
+                )}
+              </div>
+            </div>
+            <div className="admin-modal-footer">
+              <button className="admin-btn admin-btn-secondary" onClick={() => setShowConfirm(false)}>
+                Cancel
+              </button>
+              <button className="admin-btn admin-btn-primary" onClick={handleSendConfirm}>
+                Send Now
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
 // ── Main Admin Component ───────────────────────────────────────────────────────
 export default function Admin({ onBack }) {
   const [authed, setAuthed] = useState(false);
@@ -186,6 +539,7 @@ export default function Admin({ onBack }) {
 
   const [filter, setFilter] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
+  const [tab, setTab] = useState('registrations');
 
   const fetchRegistrations = useCallback(async (pw) => {
     setLoading(true);
@@ -307,14 +661,37 @@ export default function Admin({ onBack }) {
           <img src={PglLogo} alt="PGL" className="admin-header-logo" />
           <span className="admin-header-label">Admin Dashboard</span>
         </div>
-        <button
-          className="admin-btn admin-btn-secondary admin-refresh-btn"
-          onClick={() => fetchRegistrations(password)}
-          disabled={loading}
-        >
-          {loading ? 'Loading…' : 'Refresh'}
-        </button>
+        {tab === 'registrations' ? (
+          <button
+            className="admin-btn admin-btn-secondary admin-refresh-btn"
+            onClick={() => fetchRegistrations(password)}
+            disabled={loading}
+          >
+            {loading ? 'Loading…' : 'Refresh'}
+          </button>
+        ) : (
+          <div className="admin-header-spacer" />
+        )}
       </header>
+
+      {/* Tab nav */}
+      <div className="admin-tabs">
+        <button
+          className={`admin-tab${tab === 'registrations' ? ' admin-tab-active' : ''}`}
+          onClick={() => setTab('registrations')}
+        >
+          Registrations
+        </button>
+        <button
+          className={`admin-tab${tab === 'emails' ? ' admin-tab-active' : ''}`}
+          onClick={() => setTab('emails')}
+        >
+          Email
+        </button>
+      </div>
+
+      {tab === 'registrations' && (
+      <>
 
       {/* Stats strip */}
       <div className="admin-stats">
@@ -484,6 +861,13 @@ export default function Admin({ onBack }) {
             </div>
           </div>
         </div>
+      )}
+
+      </> /* end registrations tab */
+      )}
+
+      {tab === 'emails' && (
+        <EmailsTab registrations={registrations} password={password} />
       )}
     </div>
   );

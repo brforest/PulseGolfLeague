@@ -1,5 +1,6 @@
 import { Router } from 'express';
 import pool from '../db/index.js';
+import { sendCustomEmail } from '../services/email.js';
 
 export const adminRoute = Router();
 
@@ -145,3 +146,111 @@ adminRoute.delete('/registrations/:id', async (req, res) => {
     res.status(500).json({ error: 'Internal server error.' });
   }
 });
+
+// ── GET /api/admin/emails ─────────────────────────────────────────────────────
+// Returns the list of sent emails from Resend (metadata only, no html body)
+adminRoute.get('/emails', async (req, res) => {
+  const apiKey = process.env.RESEND_API_KEY;
+  if (!apiKey) return res.status(503).json({ error: 'Email service not configured.' });
+
+  const limit = Math.min(parseInt(req.query.limit, 10) || 50, 100);
+
+  try {
+    const response = await fetch(`https://api.resend.com/emails?limit=${limit}`, {
+      headers: { Authorization: `Bearer ${apiKey}` },
+    });
+    const data = await response.json();
+    if (!response.ok) {
+      return res.status(response.status).json({ error: data.message || 'Resend API error.' });
+    }
+    res.json(data);
+  } catch (err) {
+    console.error('GET /admin/emails error:', err);
+    res.status(500).json({ error: 'Failed to fetch emails from Resend.' });
+  }
+});
+
+// ── GET /api/admin/emails/:emailId ────────────────────────────────────────────
+// Returns a single email from Resend including the full html body for preview
+adminRoute.get('/emails/:emailId', async (req, res) => {
+  const apiKey = process.env.RESEND_API_KEY;
+  if (!apiKey) return res.status(503).json({ error: 'Email service not configured.' });
+
+  const { emailId } = req.params;
+  // Resend email IDs are UUIDs
+  if (!/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(emailId)) {
+    return res.status(400).json({ error: 'Invalid email ID.' });
+  }
+
+  try {
+    const response = await fetch(`https://api.resend.com/emails/${emailId}`, {
+      headers: { Authorization: `Bearer ${apiKey}` },
+    });
+    const data = await response.json();
+    if (!response.ok) {
+      return res.status(response.status).json({ error: data.message || 'Resend API error.' });
+    }
+    res.json(data);
+  } catch (err) {
+    console.error('GET /admin/emails/:id error:', err);
+    res.status(500).json({ error: 'Failed to fetch email from Resend.' });
+  }
+});
+
+// ── POST /api/admin/emails/send ───────────────────────────────────────────────
+// Sends a custom branded email to one or more recipients
+adminRoute.post('/emails/send', async (req, res) => {
+  const { recipients, subject, body } = req.body;
+
+  if (!Array.isArray(recipients) || recipients.length === 0) {
+    return res.status(400).json({ error: 'recipients must be a non-empty array.' });
+  }
+  if (recipients.length > 200) {
+    return res.status(400).json({ error: 'Maximum 200 recipients per send.' });
+  }
+  if (!subject || typeof subject !== 'string' || !subject.trim()) {
+    return res.status(400).json({ error: 'subject is required.' });
+  }
+  if (subject.length > 200) {
+    return res.status(400).json({ error: 'subject too long (max 200 chars).' });
+  }
+  if (!body || typeof body !== 'string' || !body.trim()) {
+    return res.status(400).json({ error: 'body is required.' });
+  }
+  if (body.length > 50000) {
+    return res.status(400).json({ error: 'body too long (max 50,000 chars).' });
+  }
+
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  const invalid = recipients.filter((r) => typeof r !== 'string' || !emailRegex.test(r));
+  if (invalid.length > 0) {
+    return res.status(400).json({ error: `Invalid email address(es): ${invalid.join(', ')}` });
+  }
+
+  const errors = [];
+
+  // Send individually so each recipient's To: header shows only their address
+  // Process in concurrent batches of 10 to avoid overwhelming Resend
+  for (let i = 0; i < recipients.length; i += 10) {
+    const batch = recipients.slice(i, i + 10);
+    await Promise.all(
+      batch.map((to) =>
+        sendCustomEmail({ to, subject: subject.trim(), bodyText: body }).catch((err) => {
+          errors.push(`${to}: ${err.message}`);
+        })
+      )
+    );
+  }
+
+  if (errors.length === recipients.length) {
+    return res.status(500).json({ error: 'All sends failed.', details: errors });
+  }
+
+  res.json({
+    success: true,
+    sent: recipients.length - errors.length,
+    failed: errors.length,
+    ...(errors.length > 0 && { errors }),
+  });
+});
+
