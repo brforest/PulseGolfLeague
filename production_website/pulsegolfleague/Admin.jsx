@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useCallback } from 'react';
+import React, { useEffect, useState, useCallback, useRef } from 'react';
 
 const PglLogo = '/images/pgl_logo.png';
 const API_URL = import.meta.env.VITE_API_URL || '';
@@ -170,23 +170,50 @@ function EditModal({ reg, password, onSave, onClose }) {
 
 // ── Email Tab ─────────────────────────────────────────────────────────────────
 function EmailsTab({ registrations, password }) {
-  // Sent emails list
+
+  // ── Inbox state ──
+  const [inbox, setInbox] = useState([]);
+  const [inboxLoading, setInboxLoading] = useState(false);
+  const [inboxError, setInboxError] = useState('');
+  const [inboxDetail, setInboxDetail] = useState(null);
+
+  // ── Sent emails state ──
   const [emails, setEmails] = useState([]);
   const [emailsLoading, setEmailsLoading] = useState(false);
   const [emailsError, setEmailsError] = useState('');
   const [detailEmail, setDetailEmail] = useState(null);
 
-  // Compose
+  // ── Compose state ──
+  const bodyRef = useRef(null);
   const [selectedPlayers, setSelectedPlayers] = useState(new Set());
   const [customTo, setCustomTo] = useState('');
   const [subject, setSubject] = useState('');
-  const [body, setBody] = useState('');
   const [sending, setSending] = useState(false);
   const [sendResult, setSendResult] = useState(null);
   const [sendError, setSendError] = useState('');
   const [showConfirm, setShowConfirm] = useState(false);
   const [confirmRecipients, setConfirmRecipients] = useState([]);
+  const [confirmBodyHtml, setConfirmBodyHtml] = useState('');
 
+  // ── Load inbox ──
+  const loadInbox = useCallback(async () => {
+    setInboxLoading(true);
+    setInboxError('');
+    try {
+      const res = await fetch(`${API_URL}/api/admin/inbox?limit=50`, {
+        headers: { Authorization: `Bearer ${password}` },
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Failed to load inbox.');
+      setInbox(data.emails || []);
+    } catch (err) {
+      setInboxError(err.message);
+    } finally {
+      setInboxLoading(false);
+    }
+  }, [password]);
+
+  // ── Load sent emails ──
   const loadEmails = useCallback(async () => {
     setEmailsLoading(true);
     setEmailsError('');
@@ -204,8 +231,46 @@ function EmailsTab({ registrations, password }) {
     }
   }, [password]);
 
-  useEffect(() => { loadEmails(); }, [loadEmails]);
+  useEffect(() => {
+    loadInbox();
+    loadEmails();
+  }, [loadInbox, loadEmails]);
 
+  // ── Inbox helpers ──
+  const handleInboxClick = async (email) => {
+    setInboxDetail({ ...email, _loading: true });
+    try {
+      const res = await fetch(`${API_URL}/api/admin/inbox/${email.id}`, {
+        headers: { Authorization: `Bearer ${password}` },
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Failed to load email.');
+      setInboxDetail(data);
+    } catch (err) {
+      setInboxDetail({ _error: err.message });
+    }
+  };
+
+  const startReply = (email) => {
+    setInboxDetail(null);
+    setSelectedPlayers(new Set());
+    setCustomTo(email.from_address || '');
+    const reSubject = (email.subject || '').startsWith('Re:')
+      ? email.subject
+      : `Re: ${email.subject || ''}`.trim();
+    setSubject(reSubject);
+    setSendResult(null);
+    setSendError('');
+    setTimeout(() => {
+      if (bodyRef.current) {
+        bodyRef.current.innerHTML = '';
+        bodyRef.current.focus();
+        bodyRef.current.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      }
+    }, 50);
+  };
+
+  // ── Sent email detail ──
   const loadDetail = async (emailId) => {
     setDetailEmail({ id: emailId, _loading: true });
     try {
@@ -220,11 +285,11 @@ function EmailsTab({ registrations, password }) {
     }
   };
 
+  // ── Compose helpers ──
   const togglePlayer = (email) => {
     setSelectedPlayers((prev) => {
       const next = new Set(prev);
-      if (next.has(email)) next.delete(email);
-      else next.add(email);
+      if (next.has(email)) next.delete(email); else next.add(email);
       return next;
     });
   };
@@ -248,12 +313,27 @@ function EmailsTab({ registrations, password }) {
     return [...new Set([...selectedPlayers, ...custom])];
   };
 
+  const formatText = (cmd) => {
+    document.execCommand(cmd, false, null);
+    bodyRef.current?.focus();
+  };
+
+  const handleBodyPaste = (e) => {
+    // Strip formatting on paste — always insert plain text
+    e.preventDefault();
+    const text = e.clipboardData.getData('text/plain');
+    document.execCommand('insertText', false, text);
+  };
+
   const handleSendClick = () => {
     const recipients = getRecipients();
+    const hasBody = bodyRef.current?.textContent?.trim().length > 0;
     if (recipients.length === 0) { setSendError('Select at least one recipient.'); return; }
     if (!subject.trim()) { setSendError('Subject is required.'); return; }
-    if (!body.trim()) { setSendError('Message body is required.'); return; }
+    if (!hasBody) { setSendError('Message body is required.'); return; }
     setSendError('');
+    const html = bodyRef.current?.innerHTML || '';
+    setConfirmBodyHtml(html);
     setConfirmRecipients(recipients);
     setShowConfirm(true);
   };
@@ -266,17 +346,14 @@ function EmailsTab({ registrations, password }) {
     try {
       const res = await fetch(`${API_URL}/api/admin/emails/send`, {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${password}`,
-        },
-        body: JSON.stringify({ recipients: confirmRecipients, subject: subject.trim(), body }),
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${password}` },
+        body: JSON.stringify({ recipients: confirmRecipients, subject: subject.trim(), bodyHtml: confirmBodyHtml }),
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || 'Send failed.');
       setSendResult(data);
       setSubject('');
-      setBody('');
+      if (bodyRef.current) bodyRef.current.innerHTML = '';
       setSelectedPlayers(new Set());
       setCustomTo('');
       loadEmails();
@@ -292,50 +369,73 @@ function EmailsTab({ registrations, password }) {
   return (
     <div className="admin-email-tab">
 
+      {/* ── Inbox ── */}
+      <section className="admin-email-section">
+        <div className="admin-email-section-header">
+          <h3 className="admin-email-section-title">Inbox</h3>
+          <button className="admin-btn admin-btn-secondary" onClick={loadInbox} disabled={inboxLoading}>
+            {inboxLoading ? 'Loading…' : 'Refresh'}
+          </button>
+        </div>
+        {inboxError && <p className="admin-load-error" style={{ margin: '12px 24px 0' }}>{inboxError}</p>}
+        <div className="admin-table-wrap" style={{ borderRadius: 0, border: 'none' }}>
+          <table className="admin-table">
+            <thead>
+              <tr><th>From</th><th>Subject</th><th>Received</th></tr>
+            </thead>
+            <tbody>
+              {inboxLoading && <tr><td colSpan={3} className="admin-empty-row">Loading…</td></tr>}
+              {!inboxLoading && inbox.length === 0 && (
+                <tr><td colSpan={3} className="admin-empty-row">No messages received yet. Set up Resend inbound routing to receive emails here.</td></tr>
+              )}
+              {inbox.map((e) => (
+                <tr
+                  key={e.id}
+                  className="admin-row admin-email-row"
+                  onClick={() => handleInboxClick(e)}
+                >
+                  <td className="admin-email-to">
+                    {e.from_name ? `${e.from_name} <${e.from_address}>` : e.from_address}
+                  </td>
+                  <td>{e.subject || <em style={{ color: 'var(--text-muted)' }}>(no subject)</em>}</td>
+                  <td className="admin-email-date">
+                    {e.received_at
+                      ? new Date(e.received_at).toLocaleString('en-US', { month: 'short', day: 'numeric', year: 'numeric', hour: 'numeric', minute: '2-digit' })
+                      : '—'}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </section>
+
       {/* ── Sent Emails ── */}
       <section className="admin-email-section">
         <div className="admin-email-section-header">
-          <h3 className="admin-email-section-title">Sent Emails</h3>
-          <button
-            className="admin-btn admin-btn-secondary"
-            onClick={loadEmails}
-            disabled={emailsLoading}
-          >
+          <h3 className="admin-email-section-title">Sent</h3>
+          <button className="admin-btn admin-btn-secondary" onClick={loadEmails} disabled={emailsLoading}>
             {emailsLoading ? 'Loading…' : 'Refresh'}
           </button>
         </div>
         {emailsError && <p className="admin-load-error" style={{ margin: '12px 24px 0' }}>{emailsError}</p>}
-        <div className="admin-table-wrap" style={{ borderRadius: 0, borderLeft: 'none', borderRight: 'none', borderBottom: 'none' }}>
+        <div className="admin-table-wrap" style={{ borderRadius: 0, border: 'none' }}>
           <table className="admin-table">
             <thead>
-              <tr>
-                <th>To</th>
-                <th>Subject</th>
-                <th>Sent</th>
-                <th>Status</th>
-              </tr>
+              <tr><th>To</th><th>Subject</th><th>Sent</th><th>Status</th></tr>
             </thead>
             <tbody>
-              {emailsLoading && (
-                <tr><td colSpan={4} className="admin-empty-row">Loading…</td></tr>
-              )}
+              {emailsLoading && <tr><td colSpan={4} className="admin-empty-row">Loading…</td></tr>}
               {!emailsLoading && emails.length === 0 && (
                 <tr><td colSpan={4} className="admin-empty-row">No emails found.</td></tr>
               )}
               {emails.map((e) => (
-                <tr
-                  key={e.id}
-                  className="admin-row admin-email-row"
-                  onClick={() => loadDetail(e.id)}
-                >
+                <tr key={e.id} className="admin-row admin-email-row" onClick={() => loadDetail(e.id)}>
                   <td className="admin-email-to">{Array.isArray(e.to) ? e.to.join(', ') : e.to}</td>
                   <td>{e.subject}</td>
                   <td className="admin-email-date">
                     {e.created_at
-                      ? new Date(e.created_at).toLocaleString('en-US', {
-                          month: 'short', day: 'numeric', year: 'numeric',
-                          hour: 'numeric', minute: '2-digit',
-                        })
+                      ? new Date(e.created_at).toLocaleString('en-US', { month: 'short', day: 'numeric', year: 'numeric', hour: 'numeric', minute: '2-digit' })
                       : '—'}
                   </td>
                   <td>
@@ -367,34 +467,24 @@ function EmailsTab({ registrations, password }) {
             <button className="admin-btn admin-btn-secondary admin-btn-xs" onClick={() => setSelectedPlayers(new Set())}>Clear</button>
           </div>
           <div className="admin-compose-player-list">
-            {registrations.length === 0 && (
-              <p className="admin-compose-empty">No registered players.</p>
-            )}
+            {registrations.length === 0 && <p className="admin-compose-empty">No registered players.</p>}
             {registrations.map((r) => (
               <label key={r.id} className="admin-compose-player-row">
-                <input
-                  type="checkbox"
-                  checked={selectedPlayers.has(r.email)}
-                  onChange={() => togglePlayer(r.email)}
-                />
+                <input type="checkbox" checked={selectedPlayers.has(r.email)} onChange={() => togglePlayer(r.email)} />
                 <span className="admin-compose-player-name">{r.first_name} {r.last_name}</span>
                 <span className="admin-compose-player-email">{r.email}</span>
-                <span className={`admin-status-badge ${statusColor(r.charge_status)} admin-compose-badge`}>
-                  {r.charge_status}
-                </span>
+                <span className={`admin-status-badge ${statusColor(r.charge_status)} admin-compose-badge`}>{r.charge_status}</span>
               </label>
             ))}
           </div>
           <input
             className="admin-edit-input admin-compose-custom-input"
             type="text"
-            placeholder="Custom recipients (comma-separated): extra@example.com, other@example.com"
+            placeholder="Additional recipients (comma-separated)"
             value={customTo}
             onChange={(e) => setCustomTo(e.target.value)}
           />
-          <p className="admin-compose-count">
-            {recipientCount} recipient{recipientCount !== 1 ? 's' : ''} selected
-          </p>
+          <p className="admin-compose-count">{recipientCount} recipient{recipientCount !== 1 ? 's' : ''} selected</p>
         </div>
 
         {/* Subject */}
@@ -410,16 +500,37 @@ function EmailsTab({ registrations, password }) {
           />
         </div>
 
-        {/* Body */}
+        {/* Body — rich text editor */}
         <div className="admin-compose-block">
           <label className="admin-compose-label">Message</label>
-          <p className="admin-compose-hint">Separate paragraphs with a blank line. Sent in the PGL branded email template.</p>
-          <textarea
-            className="admin-compose-body"
-            value={body}
-            onChange={(e) => setBody(e.target.value)}
-            rows={10}
-            placeholder={'Write your message here.\n\nStart a new paragraph by adding a blank line between sections.'}
+          <p className="admin-compose-hint">Sent using the PGL branded email template. Pasted text is always plain text.</p>
+          <div className="admin-compose-toolbar">
+            <button
+              type="button"
+              className="admin-compose-toolbar-btn"
+              onMouseDown={(e) => { e.preventDefault(); formatText('bold'); }}
+              title="Bold (Ctrl+B)"
+            ><b>B</b></button>
+            <button
+              type="button"
+              className="admin-compose-toolbar-btn"
+              onMouseDown={(e) => { e.preventDefault(); formatText('italic'); }}
+              title="Italic (Ctrl+I)"
+            ><i>I</i></button>
+            <button
+              type="button"
+              className="admin-compose-toolbar-btn"
+              onMouseDown={(e) => { e.preventDefault(); formatText('underline'); }}
+              title="Underline (Ctrl+U)"
+            ><u>U</u></button>
+          </div>
+          <div
+            ref={bodyRef}
+            contentEditable
+            suppressContentEditableWarning
+            className="admin-compose-richbody"
+            data-placeholder="Write your message here…"
+            onPaste={handleBodyPaste}
           />
         </div>
 
@@ -430,19 +541,49 @@ function EmailsTab({ registrations, password }) {
             {sendResult.failed > 0 && ` ${sendResult.failed} failed.`}
           </div>
         )}
-
         <div className="admin-compose-actions">
-          <button
-            className="admin-btn admin-btn-primary"
-            onClick={handleSendClick}
-            disabled={sending}
-          >
+          <button className="admin-btn admin-btn-primary" onClick={handleSendClick} disabled={sending}>
             {sending ? 'Sending…' : 'Send Email →'}
           </button>
         </div>
       </section>
 
-      {/* ── Email Detail Modal ── */}
+      {/* ── Inbox Detail Modal ── */}
+      {inboxDetail && (
+        <div className="admin-modal-overlay" onClick={() => setInboxDetail(null)}>
+          <div className="admin-modal admin-email-modal" onClick={(e) => e.stopPropagation()}>
+            <div className="admin-modal-header">
+              <h3 className="admin-modal-title">
+                {inboxDetail._loading ? 'Loading…' : inboxDetail._error ? 'Error' : (inboxDetail.subject || '(no subject)')}
+              </h3>
+              <button className="admin-modal-close" onClick={() => setInboxDetail(null)}>✕</button>
+            </div>
+            {inboxDetail._loading && <div className="admin-modal-body"><p>Loading…</p></div>}
+            {inboxDetail._error && <div className="admin-modal-error" style={{ margin: '16px' }}>{inboxDetail._error}</div>}
+            {!inboxDetail._loading && !inboxDetail._error && (
+              <>
+                <div className="admin-email-meta">
+                  <div><strong>From:</strong> {inboxDetail.from_name ? `${inboxDetail.from_name} <${inboxDetail.from_address}>` : inboxDetail.from_address}</div>
+                  <div><strong>To:</strong> {inboxDetail.to_address}</div>
+                  <div><strong>Received:</strong> {inboxDetail.received_at ? new Date(inboxDetail.received_at).toLocaleString() : '—'}</div>
+                </div>
+                {inboxDetail.html_body ? (
+                  <iframe className="admin-email-frame" srcDoc={inboxDetail.html_body} sandbox="allow-same-origin" title="Email preview" />
+                ) : (
+                  <div className="admin-email-text">{inboxDetail.text_body || 'No content.'}</div>
+                )}
+              </>
+            )}
+            {!inboxDetail._loading && !inboxDetail._error && (
+              <div className="admin-modal-footer">
+                <button className="admin-btn admin-btn-primary" onClick={() => startReply(inboxDetail)}>Reply →</button>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+
+      {/* ── Sent Email Detail Modal ── */}
       {detailEmail && (
         <div className="admin-modal-overlay" onClick={() => setDetailEmail(null)}>
           <div className="admin-modal admin-email-modal" onClick={(e) => e.stopPropagation()}>
@@ -452,12 +593,8 @@ function EmailsTab({ registrations, password }) {
               </h3>
               <button className="admin-modal-close" onClick={() => setDetailEmail(null)}>✕</button>
             </div>
-            {detailEmail._loading && (
-              <div className="admin-modal-body"><p>Loading email content…</p></div>
-            )}
-            {detailEmail._error && (
-              <div className="admin-modal-error" style={{ margin: '16px' }}>{detailEmail._error}</div>
-            )}
+            {detailEmail._loading && <div className="admin-modal-body"><p>Loading email content…</p></div>}
+            {detailEmail._error && <div className="admin-modal-error" style={{ margin: '16px' }}>{detailEmail._error}</div>}
             {!detailEmail._loading && !detailEmail._error && (
               <>
                 <div className="admin-email-meta">
@@ -467,12 +604,7 @@ function EmailsTab({ registrations, password }) {
                   <div><strong>Status:</strong> {detailEmail.last_event || '—'}</div>
                 </div>
                 {detailEmail.html ? (
-                  <iframe
-                    className="admin-email-frame"
-                    srcDoc={detailEmail.html}
-                    sandbox="allow-same-origin"
-                    title="Email preview"
-                  />
+                  <iframe className="admin-email-frame" srcDoc={detailEmail.html} sandbox="allow-same-origin" title="Email preview" />
                 ) : (
                   <div className="admin-email-text">{detailEmail.text || 'No content.'}</div>
                 )}
@@ -507,12 +639,8 @@ function EmailsTab({ registrations, password }) {
               </div>
             </div>
             <div className="admin-modal-footer">
-              <button className="admin-btn admin-btn-secondary" onClick={() => setShowConfirm(false)}>
-                Cancel
-              </button>
-              <button className="admin-btn admin-btn-primary" onClick={handleSendConfirm}>
-                Send Now
-              </button>
+              <button className="admin-btn admin-btn-secondary" onClick={() => setShowConfirm(false)}>Cancel</button>
+              <button className="admin-btn admin-btn-primary" onClick={handleSendConfirm}>Send Now</button>
             </div>
           </div>
         </div>

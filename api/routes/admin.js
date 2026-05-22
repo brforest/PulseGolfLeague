@@ -1,6 +1,7 @@
 import { Router } from 'express';
+import { Resend } from 'resend';
 import pool from '../db/index.js';
-import { sendCustomEmail } from '../services/email.js';
+import { sendCustomEmail, sendCustomEmailHtml } from '../services/email.js';
 
 export const adminRoute = Router();
 
@@ -198,9 +199,13 @@ adminRoute.get('/emails/:emailId', async (req, res) => {
 });
 
 // ── POST /api/admin/emails/send ───────────────────────────────────────────────
-// Sends a custom branded email to one or more recipients
+// Sends a custom branded email to one or more recipients.
+// Body accepts either:
+//   { recipients, subject, body }     — plain-text body (paragraph-per-blank-line)
+//   { recipients, subject, bodyHtml } — rich HTML body from the composer
 adminRoute.post('/emails/send', async (req, res) => {
-  const { recipients, subject, body } = req.body;
+  const { recipients, subject, body, bodyHtml } = req.body;
+  const useHtml = bodyHtml !== undefined;
 
   if (!Array.isArray(recipients) || recipients.length === 0) {
     return res.status(400).json({ error: 'recipients must be a non-empty array.' });
@@ -214,11 +219,21 @@ adminRoute.post('/emails/send', async (req, res) => {
   if (subject.length > 200) {
     return res.status(400).json({ error: 'subject too long (max 200 chars).' });
   }
-  if (!body || typeof body !== 'string' || !body.trim()) {
-    return res.status(400).json({ error: 'body is required.' });
-  }
-  if (body.length > 50000) {
-    return res.status(400).json({ error: 'body too long (max 50,000 chars).' });
+
+  if (useHtml) {
+    if (typeof bodyHtml !== 'string' || bodyHtml.replace(/<[^>]*>/g, '').trim().length === 0) {
+      return res.status(400).json({ error: 'Message body cannot be empty.' });
+    }
+    if (bodyHtml.length > 200000) {
+      return res.status(400).json({ error: 'Body HTML too long (max 200,000 chars).' });
+    }
+  } else {
+    if (!body || typeof body !== 'string' || !body.trim()) {
+      return res.status(400).json({ error: 'body is required.' });
+    }
+    if (body.length > 50000) {
+      return res.status(400).json({ error: 'body too long (max 50,000 chars).' });
+    }
   }
 
   const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -228,17 +243,19 @@ adminRoute.post('/emails/send', async (req, res) => {
   }
 
   const errors = [];
+  const trimmedSubject = subject.trim();
 
-  // Send individually so each recipient's To: header shows only their address
-  // Process in concurrent batches of 10 to avoid overwhelming Resend
+  // Send individually so each recipient's To: header shows only their address.
+  // Process in concurrent batches of 10 to avoid overwhelming Resend.
   for (let i = 0; i < recipients.length; i += 10) {
     const batch = recipients.slice(i, i + 10);
     await Promise.all(
-      batch.map((to) =>
-        sendCustomEmail({ to, subject: subject.trim(), bodyText: body }).catch((err) => {
-          errors.push(`${to}: ${err.message}`);
-        })
-      )
+      batch.map((to) => {
+        const sendFn = useHtml
+          ? sendCustomEmailHtml({ to, subject: trimmedSubject, bodyHtml })
+          : sendCustomEmail({ to, subject: trimmedSubject, bodyText: body });
+        return sendFn.catch((err) => { errors.push(`${to}: ${err.message}`); });
+      })
     );
   }
 
@@ -252,5 +269,58 @@ adminRoute.post('/emails/send', async (req, res) => {
     failed: errors.length,
     ...(errors.length > 0 && { errors }),
   });
+});
+
+// ── GET /api/admin/inbox ──────────────────────────────────────────────────────
+// Returns the most recent received emails from Resend.
+adminRoute.get('/inbox', async (req, res) => {
+  try {
+    const resend = new Resend(process.env.RESEND_API_KEY);
+    const { data, error } = await resend.emails.receiving.list({ limit: 50 });
+    if (error) throw new Error(error.message || 'Failed to fetch inbox.');
+    const emails = (data?.data || []).map((e) => ({
+      id: e.id,
+      from_address: e.from || '',
+      from_name: null,
+      to_address: Array.isArray(e.to) ? e.to[0] : (e.to || null),
+      subject: e.subject || null,
+      received_at: e.created_at || null,
+    }));
+    res.json({ emails });
+  } catch (err) {
+    console.error('GET /admin/inbox error:', err);
+    res.status(500).json({ error: 'Internal server error.' });
+  }
+});
+
+// ── GET /api/admin/inbox/:id ──────────────────────────────────────────────────
+// Returns a single received email including HTML/text body from Resend.
+adminRoute.get('/inbox/:id', async (req, res) => {
+  const { id } = req.params;
+  if (!id || !/^[0-9a-f-]{36}$/i.test(id)) {
+    return res.status(400).json({ error: 'Invalid inbox email ID.' });
+  }
+  try {
+    const resend = new Resend(process.env.RESEND_API_KEY);
+    const { data, error } = await resend.emails.receiving.get(id);
+    if (error) throw new Error(error.message || 'Failed to fetch email.');
+    if (!data) return res.status(404).json({ error: 'Not found.' });
+    // headers.from may include display name: "Name <addr@example.com>"
+    const headerFrom = data.headers?.from || data.from || '';
+    const nameAddrMatch = /^(.*?)\s*<([^>]+)>$/.exec(headerFrom);
+    res.json({
+      id: data.id,
+      from_address: nameAddrMatch ? nameAddrMatch[2].trim() : (data.from || ''),
+      from_name: nameAddrMatch ? (nameAddrMatch[1].trim() || null) : null,
+      to_address: Array.isArray(data.to) ? data.to[0] : (data.to || null),
+      subject: data.subject || null,
+      received_at: data.created_at || null,
+      html_body: data.html || null,
+      text_body: data.text || null,
+    });
+  } catch (err) {
+    console.error('GET /admin/inbox/:id error:', err);
+    res.status(500).json({ error: 'Internal server error.' });
+  }
 });
 

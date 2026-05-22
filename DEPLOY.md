@@ -42,6 +42,7 @@ pm2 restart pgl-api
 1. Sign up at https://resend.com
 2. Verify your sending domain (`pulsegolfleague.com`) under **Domains** by adding the DNS records they provide.
 3. Under **API Keys**, create a key and copy it.
+4. To enable the admin inbox, go to **Inbound**, add a route for your domain (e.g. `info@pulsegolfleague.com`), and add the DNS MX record Resend provides.
 
 
 ---
@@ -161,6 +162,12 @@ EMAIL_FROM=PGL <noreply@pulsegolfleague.com>
 FRONTEND_URL=https://pulsegolfleague.com,https://www.pulsegolfleague.com
 
 CHARGE_DATE=2026-08-25
+
+# Required to receive inbound emails in the admin inbox.
+# Generate any random string: openssl rand -hex 32
+# Then set the Resend inbound webhook URL to:
+#   https://pulsegolfleague.com/api/webhooks/email-inbound?token=YOUR_SECRET
+WEBHOOK_SECRET=YOUR_RANDOM_SECRET
 ```
 
 Save and close.

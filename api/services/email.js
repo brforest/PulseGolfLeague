@@ -253,7 +253,7 @@ function chargeHtml(p, { amountFormatted, paymentId }) {
 </html>`;
 }
 
-// ─── Custom admin email ────────────────────────────────────────────────────────
+// ─── Custom admin email (plain text) ──────────────────────────────────────────
 
 export async function sendCustomEmail({ to, subject, bodyText }) {
   const { error } = await getClient().emails.send({
@@ -261,6 +261,18 @@ export async function sendCustomEmail({ to, subject, bodyText }) {
     to: Array.isArray(to) ? to : [to],
     subject,
     html: customEmailHtml(subject, bodyText),
+  });
+  if (error) throw error;
+}
+
+// ─── Custom admin email (rich HTML from the compose editor) ───────────────────
+
+export async function sendCustomEmailHtml({ to, subject, bodyHtml }) {
+  const { error } = await getClient().emails.send({
+    from: FROM(),
+    to: Array.isArray(to) ? to : [to],
+    subject,
+    html: customEmailHtmlFromHtml(subject, bodyHtml),
   });
   if (error) throw error;
 }
@@ -328,6 +340,93 @@ function esc(str) {
     .replace(/</g, '&lt;')
     .replace(/>/g, '&gt;')
     .replace(/"/g, '&quot;');
+}
+
+/**
+ * Sanitize HTML from the rich-text compose editor before embedding in an email.
+ * Strips scripts, style blocks, event-handler attributes, and javascript: URLs.
+ * Bold/italic/underline/break/paragraph markup is preserved.
+ */
+function sanitizeForEmail(html) {
+  return String(html ?? '')
+    .replace(/<script[\s\S]*?<\/script>/gi, '')
+    .replace(/<style[\s\S]*?<\/style>/gi, '')
+    .replace(/\s+on\w+\s*=\s*"[^"]*"/gi, '')
+    .replace(/\s+on\w+\s*=\s*'[^']*'/gi, '')
+    .replace(/\s+on\w+\s*=\s*[^\s>]*/gi, '')
+    .replace(/(href|src)\s*=\s*"javascript:[^"]*"/gi, '$1="#"')
+    .replace(/(href|src)\s*=\s*'javascript:[^']*'/gi, "$1='#'")
+    .replace(/(href|src)\s*=\s*"data:[^"]*"/gi, '')
+    .replace(/(href|src)\s*=\s*'data:[^']*'/gi, '')
+    .replace(/<base[\s\S]*?>/gi, '')
+    .replace(/<\/?(form|input|select|iframe|frame|object|embed)[\s\S]*?>/gi, '');
+}
+
+/**
+ * Normalize contentEditable HTML output into email-safe paragraph markup.
+ * Chrome wraps each paragraph in a <div>; convert those to styled <p> tags.
+ */
+function normalizeEmailHtml(html) {
+  return html
+    // Empty <div><br></div> or <div><br/></div> → paragraph spacer
+    .replace(/<div>\s*<br\s*\/?>\s*<\/div>/gi, '<br>')
+    // Wrap remaining divs as paragraphs with email-appropriate styling
+    .replace(/<div>/gi, '<p style="margin:0 0 18px;font-size:0.95rem;color:#b0ab98;line-height:1.7;">')
+    .replace(/<\/div>/gi, '</p>');
+}
+
+/**
+ * Wraps HTML body content from the rich-text editor in the PGL email template.
+ * The content is sanitized + normalized before insertion.
+ */
+function customEmailHtmlFromHtml(subject, bodyHtml) {
+  const safe = normalizeEmailHtml(sanitizeForEmail(bodyHtml));
+
+  return `<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>${esc(subject)}</title>
+</head>
+<body style="margin:0;padding:0;background:#1e2418;font-family:Arial,sans-serif;color:#f0ece0;">
+  <table width="100%" cellpadding="0" cellspacing="0" style="background:#1e2418;padding:48px 24px;">
+    <tr><td align="center">
+      <table width="100%" cellpadding="0" cellspacing="0"
+             style="background:#2a3020;border:1px solid rgba(176,171,152,0.2);border-radius:8px;overflow:hidden;max-width:600px;">
+        <tr>
+          <td style="background:#c42020;padding:32px 40px;">
+            <p style="margin:0;font-size:0.7rem;font-weight:700;letter-spacing:6px;color:#f0ece0;text-transform:uppercase;">
+              Pulse Golf League
+            </p>
+            <h1 style="margin:12px 0 0;font-size:1.8rem;font-weight:700;color:#f0ece0;line-height:1.2;">
+              ${esc(subject)}
+            </h1>
+          </td>
+        </tr>
+        <tr>
+          <td style="padding:40px;">
+            <div style="font-size:0.95rem;color:#b0ab98;line-height:1.7;">
+              ${safe}
+            </div>
+            <p style="margin:24px 0 0;font-size:0.82rem;color:#706c58;line-height:1.6;">
+              Questions? Contact us at
+              <a href="mailto:info@pulsegolfleague.com" style="color:#b0ab98;">info@pulsegolfleague.com</a>
+            </p>
+          </td>
+        </tr>
+        <tr>
+          <td style="padding:24px 40px;border-top:1px solid rgba(176,171,152,0.15);">
+            <p style="margin:0;font-size:0.65rem;letter-spacing:2px;color:#706c58;text-transform:uppercase;">
+              © 2026 Pulse Golf League · pulsegolfleague.com
+            </p>
+          </td>
+        </tr>
+      </table>
+    </td></tr>
+  </table>
+</body>
+</html>`;
 }
 
 function row(label, value) {
