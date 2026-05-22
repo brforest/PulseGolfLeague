@@ -75,10 +75,10 @@ const adminLimiter = rateLimit({
 
 // ── Routes ────────────────────────────────────────────────
 app.get('/api/health', (_req, res) => res.json({ status: 'ok', ts: new Date().toISOString() }));
+app.use('/api/admin', adminLimiter, adminRoute);   // must be before the /api catch-alls
 app.use('/api', publicReadLimiter, playersRoute);
 app.use('/api', registrationLimiter, registerRoute);
 app.use('/api', registrationLimiter, contactRoute);
-app.use('/api/admin', adminLimiter, adminRoute);
 
 // ── 404 fallthrough ───────────────────────────────────────
 app.use((_req, res) => res.status(404).json({ error: 'Not found.' }));

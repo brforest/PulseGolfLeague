@@ -53,6 +53,7 @@ function EditModal({ reg, password, onSave, onClose }) {
       ? reg.scheduled_charge_date.slice(0, 10)
       : '',
     charge_error:        reg.charge_error || '',
+    active:              reg.active !== false,
   });
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState('');
@@ -108,6 +109,15 @@ function EditModal({ reg, password, onSave, onClose }) {
         </div>
 
         <div className="admin-modal-body">
+          <div className="admin-edit-section-title">Enrollment</div>
+          <div className="admin-edit-field">
+            <label className="admin-edit-label">Active</label>
+            <select className="admin-edit-input" value={form.active ? 'true' : 'false'} onChange={(e) => set('active', e.target.value === 'true')}>
+              <option value="true">Active</option>
+              <option value="false">Inactive</option>
+            </select>
+          </div>
+
           <div className="admin-edit-section-title">Personal</div>
           <div className="admin-edit-row">
             {field('First Name', 'first_name')}
@@ -725,6 +735,21 @@ export default function Admin({ onBack }) {
     setEditTarget(null);
   };
 
+  const handleToggleActive = useCallback(async (r) => {
+    const newActive = r.active === false ? true : false;
+    try {
+      const res = await fetch(`${API_URL}/api/admin/registrations/${r.id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${password}` },
+        body: JSON.stringify({ active: newActive }),
+      });
+      if (!res.ok) return;
+      setRegistrations((prev) => prev.map((p) => (p.id === r.id ? { ...p, active: newActive } : p)));
+    } catch {
+      // noop — user can retry
+    }
+  }, [password]);
+
   const handleDeleteConfirm = async () => {
     if (!deleteTarget) return;
     setDeleting(true);
@@ -885,6 +910,7 @@ export default function Admin({ onBack }) {
               <th>Name</th>
               <th>Email</th>
               <th>Phone</th>
+              <th>Active</th>
               <th>Status</th>
               <th>Payment</th>
               <th>Amount</th>
@@ -897,13 +923,13 @@ export default function Admin({ onBack }) {
           <tbody>
             {filtered.length === 0 && (
               <tr>
-                <td colSpan={11} className="admin-empty-row">
+                <td colSpan={12} className="admin-empty-row">
                   {loading ? 'Loading…' : 'No registrations found.'}
                 </td>
               </tr>
             )}
             {filtered.map((r) => (
-              <tr key={r.id} className={`admin-row admin-row-${r.charge_status}`}>
+              <tr key={r.id} className={`admin-row admin-row-${r.charge_status}${r.active === false ? ' admin-row-inactive' : ''}`}>
                 <td className="admin-td-id">{r.id}</td>
                 <td className="admin-td-name">
                   <div>{r.first_name} {r.last_name}</div>
@@ -912,6 +938,11 @@ export default function Admin({ onBack }) {
                 </td>
                 <td>{r.email}</td>
                 <td>{r.phone}</td>
+                <td>
+                  <span className={`admin-status-badge ${r.active === false ? 'admin-status-inactive' : 'admin-status-active'}`}>
+                    {r.active === false ? 'inactive' : 'active'}
+                  </span>
+                </td>
                 <td>
                   <span className={`admin-status-badge ${statusColor(r.charge_status)}`}>
                     {r.charge_status}
@@ -938,6 +969,12 @@ export default function Admin({ onBack }) {
                     onClick={() => setEditTarget(r)}
                   >
                     Edit
+                  </button>
+                  <button
+                    className={`admin-btn ${r.active === false ? 'admin-btn-activate' : 'admin-btn-deactivate'}`}
+                    onClick={() => handleToggleActive(r)}
+                  >
+                    {r.active === false ? 'Activate' : 'Deactivate'}
                   </button>
                   <button
                     className="admin-btn admin-btn-delete"

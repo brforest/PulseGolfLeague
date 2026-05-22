@@ -23,6 +23,7 @@ playersRoute.get('/players', async (_req, res) => {
          registered_at
        FROM registrations
        WHERE charge_status != 'withdrawn'
+         AND active = TRUE
        ORDER BY registered_at ASC`
     );
 

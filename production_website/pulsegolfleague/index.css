@@ -3542,6 +3542,8 @@ html {
 .admin-status-pending  { background: rgba(245, 200, 66, 0.15);  color: #f5c842; }
 .admin-status-failed   { background: rgba(196, 32, 32, 0.2);    color: #e87878; }
 .admin-status-withdrawn { background: rgba(112, 108, 88, 0.2); color: var(--text-muted); }
+.admin-status-active   { background: rgba(106, 191, 105, 0.15); color: #6abf69; }
+.admin-status-inactive { background: rgba(112, 108, 88, 0.2);   color: var(--text-muted); }
 
 /* Actions */
 .admin-td-actions {
@@ -3588,6 +3590,22 @@ html {
 }
 
 .admin-btn-edit:hover { background: rgba(176, 171, 152, 0.2); color: var(--text-primary); }
+
+.admin-btn-deactivate {
+  background: rgba(245, 200, 66, 0.12);
+  color: #f5c842;
+  margin-right: 6px;
+}
+
+.admin-btn-deactivate:hover { background: rgba(245, 200, 66, 0.25); }
+
+.admin-btn-activate {
+  background: rgba(106, 191, 105, 0.12);
+  color: #6abf69;
+  margin-right: 6px;
+}
+
+.admin-btn-activate:hover { background: rgba(106, 191, 105, 0.25); }
 
 .admin-btn-delete {
   background: rgba(196, 32, 32, 0.12);
@@ -3742,6 +3760,7 @@ html {
 /* Row tint by status */
 .admin-row-withdrawn td { opacity: 0.5; }
 .admin-row-failed td:first-child { border-left: 2px solid var(--accent-red); }
+.admin-row-inactive td { opacity: 0.55; }
 
 /* ── Admin Tabs ──────────────────────────────────────────── */
 .admin-tabs {

@@ -44,6 +44,9 @@ CREATE TABLE IF NOT EXISTS registrations (
   square_payment_id       TEXT,
   charge_error            TEXT,
 
+  -- Enrollment
+  active                  BOOLEAN     NOT NULL DEFAULT TRUE,
+
   -- Meta
   registered_at           TIMESTAMPTZ NOT NULL DEFAULT NOW(),
   confirmation_email_sent BOOLEAN     NOT NULL DEFAULT FALSE,

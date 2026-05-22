@@ -21,6 +21,7 @@ export async function runChargeJob() {
       `SELECT * FROM registrations
        WHERE charge_status = 'pending'
          AND scheduled_charge_date <= CURRENT_DATE
+         AND active = TRUE
        ORDER BY registered_at ASC`
     );
     rows = result.rows;

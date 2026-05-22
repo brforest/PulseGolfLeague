@@ -40,7 +40,8 @@ adminRoute.get('/registrations', async (_req, res) => {
          charge_status, charge_amount_cents,
          scheduled_charge_date, charged_at,
          square_payment_id, charge_error,
-         registered_at, confirmation_email_sent
+         registered_at, confirmation_email_sent,
+         active
        FROM registrations
        ORDER BY registered_at ASC`
     );
@@ -63,6 +64,7 @@ const EDITABLE_FIELDS = [
   'home_town', 'home_course', 'college',
   'instagram', 'twitter', 'tiktok',
   'charge_status', 'scheduled_charge_date', 'charge_error',
+  'active',
 ];
 
 adminRoute.patch('/registrations/:id', async (req, res) => {
@@ -93,6 +95,13 @@ adminRoute.patch('/registrations/:id', async (req, res) => {
   if (updates.playing_status !== undefined) {
     if (!['Professional', 'Amateur'].includes(updates.playing_status)) {
       return res.status(400).json({ error: 'Invalid playing_status value.' });
+    }
+  }
+
+  // Validate active if provided
+  if (updates.active !== undefined) {
+    if (typeof updates.active !== 'boolean') {
+      return res.status(400).json({ error: 'active must be a boolean.' });
     }
   }
 
