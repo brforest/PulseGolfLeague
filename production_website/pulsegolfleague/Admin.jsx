@@ -378,7 +378,7 @@ function EmailsTab({ registrations, password }) {
           </button>
         </div>
         {inboxError && <p className="admin-load-error" style={{ margin: '12px 24px 0' }}>{inboxError}</p>}
-        <div className="admin-table-wrap" style={{ borderRadius: 0, border: 'none' }}>
+        <div className="admin-table-wrap" style={{ borderRadius: 0, border: 'none', maxHeight: '450px', overflowY: 'auto' }}>
           <table className="admin-table">
             <thead>
               <tr><th>From</th><th>Subject</th><th>Received</th></tr>
@@ -419,7 +419,7 @@ function EmailsTab({ registrations, password }) {
           </button>
         </div>
         {emailsError && <p className="admin-load-error" style={{ margin: '12px 24px 0' }}>{emailsError}</p>}
-        <div className="admin-table-wrap" style={{ borderRadius: 0, border: 'none' }}>
+        <div className="admin-table-wrap" style={{ borderRadius: 0, border: 'none', maxHeight: '450px', overflowY: 'auto' }}>
           <table className="admin-table">
             <thead>
               <tr><th>To</th><th>Subject</th><th>Sent</th><th>Status</th></tr>

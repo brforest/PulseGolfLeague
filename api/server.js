@@ -58,10 +58,16 @@ const publicReadLimiter = rateLimit({
   message: { error: 'Too many requests — please try again later.' },
 });
 
-// Admin endpoints — higher limit, shorter window
+// Admin endpoints — only counts unauthenticated/failed requests.
+// Authenticated requests are skipped so the dashboard isn't self-limiting.
 const adminLimiter = rateLimit({
-  windowMs: 60 * 1000, // 1 minute
-  max: 120,
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 30, // 30 bad/unauthenticated requests per IP per 15 min
+  skip: (req) => {
+    const token = (req.headers['authorization'] || '').replace('Bearer ', '');
+    const pw = process.env.ADMIN_PASSWORD;
+    return !!(pw && token === pw);
+  },
   standardHeaders: true,
   legacyHeaders: false,
   message: { error: 'Too many requests — please try again later.' },
