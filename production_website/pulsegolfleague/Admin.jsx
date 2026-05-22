@@ -194,6 +194,7 @@ function EmailsTab({ registrations, password }) {
   const [showConfirm, setShowConfirm] = useState(false);
   const [confirmRecipients, setConfirmRecipients] = useState([]);
   const [confirmBodyHtml, setConfirmBodyHtml] = useState('');
+  const [replyMessageId, setReplyMessageId] = useState(null);
 
   // ── Load inbox ──
   const loadInbox = useCallback(async () => {
@@ -259,6 +260,7 @@ function EmailsTab({ registrations, password }) {
       ? email.subject
       : `Re: ${email.subject || ''}`.trim();
     setSubject(reSubject);
+    setReplyMessageId(email.message_id || null);
     setSendResult(null);
     setSendError('');
     setTimeout(() => {
@@ -347,7 +349,12 @@ function EmailsTab({ registrations, password }) {
       const res = await fetch(`${API_URL}/api/admin/emails/send`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${password}` },
-        body: JSON.stringify({ recipients: confirmRecipients, subject: subject.trim(), bodyHtml: confirmBodyHtml }),
+        body: JSON.stringify({
+          recipients: confirmRecipients,
+          subject: subject.trim(),
+          bodyHtml: confirmBodyHtml,
+          ...(replyMessageId && { inReplyTo: replyMessageId }),
+        }),
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || 'Send failed.');
@@ -356,6 +363,7 @@ function EmailsTab({ registrations, password }) {
       if (bodyRef.current) bodyRef.current.innerHTML = '';
       setSelectedPlayers(new Set());
       setCustomTo('');
+      setReplyMessageId(null);
       loadEmails();
     } catch (err) {
       setSendError(err.message);

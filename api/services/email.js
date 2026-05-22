@@ -277,6 +277,20 @@ export async function sendCustomEmailHtml({ to, subject, bodyHtml }) {
   if (error) throw error;
 }
 
+export async function sendCustomEmailReply({ to, subject, bodyHtml, inReplyTo }) {
+  const sendOptions = {
+    from: FROM(),
+    to: Array.isArray(to) ? to : [to],
+    subject,
+    html: replyEmailHtmlFromHtml(bodyHtml),
+  };
+  if (inReplyTo) {
+    sendOptions.headers = { 'In-Reply-To': inReplyTo, 'References': inReplyTo };
+  }
+  const { error } = await getClient().emails.send(sendOptions);
+  if (error) throw error;
+}
+
 function customEmailHtml(subject, bodyText) {
   const bodyHtml = String(bodyText ?? '')
     .split(/\n\n+/)
@@ -360,6 +374,42 @@ function sanitizeForEmail(html) {
     .replace(/(href|src)\s*=\s*'data:[^']*'/gi, '')
     .replace(/<base[\s\S]*?>/gi, '')
     .replace(/<\/?(form|input|select|iframe|frame|object|embed)[\s\S]*?>/gi, '');
+}
+
+/**
+ * Normalize contentEditable HTML for the plain reply template (light background).
+ */
+function normalizeEmailHtmlForReply(html) {
+  return html
+    .replace(/<div>\s*<br\s*\/?>\s*<\/div>/gi, '<br>')
+    .replace(/<div>/gi, '<p style="margin:0 0 16px;font-size:14px;color:#222222;line-height:1.6;">')
+    .replace(/<\/div>/gi, '</p>');
+}
+
+/**
+ * Plain white reply email — just the content and a minimal footer.
+ * Used when replying to an inbound email so it looks like a normal email.
+ */
+function replyEmailHtmlFromHtml(bodyHtml) {
+  const safe = normalizeEmailHtmlForReply(sanitizeForEmail(bodyHtml));
+  return `<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+</head>
+<body style="margin:0;padding:0;background:#ffffff;font-family:Arial,sans-serif;color:#222222;">
+  <div style="max-width:600px;margin:0 auto;padding:32px 24px;">
+    <div style="font-size:14px;color:#222222;line-height:1.6;">
+      ${safe}
+    </div>
+    <hr style="border:none;border-top:1px solid #e0e0e0;margin:32px 0;" />
+    <p style="margin:0;font-size:12px;color:#888888;">
+      Pulse Golf League &middot; <a href="https://pulsegolfleague.com" style="color:#888888;">pulsegolfleague.com</a>
+    </p>
+  </div>
+</body>
+</html>`;
 }
 
 /**

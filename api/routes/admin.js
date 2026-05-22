@@ -1,7 +1,7 @@
 import { Router } from 'express';
 import { Resend } from 'resend';
 import pool from '../db/index.js';
-import { sendCustomEmail, sendCustomEmailHtml } from '../services/email.js';
+import { sendCustomEmail, sendCustomEmailHtml, sendCustomEmailReply } from '../services/email.js';
 
 export const adminRoute = Router();
 
@@ -204,8 +204,9 @@ adminRoute.get('/emails/:emailId', async (req, res) => {
 //   { recipients, subject, body }     — plain-text body (paragraph-per-blank-line)
 //   { recipients, subject, bodyHtml } — rich HTML body from the composer
 adminRoute.post('/emails/send', async (req, res) => {
-  const { recipients, subject, body, bodyHtml } = req.body;
+  const { recipients, subject, body, bodyHtml, inReplyTo } = req.body;
   const useHtml = bodyHtml !== undefined;
+  const isReply = !!(inReplyTo && typeof inReplyTo === 'string' && inReplyTo.length <= 1000);
 
   if (!Array.isArray(recipients) || recipients.length === 0) {
     return res.status(400).json({ error: 'recipients must be a non-empty array.' });
@@ -251,9 +252,11 @@ adminRoute.post('/emails/send', async (req, res) => {
     const batch = recipients.slice(i, i + 10);
     await Promise.all(
       batch.map((to) => {
-        const sendFn = useHtml
-          ? sendCustomEmailHtml({ to, subject: trimmedSubject, bodyHtml })
-          : sendCustomEmail({ to, subject: trimmedSubject, bodyText: body });
+        const sendFn = (isReply && useHtml)
+          ? sendCustomEmailReply({ to, subject: trimmedSubject, bodyHtml, inReplyTo })
+          : useHtml
+            ? sendCustomEmailHtml({ to, subject: trimmedSubject, bodyHtml })
+            : sendCustomEmail({ to, subject: trimmedSubject, bodyText: body });
         return sendFn.catch((err) => { errors.push(`${to}: ${err.message}`); });
       })
     );
@@ -310,6 +313,7 @@ adminRoute.get('/inbox/:id', async (req, res) => {
     const nameAddrMatch = /^(.*?)\s*<([^>]+)>$/.exec(headerFrom);
     res.json({
       id: data.id,
+      message_id: data.message_id || null,
       from_address: nameAddrMatch ? nameAddrMatch[2].trim() : (data.from || ''),
       from_name: nameAddrMatch ? (nameAddrMatch[1].trim() || null) : null,
       to_address: Array.isArray(data.to) ? data.to[0] : (data.to || null),
