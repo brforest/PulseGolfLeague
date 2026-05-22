@@ -53,7 +53,7 @@ function TournamentDetailsStep({ onNext }) {
         <span className="signup-event-eyebrow">INAUGURAL EVENT · YOLO FLIERS CLUB · WOODLAND, CA</span>
         <h1 className="signup-event-title">Yolo Fliers Matchplay Championship — Registration</h1>
         <div className="signup-event-dates">
-          <span>QUALIFIER: MON, SEPT 8</span>
+          <span>QUALIFIER: TUE, SEPT 8</span>
           <span className="signup-date-divider">·</span>
           <span>MATCH PLAY: SEPT 9–11</span>
         </div>

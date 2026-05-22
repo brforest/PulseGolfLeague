@@ -70,7 +70,7 @@ export default function TournamentInfo({ onRegister, onBack, onFounders, onConta
           <span className="tinfo-eyebrow">INAUGURAL EVENT · YOLO FLIERS CLUB · WOODLAND, CA</span>
           <h1 className="tinfo-event-title">Yolo Fliers Matchplay Championship</h1>
           <div className="tinfo-dates">
-            <span>QUALIFIER: MON, SEPT 8</span>
+            <span>QUALIFIER: TUE, SEPT 8</span>
             <span className="tinfo-date-dot">·</span>
             <span>MATCH PLAY: SEPT 9–11</span>
           </div>
