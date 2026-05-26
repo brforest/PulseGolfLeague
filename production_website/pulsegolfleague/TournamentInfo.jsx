@@ -297,7 +297,7 @@ export default function TournamentInfo({ onRegister, onBack, onFounders, onConta
         {/* CTA */}
         <section className="tinfo-cta">
           <h2 className="tinfo-cta-title">Ready to compete?</h2>
-          <p className="tinfo-cta-sub">$500 entry · Card charged June 23, 2026 · Top 32 earn their money back</p>
+          <p className="tinfo-cta-sub">$500 entry · Card not charged until August 25, 2026 · Top 32 earn their money back</p>
           <button className="tinfo-cta-btn" onClick={onRegister}>Sign Up Now</button>
         </section>
 
