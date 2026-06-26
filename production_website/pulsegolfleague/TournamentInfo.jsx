@@ -116,7 +116,7 @@ export default function TournamentInfo({ onRegister, onBack, onFounders, onConta
               </div>
               <div className="tinfo-fact">
                 <span className="tinfo-fact-label">SIGNUP DEADLINE</span>
-                <span className="tinfo-fact-value">Monday, June 29, 2026</span>
+                <span className="tinfo-fact-value">Tuesday, August 25, 2026</span>
               </div>
             </div>
           </div>
