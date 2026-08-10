@@ -36,6 +36,7 @@ adminRoute.get('/registrations', async (_req, res) => {
          playing_status, ghin_number,
          home_town, home_course, college,
          instagram, twitter, tiktok,
+         referred_by,
          square_customer_id, square_card_id,
          charge_status, charge_amount_cents,
          scheduled_charge_date, charged_at,
@@ -63,6 +64,7 @@ const EDITABLE_FIELDS = [
   'playing_status', 'ghin_number',
   'home_town', 'home_course', 'college',
   'instagram', 'twitter', 'tiktok',
+  'referred_by',
   'charge_status', 'scheduled_charge_date', 'charge_error',
   'active',
 ];
@@ -153,6 +155,35 @@ adminRoute.delete('/registrations/:id', async (req, res) => {
     res.json({ success: true, id });
   } catch (err) {
     console.error('DELETE /admin/registrations error:', err);
+    res.status(500).json({ error: 'Internal server error.' });
+  }
+});
+
+// ── GET /api/admin/referrals ──────────────────────────────────────────────────
+// Returns each referrer name along with the count of players they referred
+// and the list of those players. Used to determine who earns a discount.
+adminRoute.get('/referrals', async (_req, res) => {
+  try {
+    const result = await pool.query(
+      `SELECT
+         referred_by,
+         COUNT(*)::int AS referral_count,
+         json_agg(json_build_object(
+           'id', id,
+           'first_name', first_name,
+           'last_name', last_name,
+           'email', email,
+           'charge_status', charge_status,
+           'active', active
+         ) ORDER BY registered_at ASC) AS referred_players
+       FROM registrations
+       WHERE referred_by IS NOT NULL AND referred_by <> ''
+       GROUP BY referred_by
+       ORDER BY referral_count DESC, referred_by ASC`
+    );
+    res.json({ referrals: result.rows });
+  } catch (err) {
+    console.error('GET /admin/referrals error:', err);
     res.status(500).json({ error: 'Internal server error.' });
   }
 });

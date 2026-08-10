@@ -308,6 +308,14 @@ function PlayerInfoStep({ data, onChange, onNext, onBack }) {
             </div>
             {f('tiktok', 'TikTok', '@handle', true)}
           </div>
+
+          <div className="signup-form-section">
+            <h3 className="signup-form-section-title">
+              Referral <span className="signup-section-optional">(optional)</span>
+            </h3>
+            <p className="signup-form-section-note">Were you referred by a current PGL player? Enter their name below. Referring players earn a discount on their entry fee.</p>
+            {f('referredBy', 'Referred By', 'e.g. John Smith', true)}
+          </div>
         </div>
 
         <div className="signup-actions">
@@ -505,6 +513,7 @@ export default function SignUp({ onBack }) {
     instagram: '',
     twitter: '',
     tiktok: '',
+    referredBy: '',
   });
 
   const [paymentError, setPaymentError] = useState('');

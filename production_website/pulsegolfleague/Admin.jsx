@@ -48,6 +48,7 @@ function EditModal({ reg, password, onSave, onClose }) {
     instagram:           reg.instagram || '',
     twitter:             reg.twitter || '',
     tiktok:              reg.tiktok || '',
+    referred_by:         reg.referred_by || '',
     charge_status:       reg.charge_status,
     scheduled_charge_date: reg.scheduled_charge_date
       ? reg.scheduled_charge_date.slice(0, 10)
@@ -159,6 +160,9 @@ function EditModal({ reg, password, onSave, onClose }) {
           </div>
           {field('TikTok', 'tiktok')}
 
+          <div className="admin-edit-section-title">Referral</div>
+          {field('Referred By', 'referred_by')}
+
           <div className="admin-edit-section-title">Payment</div>
           {field('Charge Status', 'charge_status', 'text', CHARGE_STATUS_OPTIONS)}
           {field('Scheduled Charge Date', 'scheduled_charge_date', 'date')}
@@ -173,6 +177,73 @@ function EditModal({ reg, password, onSave, onClose }) {
             {saving ? 'Saving…' : 'Save Changes'}
           </button>
         </div>
+      </div>
+    </div>
+  );
+}
+
+// ── Referrals Tab ─────────────────────────────────────────────────────────────
+function ReferralsTab({ password }) {
+  const [referrals, setReferrals] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
+
+  useEffect(() => {
+    const load = async () => {
+      try {
+        const res = await fetch(`${API_URL}/api/admin/referrals`, {
+          headers: { Authorization: `Bearer ${password}` },
+        });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error || 'Failed to load referrals.');
+        setReferrals(data.referrals || []);
+      } catch (err) {
+        setError(err.message);
+      } finally {
+        setLoading(false);
+      }
+    };
+    load();
+  }, [password]);
+
+  if (loading) return <p className="admin-load-error">Loading referrals…</p>;
+  if (error)   return <p className="admin-load-error">{error}</p>;
+  if (referrals.length === 0) return <p className="admin-load-error">No referrals recorded yet.</p>;
+
+  return (
+    <div className="admin-referrals">
+      <p className="admin-referrals-note">
+        Each row is a player who referred others. Players with 1+ referral earn a discount on their entry fee.
+      </p>
+      <div className="admin-table-wrap">
+        <table className="admin-table">
+          <thead>
+            <tr>
+              <th>Referring Player</th>
+              <th># Referrals</th>
+              <th>Players Referred</th>
+            </tr>
+          </thead>
+          <tbody>
+            {referrals.map((row) => (
+              <tr key={row.referred_by} className="admin-row">
+                <td className="admin-td-name"><strong>{row.referred_by}</strong></td>
+                <td>{row.referral_count}</td>
+                <td>
+                  <ul className="admin-referred-list">
+                    {row.referred_players.map((p) => (
+                      <li key={p.id}>
+                        {p.first_name} {p.last_name}
+                        <span className="admin-sub"> — {p.email}</span>
+                        {p.active === false && <span className="admin-sub"> (inactive)</span>}
+                      </li>
+                    ))}
+                  </ul>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
       </div>
     </div>
   );
@@ -844,6 +915,12 @@ export default function Admin({ onBack }) {
           Registrations
         </button>
         <button
+          className={`admin-tab${tab === 'referrals' ? ' admin-tab-active' : ''}`}
+          onClick={() => setTab('referrals')}
+        >
+          Referrals
+        </button>
+        <button
           className={`admin-tab${tab === 'emails' ? ' admin-tab-active' : ''}`}
           onClick={() => setTab('emails')}
         >
@@ -935,6 +1012,7 @@ export default function Admin({ onBack }) {
                   <div>{r.first_name} {r.last_name}</div>
                   {r.nickname && <div className="admin-nickname">"{r.nickname}"</div>}
                   <div className="admin-sub">{r.playing_status} · {r.home_course}</div>
+                  {r.referred_by && <div className="admin-sub admin-referred-by">Ref: {r.referred_by}</div>}
                 </td>
                 <td>{r.email}</td>
                 <td>{r.phone}</td>
@@ -1037,6 +1115,10 @@ export default function Admin({ onBack }) {
       )}
 
       </> /* end registrations tab */
+      )}
+
+      {tab === 'referrals' && (
+        <ReferralsTab password={password} />
       )}
 
       {tab === 'emails' && (

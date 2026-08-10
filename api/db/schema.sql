@@ -26,6 +26,9 @@ CREATE TABLE IF NOT EXISTS registrations (
   playing_status          TEXT        NOT NULL CHECK (playing_status IN ('Professional', 'Amateur')),
   ghin_number             TEXT,
 
+  -- Referral
+  referred_by             TEXT,
+
   -- Social
   instagram               TEXT,
   twitter                 TEXT,
@@ -57,3 +60,7 @@ CREATE TABLE IF NOT EXISTS registrations (
 CREATE INDEX IF NOT EXISTS idx_reg_email         ON registrations (email);
 CREATE INDEX IF NOT EXISTS idx_reg_charge_status ON registrations (charge_status);
 CREATE INDEX IF NOT EXISTS idx_reg_charge_date   ON registrations (scheduled_charge_date);
+CREATE INDEX IF NOT EXISTS idx_reg_referred_by   ON registrations (referred_by);
+
+-- Migration for existing databases:
+-- ALTER TABLE registrations ADD COLUMN IF NOT EXISTS referred_by TEXT;
