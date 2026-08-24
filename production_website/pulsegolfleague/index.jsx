@@ -362,8 +362,8 @@ function PulseGolfLeague() {
             <button className="hero-founders-button" onClick={() => navigate('/founders', { from: '/' })}>Meet the Founders</button>
           </div>
           <div className="hero-cta" style={{ marginTop: 16 }}>
-            <button className="hero-founders-button" onClick={() => navigate('/host-housing', { from: '/' })}>Host a Player (Club Members)</button>
             <button className="hero-founders-button" onClick={() => navigate('/housing-request', { from: '/' })}>Request Host Housing (Players)</button>
+            <button className="hero-founders-button" onClick={() => navigate('/host-housing', { from: '/' })}>Host a Player (Club Members)</button>
           </div>
         </div>
         <div className="hero-scroll-indicator">
