@@ -874,12 +874,15 @@ function EmailsTab({ registrations, password }) {
   );
 }
 
+const ADMIN_SESSION_KEY = 'pgl_admin_password';
+
 // ── Main Admin Component ───────────────────────────────────────────────────────
 export default function Admin({ onBack }) {
   const [authed, setAuthed] = useState(false);
   const [passwordInput, setPasswordInput] = useState('');
   const [authError, setAuthError] = useState('');
   const [password, setPassword] = useState('');
+  const [checkingSession, setCheckingSession] = useState(true);
 
   const [registrations, setRegistrations] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -902,6 +905,7 @@ export default function Admin({ onBack }) {
         headers: { Authorization: `Bearer ${pw}` },
       });
       if (res.status === 401) {
+        sessionStorage.removeItem(ADMIN_SESSION_KEY);
         setAuthed(false);
         setAuthError('Incorrect password.');
         setLoading(false);
@@ -932,10 +936,39 @@ export default function Admin({ onBack }) {
       setAuthError(data.error || 'Login failed.');
       return;
     }
+    sessionStorage.setItem(ADMIN_SESSION_KEY, passwordInput);
     setPassword(passwordInput);
     setRegistrations(data.registrations || []);
     setAuthed(true);
   };
+
+  // Re-authenticate with any password saved from a previous session on this tab.
+  useEffect(() => {
+    const saved = sessionStorage.getItem(ADMIN_SESSION_KEY);
+    if (!saved) {
+      setCheckingSession(false);
+      return;
+    }
+    (async () => {
+      try {
+        const res = await fetch(`${API_URL}/api/admin/registrations`, {
+          headers: { Authorization: `Bearer ${saved}` },
+        });
+        if (res.ok) {
+          const data = await res.json();
+          setPassword(saved);
+          setRegistrations(data.registrations || []);
+          setAuthed(true);
+        } else {
+          sessionStorage.removeItem(ADMIN_SESSION_KEY);
+        }
+      } catch {
+        // network error — leave logged out, user can retry
+      } finally {
+        setCheckingSession(false);
+      }
+    })();
+  }, []);
 
   const handleSave = (updated) => {
     setRegistrations((prev) => prev.map((r) => (r.id === updated.id ? updated : r)));
@@ -994,6 +1027,9 @@ export default function Admin({ onBack }) {
   }, {});
 
   // ── Login Screen ─────────────────────────────────────────────────────────────
+  if (checkingSession) {
+    return <div className="admin-login-page" />;
+  }
   if (!authed) {
     return (
       <div className="admin-login-page">
