@@ -159,6 +159,45 @@ adminRoute.delete('/registrations/:id', async (req, res) => {
   }
 });
 
+// ── GET /api/admin/host-housing ────────────────────────────────────────────────
+adminRoute.get('/host-housing', async (_req, res) => {
+  try {
+    const result = await pool.query(
+      `SELECT
+         id, role, first_name, last_name, email, phone,
+         capacity, date_option, notes, submitted_at
+       FROM host_housing_signups
+       ORDER BY submitted_at ASC`
+    );
+    res.json({ signups: result.rows });
+  } catch (err) {
+    console.error('GET /admin/host-housing error:', err);
+    res.status(500).json({ error: 'Internal server error.' });
+  }
+});
+
+// ── DELETE /api/admin/host-housing/:id ─────────────────────────────────────────
+adminRoute.delete('/host-housing/:id', async (req, res) => {
+  const id = parseInt(req.params.id, 10);
+  if (!Number.isInteger(id) || id <= 0) {
+    return res.status(400).json({ error: 'Invalid ID.' });
+  }
+
+  try {
+    const result = await pool.query(
+      'DELETE FROM host_housing_signups WHERE id = $1 RETURNING id',
+      [id]
+    );
+    if (result.rowCount === 0) {
+      return res.status(404).json({ error: 'Sign-up not found.' });
+    }
+    res.json({ success: true, id });
+  } catch (err) {
+    console.error('DELETE /admin/host-housing error:', err);
+    res.status(500).json({ error: 'Internal server error.' });
+  }
+});
+
 // ── GET /api/admin/referrals ──────────────────────────────────────────────────
 // Returns each referrer name along with the count of players they referred
 // and the list of those players. Used to determine who earns a discount.

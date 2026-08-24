@@ -249,6 +249,142 @@ function ReferralsTab({ password }) {
   );
 }
 
+// ── Host Housing Tab ─────────────────────────────────────────────────────────
+const DATE_OPTION_LABELS = {
+  pgl_only: 'PGL Only (Sep 8–11)',
+  pgl_and_qschool: 'PGL & Q-School (Sep 8–11, Sep 16–18)',
+};
+
+function HostHousingTab({ password }) {
+  const [signups, setSignups] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
+  const [roleFilter, setRoleFilter] = useState('all');
+  const [deleteTarget, setDeleteTarget] = useState(null);
+  const [deleting, setDeleting] = useState(false);
+
+  const load = useCallback(async () => {
+    setLoading(true);
+    setError('');
+    try {
+      const res = await fetch(`${API_URL}/api/admin/host-housing`, {
+        headers: { Authorization: `Bearer ${password}` },
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Failed to load host housing sign-ups.');
+      setSignups(data.signups || []);
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setLoading(false);
+    }
+  }, [password]);
+
+  useEffect(() => { load(); }, [load]);
+
+  const handleDeleteConfirm = async () => {
+    if (!deleteTarget) return;
+    setDeleting(true);
+    try {
+      const res = await fetch(`${API_URL}/api/admin/host-housing/${deleteTarget.id}`, {
+        method: 'DELETE',
+        headers: { Authorization: `Bearer ${password}` },
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Delete failed.');
+      setSignups((prev) => prev.filter((s) => s.id !== deleteTarget.id));
+      setDeleteTarget(null);
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setDeleting(false);
+    }
+  };
+
+  const filtered = signups.filter((s) => roleFilter === 'all' || s.role === roleFilter);
+  const hostCount = signups.filter((s) => s.role === 'host').length;
+  const playerCount = signups.filter((s) => s.role === 'player').length;
+
+  if (loading) return <p className="admin-load-error">Loading host housing sign-ups…</p>;
+  if (error)   return <p className="admin-load-error">{error}</p>;
+
+  return (
+    <div className="admin-referrals">
+      <p className="admin-referrals-note">
+        {hostCount} member{hostCount !== 1 ? 's' : ''} offering housing · {playerCount} player{playerCount !== 1 ? 's' : ''} requesting housing.
+      </p>
+
+      <div className="admin-filters">
+        <select className="admin-status-filter" value={roleFilter} onChange={(e) => setRoleFilter(e.target.value)}>
+          <option value="all">All</option>
+          <option value="host">Hosts (Club Members)</option>
+          <option value="player">Players (Requests)</option>
+        </select>
+        <button className="admin-btn admin-btn-secondary" onClick={load}>Refresh</button>
+      </div>
+
+      {filtered.length === 0 ? (
+        <p className="admin-load-error">No sign-ups yet.</p>
+      ) : (
+        <div className="admin-table-wrap">
+          <table className="admin-table">
+            <thead>
+              <tr>
+                <th>Role</th>
+                <th>Name</th>
+                <th>Email</th>
+                <th>Phone</th>
+                <th>Capacity</th>
+                <th>Dates</th>
+                <th>Notes</th>
+                <th>Submitted</th>
+                <th></th>
+              </tr>
+            </thead>
+            <tbody>
+              {filtered.map((s) => (
+                <tr key={s.id} className="admin-row">
+                  <td>{s.role === 'host' ? 'Host' : 'Player'}</td>
+                  <td className="admin-td-name"><strong>{s.first_name} {s.last_name}</strong></td>
+                  <td>{s.email}</td>
+                  <td>{s.phone}</td>
+                  <td>{s.capacity ?? '—'}</td>
+                  <td>{DATE_OPTION_LABELS[s.date_option] || s.date_option}</td>
+                  <td>{s.notes || '—'}</td>
+                  <td>{formatDate(s.submitted_at)}</td>
+                  <td>
+                    <button className="admin-btn admin-btn-delete" onClick={() => setDeleteTarget(s)}>Delete</button>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}
+
+      {deleteTarget && (
+        <div className="admin-modal-overlay" onClick={() => setDeleteTarget(null)}>
+          <div className="admin-modal admin-modal-small" onClick={(e) => e.stopPropagation()}>
+            <div className="admin-modal-header">
+              <h3 className="admin-modal-title">Delete Sign-Up</h3>
+              <button className="admin-modal-close" onClick={() => setDeleteTarget(null)}>✕</button>
+            </div>
+            <div className="admin-modal-body">
+              <p>Delete the sign-up from <strong>{deleteTarget.first_name} {deleteTarget.last_name}</strong>?</p>
+            </div>
+            <div className="admin-modal-footer">
+              <button className="admin-btn admin-btn-secondary" onClick={() => setDeleteTarget(null)} disabled={deleting}>Cancel</button>
+              <button className="admin-btn admin-btn-delete" onClick={handleDeleteConfirm} disabled={deleting}>
+                {deleting ? 'Deleting…' : 'Delete'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
 // ── Email Tab ─────────────────────────────────────────────────────────────────
 function EmailsTab({ registrations, password }) {
 
@@ -921,6 +1057,12 @@ export default function Admin({ onBack }) {
           Referrals
         </button>
         <button
+          className={`admin-tab${tab === 'host-housing' ? ' admin-tab-active' : ''}`}
+          onClick={() => setTab('host-housing')}
+        >
+          Host Housing
+        </button>
+        <button
           className={`admin-tab${tab === 'emails' ? ' admin-tab-active' : ''}`}
           onClick={() => setTab('emails')}
         >
@@ -1119,6 +1261,10 @@ export default function Admin({ onBack }) {
 
       {tab === 'referrals' && (
         <ReferralsTab password={password} />
+      )}
+
+      {tab === 'host-housing' && (
+        <HostHousingTab password={password} />
       )}
 
       {tab === 'emails' && (

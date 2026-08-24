@@ -22,7 +22,7 @@ function statusLabel(status) {
   }
 }
 
-export default function TournamentInfo({ onRegister, onBack, onFounders, onContact }) {
+export default function TournamentInfo({ onRegister, onBack, onFounders, onContact, onHousing }) {
   const [players, setPlayers] = useState([]);
   const [loadingPlayers, setLoadingPlayers] = useState(true);
   const [playerError, setPlayerError] = useState('');
@@ -298,7 +298,12 @@ export default function TournamentInfo({ onRegister, onBack, onFounders, onConta
         <section className="tinfo-cta">
           <h2 className="tinfo-cta-title">Ready to compete?</h2>
           <p className="tinfo-cta-sub">$500 entry · Card not charged until August 25, 2026 · Top 32 earn their money back</p>
-          <button className="tinfo-cta-btn" onClick={onRegister}>Sign Up Now</button>
+          <div className="tinfo-cta-actions">
+            <button className="tinfo-cta-btn" onClick={onRegister}>Sign Up Now</button>
+            {onHousing && (
+              <button className="tinfo-cta-secondary-btn" onClick={() => onHousing('/tournament-info')}>Need Host Housing?</button>
+            )}
+          </div>
         </section>
 
       </div>

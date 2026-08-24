@@ -7,6 +7,7 @@ import { registerRoute } from './routes/register.js';
 import { playersRoute } from './routes/players.js';
 import { adminRoute } from './routes/admin.js';
 import { contactRoute } from './routes/contact.js';
+import { hostHousingRoute } from './routes/hostHousing.js';
 import { startChargeJob } from './jobs/chargeRegistrations.js';
 
 const app = express();
@@ -79,6 +80,7 @@ app.use('/api/admin', adminLimiter, adminRoute);   // must be before the /api ca
 app.use('/api', publicReadLimiter, playersRoute);
 app.use('/api', registrationLimiter, registerRoute);
 app.use('/api', registrationLimiter, contactRoute);
+app.use('/api', registrationLimiter, hostHousingRoute);
 
 // ── 404 fallthrough ───────────────────────────────────────
 app.use((_req, res) => res.status(404).json({ error: 'Not found.' }));

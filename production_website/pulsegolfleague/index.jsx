@@ -5,6 +5,8 @@ import TournamentInfo from './TournamentInfo.jsx';
 import Admin from './AdminPanel.jsx';
 import Founders from './Founders.jsx';
 import Contact from './Contact.jsx';
+import HostSignUp from './HostSignUp.jsx';
+import HousingRequest from './HousingRequest.jsx';
 
 const PglLogo = '/images/pgl_logo.png';
 
@@ -146,6 +148,8 @@ function PulseGolfLeague() {
     if (p === '/admin') return 'admin';
     if (p === '/founders') return 'founders';
     if (p === '/contact') return 'contact';
+    if (p === '/host-housing') return 'host-housing';
+    if (p === '/housing-request') return 'housing-request';
     return 'home';
   };
   const [page, setPage] = useState(getPage);
@@ -280,6 +284,16 @@ function PulseGolfLeague() {
     return <Contact onBack={() => navigate(contactBack)} />;
   }
 
+  if (page === 'host-housing') {
+    const backTo = history.state?.from || '/';
+    return <HostSignUp onBack={() => navigate(backTo)} />;
+  }
+
+  if (page === 'housing-request') {
+    const backTo = history.state?.from || '/tournament-info';
+    return <HousingRequest onBack={() => navigate(backTo)} />;
+  }
+
   if (page === 'signup') {
     return <SignUp onBack={() => navigate('/tournament-info')} />;
   }
@@ -291,6 +305,7 @@ function PulseGolfLeague() {
         onBack={() => navigate('/')}
         onFounders={() => navigate('/founders', { from: '/tournament-info' })}
         onContact={(from) => navigate('/contact', { from: from || '/tournament-info' })}
+        onHousing={(from) => navigate('/housing-request', { from: from || '/tournament-info' })}
       />
     );
   }
@@ -345,6 +360,10 @@ function PulseGolfLeague() {
           <div className="hero-cta">
             <button className="hero-pilot-info-button" onClick={() => navigate('/tournament-info')}>Pilot Event Info and Sign Up</button>
             <button className="hero-founders-button" onClick={() => navigate('/founders', { from: '/' })}>Meet the Founders</button>
+          </div>
+          <div className="hero-cta" style={{ marginTop: 16 }}>
+            <button className="hero-founders-button" onClick={() => navigate('/host-housing', { from: '/' })}>Host a Player (Club Members)</button>
+            <button className="hero-founders-button" onClick={() => navigate('/housing-request', { from: '/' })}>Request Host Housing (Players)</button>
           </div>
         </div>
         <div className="hero-scroll-indicator">

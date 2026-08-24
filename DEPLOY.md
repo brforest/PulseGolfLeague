@@ -4,6 +4,7 @@ cd ~/pulsegolfleague/PulseGolfLeague
 rm production_website/pulsegolfleague/dist/index.html
 rm production_website/pulsegolfleague/dist/images/athlesign_logo.jpg
 rm production_website/pulsegolfleague/dist/images/fairway_hunters_logo.png
+rm production_website/pulsegolfleague/node_modules/.package-lock.json
 rm api/package-lock.json
 git pull
 cd production_website/pulsegolfleague

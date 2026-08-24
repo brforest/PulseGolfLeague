@@ -64,3 +64,29 @@ CREATE INDEX IF NOT EXISTS idx_reg_referred_by   ON registrations (referred_by);
 
 -- Migration for existing databases:
 -- ALTER TABLE registrations ADD COLUMN IF NOT EXISTS referred_by TEXT;
+
+CREATE TABLE IF NOT EXISTS host_housing_signups (
+  id                SERIAL PRIMARY KEY,
+
+  -- 'host' = Yolo Fliers Club member offering housing
+  -- 'player' = PGL player requesting housing
+  role              TEXT        NOT NULL CHECK (role IN ('host', 'player')),
+
+  first_name        TEXT        NOT NULL,
+  last_name         TEXT        NOT NULL,
+  email             TEXT        NOT NULL,
+  phone             TEXT        NOT NULL,
+
+  -- Only set for hosts: number of players they can accommodate
+  capacity          INTEGER     CHECK (capacity IS NULL OR (capacity > 0 AND capacity <= 20)),
+
+  -- 'pgl_only' = Sept 8-11 · 'pgl_and_qschool' = Sept 8-11 & Sept 16-18
+  date_option       TEXT        NOT NULL CHECK (date_option IN ('pgl_only', 'pgl_and_qschool')),
+
+  notes             TEXT,
+
+  submitted_at      TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+CREATE INDEX IF NOT EXISTS idx_hh_role         ON host_housing_signups (role);
+CREATE INDEX IF NOT EXISTS idx_hh_submitted_at ON host_housing_signups (submitted_at);
