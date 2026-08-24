@@ -469,7 +469,7 @@ function PlayerInfoStep({ data, onChange, onNext, onBack }) {
 }
 
 // ===== Step 4: Payment =====
-function PaymentStep({ cardContainerRef, paymentError, submitting, onSubmit, onBack, playerInfo }) {
+function PaymentStep({ cardContainerRef, cardLoading, paymentError, submitting, onSubmit, onBack, playerInfo }) {
   return (
     <div className="signup-step-content">
       <div className="signup-card">
@@ -502,7 +502,15 @@ function PaymentStep({ cardContainerRef, paymentError, submitting, onSubmit, onB
           <label className="signup-field-label">
             Card Details <span className="signup-required">*</span>
           </label>
-          <div id="card-container" ref={cardContainerRef} className="signup-square-container" />
+          <div className="signup-square-container-outer">
+            <div id="card-container" ref={cardContainerRef} className="signup-square-container" />
+            {cardLoading && (
+              <div className="signup-square-loading" role="status" aria-live="polite">
+                <span className="signup-spinner" />
+                <span>Loading payment form…</span>
+              </div>
+            )}
+          </div>
           <p className="signup-square-note">
             Payments are processed securely by Square. PGL does not store your full card number.
           </p>
@@ -658,6 +666,7 @@ export default function SignUp({ onBack }) {
   const [paymentError, setPaymentError] = useState('');
   const [submitting, setSubmitting] = useState(false);
   const [submitted, setSubmitted] = useState(false);
+  const [cardLoading, setCardLoading] = useState(true);
 
   const squareCardRef = useRef(null);
   const squarePaymentsRef = useRef(null);
@@ -698,6 +707,7 @@ export default function SignUp({ onBack }) {
     if (step !== 4) return;
 
     let destroyed = false;
+    setCardLoading(true);
 
     const initSquare = async () => {
       // Poll for Square SDK to load
@@ -708,7 +718,10 @@ export default function SignUp({ onBack }) {
       }
 
       if (!window.Square) {
-        if (!destroyed) setPaymentError('Payment system failed to load. Please refresh the page.');
+        if (!destroyed) {
+          setPaymentError('Payment system failed to load. Please refresh the page.');
+          setCardLoading(false);
+        }
         return;
       }
 
@@ -749,11 +762,13 @@ export default function SignUp({ onBack }) {
         if (!destroyed && cardContainerRef.current) {
           await card.attach('#card-container');
           squareCardRef.current = card;
+          if (!destroyed) setCardLoading(false);
         }
       } catch (err) {
         if (!destroyed) {
           console.error('Square init error:', err);
           setPaymentError('Failed to initialize payment form. Please try again.');
+          setCardLoading(false);
         }
       }
     };
@@ -860,6 +875,7 @@ export default function SignUp({ onBack }) {
       {step === 4 && (
         <PaymentStep
           cardContainerRef={cardContainerRef}
+          cardLoading={cardLoading}
           paymentError={paymentError}
           submitting={submitting}
           onSubmit={handleSubmit}
