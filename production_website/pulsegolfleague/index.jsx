@@ -2,7 +2,7 @@ import React, { useEffect, useState, useRef } from 'react';
 import './index.css';
 import SignUp from './SignUp.jsx';
 import TournamentInfo from './TournamentInfo.jsx';
-import Admin from './Admin.jsx';
+import Admin from './AdminPanel.jsx';
 import Founders from './Founders.jsx';
 import Contact from './Contact.jsx';
 

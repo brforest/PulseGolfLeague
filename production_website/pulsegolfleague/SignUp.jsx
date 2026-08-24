@@ -167,6 +167,144 @@ function WaiverStep({ onNext, onBack }) {
 }
 
 // ===== Step 3: Player Info =====
+
+// Dial codes for a country selector, so users never have to type "+" themselves.
+const COUNTRY_CODES = [
+  { iso: 'US', name: 'United States', dial: '+1' },
+  { iso: 'CA', name: 'Canada', dial: '+1' },
+  { iso: 'MX', name: 'Mexico', dial: '+52' },
+  { iso: 'GB', name: 'United Kingdom', dial: '+44' },
+  { iso: 'IE', name: 'Ireland', dial: '+353' },
+  { iso: 'FR', name: 'France', dial: '+33' },
+  { iso: 'DE', name: 'Germany', dial: '+49' },
+  { iso: 'ES', name: 'Spain', dial: '+34' },
+  { iso: 'IT', name: 'Italy', dial: '+39' },
+  { iso: 'PT', name: 'Portugal', dial: '+351' },
+  { iso: 'NL', name: 'Netherlands', dial: '+31' },
+  { iso: 'BE', name: 'Belgium', dial: '+32' },
+  { iso: 'CH', name: 'Switzerland', dial: '+41' },
+  { iso: 'AT', name: 'Austria', dial: '+43' },
+  { iso: 'SE', name: 'Sweden', dial: '+46' },
+  { iso: 'NO', name: 'Norway', dial: '+47' },
+  { iso: 'DK', name: 'Denmark', dial: '+45' },
+  { iso: 'FI', name: 'Finland', dial: '+358' },
+  { iso: 'PL', name: 'Poland', dial: '+48' },
+  { iso: 'IS', name: 'Iceland', dial: '+354' },
+  { iso: 'GR', name: 'Greece', dial: '+30' },
+  { iso: 'IN', name: 'India', dial: '+91' },
+  { iso: 'CN', name: 'China', dial: '+86' },
+  { iso: 'JP', name: 'Japan', dial: '+81' },
+  { iso: 'KR', name: 'South Korea', dial: '+82' },
+  { iso: 'SG', name: 'Singapore', dial: '+65' },
+  { iso: 'HK', name: 'Hong Kong', dial: '+852' },
+  { iso: 'TW', name: 'Taiwan', dial: '+886' },
+  { iso: 'TH', name: 'Thailand', dial: '+66' },
+  { iso: 'VN', name: 'Vietnam', dial: '+84' },
+  { iso: 'PH', name: 'Philippines', dial: '+63' },
+  { iso: 'ID', name: 'Indonesia', dial: '+62' },
+  { iso: 'MY', name: 'Malaysia', dial: '+60' },
+  { iso: 'AU', name: 'Australia', dial: '+61' },
+  { iso: 'NZ', name: 'New Zealand', dial: '+64' },
+  { iso: 'BR', name: 'Brazil', dial: '+55' },
+  { iso: 'AR', name: 'Argentina', dial: '+54' },
+  { iso: 'CL', name: 'Chile', dial: '+56' },
+  { iso: 'CO', name: 'Colombia', dial: '+57' },
+  { iso: 'PE', name: 'Peru', dial: '+51' },
+  { iso: 'ZA', name: 'South Africa', dial: '+27' },
+  { iso: 'NG', name: 'Nigeria', dial: '+234' },
+  { iso: 'EG', name: 'Egypt', dial: '+20' },
+  { iso: 'SA', name: 'Saudi Arabia', dial: '+966' },
+  { iso: 'AE', name: 'United Arab Emirates', dial: '+971' },
+  { iso: 'IL', name: 'Israel', dial: '+972' },
+  { iso: 'TR', name: 'Turkey', dial: '+90' },
+];
+
+/** Groups up to 10 digits into a US-style (XXX) XXX-XXXX pattern as the user types. */
+function groupUsDigits(d) {
+  if (d.length === 0) return '';
+  if (d.length <= 3) return `(${d}`;
+  if (d.length <= 6) return `(${d.slice(0, 3)}) ${d.slice(3)}`;
+  return `(${d.slice(0, 3)}) ${d.slice(3, 6)}-${d.slice(6, 10)}`;
+}
+
+/** Groups digits in 3s for countries without a US-style format, e.g. "791 123 456". */
+function groupGenericDigits(d) {
+  return d.match(/.{1,3}/g)?.join(' ') ?? '';
+}
+
+/** Splits a composed "<dial> <national digits>" phone value, defaulting to +1 (US). */
+function parsePhone(value) {
+  const v = value || '+1';
+  const spaceIdx = v.indexOf(' ');
+  if (spaceIdx === -1) return { dial: v, national: '' };
+  return { dial: v.slice(0, spaceIdx), national: v.slice(spaceIdx + 1) };
+}
+
+function composePhone(dial, national) {
+  return national ? `${dial} ${national}` : dial;
+}
+
+/** Formats the national-number portion as the user types, based on the selected dial code. */
+function formatNational(raw, dial) {
+  const digits = raw.replace(/\D/g, '').slice(0, 14);
+  return dial === '+1' ? groupUsDigits(digits.slice(0, 10)) : groupGenericDigits(digits);
+}
+
+/**
+ * True if the composed phone number meets Square's validation rules closely
+ * enough to avoid a rejected registration. Since the number always carries an
+ * explicit country dial code from the dropdown, it's always sent to Square as
+ * an E.164-compliant number, which only requires a valid country code plus
+ * 9-16 total digits (no per-country area-code rules, unlike bare national
+ * numbers). US/CA numbers are still checked for the exact 10-digit NANP length.
+ * See: https://developer.squareup.com/docs/customers-api/use-the-api/keep-records#considerations
+ */
+function isValidPhone(value) {
+  const { dial, national } = parsePhone(value);
+  const nationalDigits = national.replace(/\D/g, '');
+  if (!nationalDigits) return false;
+  if (dial === '+1') return nationalDigits.length === 10;
+  const totalDigits = dial.replace(/\D/g, '').length + nationalDigits.length;
+  return totalDigits >= 9 && totalDigits <= 16;
+}
+
+/** Phone field with a country dial-code dropdown, so users never type "+" themselves. */
+function PhoneField({ data, errors, onChange }) {
+  const { dial, national } = parsePhone(data.phone);
+
+  return (
+    <div className="signup-field" data-field="phone">
+      <label className="signup-field-label">
+        Phone Number
+        <span className="signup-required"> *</span>
+      </label>
+      <div className="signup-phone-row">
+        <select
+          className={`signup-input signup-phone-country${errors.phone ? ' error' : ''}`}
+          value={dial}
+          onChange={(e) => onChange('phone', composePhone(e.target.value, national))}
+        >
+          {COUNTRY_CODES.map((c) => (
+            <option key={`${c.iso}-${c.dial}`} value={c.dial}>
+              {c.dial} ({c.iso})
+            </option>
+          ))}
+        </select>
+        <input
+          className={`signup-input signup-phone-number${errors.phone ? ' error' : ''}`}
+          type="tel"
+          inputMode="tel"
+          placeholder={dial === '+1' ? '(555) 000-0000' : '7911 123456'}
+          value={national}
+          onChange={(e) => onChange('phone', composePhone(dial, formatNational(e.target.value, dial)))}
+          autoComplete="off"
+        />
+      </div>
+      {errors.phone && <span className="signup-field-error">{errors.phone}</span>}
+    </div>
+  );
+}
+
 function PlayerInfoField({ name, label, placeholder, optional, type, options, data, errors, onChange }) {
   return (
     <div className="signup-field" data-field={name}>
@@ -218,7 +356,8 @@ function PlayerInfoStep({ data, onChange, onNext, onBack }) {
     } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(data.email)) {
       errs.email = 'Invalid email address';
     }
-    if (!data.phone.trim()) errs.phone = 'Required';
+    if (!parsePhone(data.phone).national.replace(/\D/g, '')) errs.phone = 'Required';
+    else if (!isValidPhone(data.phone)) errs.phone = 'Enter a valid phone number';
     if (!data.homeTown.trim()) errs.homeTown = 'Required';
     if (!data.homeCourse.trim()) errs.homeCourse = 'Required';
     if (data.playingStatus === 'Amateur' && !data.ghinNumber.trim()) {
@@ -280,7 +419,7 @@ function PlayerInfoStep({ data, onChange, onNext, onBack }) {
             </div>
             <div className="signup-field-row">
               {f('email', 'Email Address', 'john@example.com', false, 'email')}
-              {f('phone', 'Phone Number', '+1 (555) 000-0000', false, 'tel')}
+              <PhoneField data={data} errors={errors} onChange={onChange} />
             </div>
           </div>
 
@@ -504,7 +643,7 @@ export default function SignUp({ onBack }) {
     country: '',
     nationality: '',
     email: '',
-    phone: '',
+    phone: '+1',
     playingStatus: 'Professional',
     ghinNumber: '',
     homeTown: '',
