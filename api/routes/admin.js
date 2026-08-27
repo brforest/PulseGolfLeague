@@ -324,8 +324,9 @@ adminRoute.get('/emails/:emailId', async (req, res) => {
 //   { recipients, subject, body }     — plain-text body (paragraph-per-blank-line)
 //   { recipients, subject, bodyHtml } — rich HTML body from the composer
 // Optional: attachments: [{ filename, content (base64) }] — max 5 files, 8MB each, 20MB total.
+// Optional: cc — array of email addresses, max 20, CC'd on every recipient's email.
 adminRoute.post('/emails/send', async (req, res) => {
-  const { recipients, subject, body, bodyHtml, inReplyTo, attachments: rawAttachments } = req.body;
+  const { recipients, subject, body, bodyHtml, inReplyTo, attachments: rawAttachments, cc: rawCc } = req.body;
   const useHtml = bodyHtml !== undefined;
   const isReply = !!(inReplyTo && typeof inReplyTo === 'string' && inReplyTo.length <= 1000);
 
@@ -340,6 +341,25 @@ adminRoute.post('/emails/send', async (req, res) => {
   }
   if (subject.length > 200) {
     return res.status(400).json({ error: 'subject too long (max 200 chars).' });
+  }
+
+  // ── CC ──
+  const emailRegexCc = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  let cc;
+  if (rawCc !== undefined) {
+    if (!Array.isArray(rawCc)) {
+      return res.status(400).json({ error: 'cc must be an array.' });
+    }
+    if (rawCc.length > 20) {
+      return res.status(400).json({ error: 'Maximum 20 CC addresses.' });
+    }
+    const invalidCc = rawCc.filter((r) => typeof r !== 'string' || !emailRegexCc.test(r));
+    if (invalidCc.length > 0) {
+      return res.status(400).json({ error: `Invalid CC address(es): ${invalidCc.join(', ')}` });
+    }
+    if (rawCc.length > 0) {
+      cc = [...new Set(rawCc)];
+    }
   }
 
   // ── Attachments ──
@@ -411,10 +431,10 @@ adminRoute.post('/emails/send', async (req, res) => {
   // Throttled to one per 200ms to stay under Resend's 5 req/sec rate limit.
   for (const to of recipients) {
     const sendFn = (isReply && useHtml)
-      ? sendCustomEmailReply({ to, subject: trimmedSubject, bodyHtml, inReplyTo, attachments })
+      ? sendCustomEmailReply({ to, subject: trimmedSubject, bodyHtml, inReplyTo, attachments, cc })
       : useHtml
-        ? sendCustomEmailHtml({ to, subject: trimmedSubject, bodyHtml, attachments })
-        : sendCustomEmail({ to, subject: trimmedSubject, bodyText: body, attachments });
+        ? sendCustomEmailHtml({ to, subject: trimmedSubject, bodyHtml, attachments, cc })
+        : sendCustomEmail({ to, subject: trimmedSubject, bodyText: body, attachments, cc });
     await sendFn.catch((err) => { errors.push(`${to}: ${err.message}`); });
     await new Promise((resolve) => setTimeout(resolve, 200));
   }

@@ -560,12 +560,14 @@ function EmailsTab({ registrations, password }) {
   const bodyRef = useRef(null);
   const [selectedPlayers, setSelectedPlayers] = useState(new Set());
   const [customTo, setCustomTo] = useState('');
+  const [ccTo, setCcTo] = useState('');
   const [subject, setSubject] = useState('');
   const [sending, setSending] = useState(false);
   const [sendResult, setSendResult] = useState(null);
   const [sendError, setSendError] = useState('');
   const [showConfirm, setShowConfirm] = useState(false);
   const [confirmRecipients, setConfirmRecipients] = useState([]);
+  const [confirmCc, setConfirmCc] = useState([]);
   const [confirmBodyHtml, setConfirmBodyHtml] = useState('');
   const [replyMessageId, setReplyMessageId] = useState(null);
   const [attachments, setAttachments] = useState([]); // [{ filename, content, size }]
@@ -632,6 +634,7 @@ function EmailsTab({ registrations, password }) {
     setInboxDetail(null);
     setSelectedPlayers(new Set());
     setCustomTo(email.from_address || '');
+    setCcTo('');
     const reSubject = (email.subject || '').startsWith('Re:')
       ? email.subject
       : `Re: ${email.subject || ''}`.trim();
@@ -691,6 +694,14 @@ function EmailsTab({ registrations, password }) {
       .map((s) => s.trim())
       .filter((s) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(s));
     return [...new Set([...selectedPlayers, ...custom])];
+  };
+
+  const getCc = () => {
+    const parsed = ccTo
+      .split(/[\s,]+/)
+      .map((s) => s.trim())
+      .filter((s) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(s));
+    return [...new Set(parsed)];
   };
 
   const formatText = (cmd) => {
@@ -770,6 +781,7 @@ function EmailsTab({ registrations, password }) {
     const html = bodyRef.current?.innerHTML || '';
     setConfirmBodyHtml(html);
     setConfirmRecipients(recipients);
+    setConfirmCc(getCc());
     setShowConfirm(true);
   };
 
@@ -790,6 +802,7 @@ function EmailsTab({ registrations, password }) {
           ...(attachments.length > 0 && {
             attachments: attachments.map(({ filename, content }) => ({ filename, content })),
           }),
+          ...(confirmCc.length > 0 && { cc: confirmCc }),
         }),
       });
       const data = await res.json();
@@ -799,6 +812,7 @@ function EmailsTab({ registrations, password }) {
       if (bodyRef.current) bodyRef.current.innerHTML = '';
       setSelectedPlayers(new Set());
       setCustomTo('');
+      setCcTo('');
       setReplyMessageId(null);
       setAttachments([]);
       setAttachmentError('');
@@ -811,6 +825,7 @@ function EmailsTab({ registrations, password }) {
   };
 
   const recipientCount = getRecipients().length;
+  const ccCount = getCc().length;
 
   return (
     <div className="admin-email-tab">
@@ -931,6 +946,22 @@ function EmailsTab({ registrations, password }) {
             onChange={(e) => setCustomTo(e.target.value)}
           />
           <p className="admin-compose-count">{recipientCount} recipient{recipientCount !== 1 ? 's' : ''} selected</p>
+        </div>
+
+        {/* CC */}
+        <div className="admin-compose-block">
+          <label className="admin-compose-label">CC</label>
+          <p className="admin-compose-hint">CC'd on every recipient's email — best used with a single recipient.</p>
+          <input
+            className="admin-edit-input"
+            type="text"
+            placeholder="CC recipients (comma-separated)"
+            value={ccTo}
+            onChange={(e) => setCcTo(e.target.value)}
+          />
+          {ccCount > 0 && (
+            <p className="admin-compose-count">{ccCount} CC recipient{ccCount !== 1 ? 's' : ''}</p>
+          )}
         </div>
 
         {/* Subject */}
@@ -1121,6 +1152,16 @@ function EmailsTab({ registrations, password }) {
                   </div>
                 )}
               </div>
+              {confirmCc.length > 0 && (
+                <>
+                  <p style={{ marginTop: '12px' }}>CC:</p>
+                  <div className="admin-confirm-list">
+                    {confirmCc.map((addr) => (
+                      <div key={addr} className="admin-confirm-addr">{addr}</div>
+                    ))}
+                  </div>
+                </>
+              )}
             </div>
             <div className="admin-modal-footer">
               <button className="admin-btn admin-btn-secondary" onClick={() => setShowConfirm(false)}>Cancel</button>

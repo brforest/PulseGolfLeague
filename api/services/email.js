@@ -255,31 +255,33 @@ function chargeHtml(p, { amountFormatted, paymentId }) {
 
 // ─── Custom admin email (plain text) ──────────────────────────────────────────
 
-export async function sendCustomEmail({ to, subject, bodyText, attachments }) {
+export async function sendCustomEmail({ to, subject, bodyText, attachments, cc }) {
   const { error } = await getClient().emails.send({
     from: FROM(),
     to: Array.isArray(to) ? to : [to],
     subject,
     html: customEmailHtml(subject, bodyText),
     ...(attachments?.length && { attachments }),
+    ...(cc?.length && { cc }),
   });
   if (error) throw error;
 }
 
 // ─── Custom admin email (rich HTML from the compose editor) ───────────────────
 
-export async function sendCustomEmailHtml({ to, subject, bodyHtml, attachments }) {
+export async function sendCustomEmailHtml({ to, subject, bodyHtml, attachments, cc }) {
   const { error } = await getClient().emails.send({
     from: FROM(),
     to: Array.isArray(to) ? to : [to],
     subject,
     html: customEmailHtmlFromHtml(subject, bodyHtml),
     ...(attachments?.length && { attachments }),
+    ...(cc?.length && { cc }),
   });
   if (error) throw error;
 }
 
-export async function sendCustomEmailReply({ to, subject, bodyHtml, inReplyTo, attachments }) {
+export async function sendCustomEmailReply({ to, subject, bodyHtml, inReplyTo, attachments, cc }) {
   const sendOptions = {
     from: FROM(),
     to: Array.isArray(to) ? to : [to],
@@ -291,6 +293,9 @@ export async function sendCustomEmailReply({ to, subject, bodyHtml, inReplyTo, a
   }
   if (attachments?.length) {
     sendOptions.attachments = attachments;
+  }
+  if (cc?.length) {
+    sendOptions.cc = cc;
   }
   const { error } = await getClient().emails.send(sendOptions);
   if (error) throw error;
