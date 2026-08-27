@@ -340,6 +340,14 @@ To view the charge job logs:
 pm2 logs pgl-api | grep charge-job
 ```
 
+To apply a schema change (new/updated tables) after a `git pull`, run the schema
+file again from the repo (it's safe — uses `CREATE TABLE IF NOT EXISTS`):
+```bash
+cd ~/pulsegolfleague/PulseGolfLeague/api
+export $(grep DATABASE_URL .env | xargs)
+psql "$DATABASE_URL" -f db/schema.sql
+```
+
 To manually trigger the charge job (e.g. for testing):
 ```bash
 cd /var/www/pulsegolfleague/api

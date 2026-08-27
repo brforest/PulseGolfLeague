@@ -104,6 +104,17 @@ export default function MediaCrew({ onBack }) {
             livestream production, photography and social media while working alongside
             professional golfers and the Pulse Golf League team.
           </p>
+          <div className="mc-compensation-note">
+            <h2 className="mc-compensation-title">Compensation</h2>
+            <p>
+              This is currently an unpaid student media opportunity designed to provide hands-on
+              experience in sports videography, broadcast production, photography and social
+              media. If additional sponsorship funding becomes available, compensation or
+              stipends may be offered, but payment cannot be guaranteed. We are also happy to
+              work with students and their schools regarding internship, work-experience or
+              academic-credit opportunities where applicable.
+            </p>
+          </div>
           <a href="mailto:info@pulsegolfleague.com" className="contact-email-link">
             info@pulsegolfleague.com
           </a>
