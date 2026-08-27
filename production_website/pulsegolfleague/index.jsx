@@ -7,6 +7,7 @@ import Founders from './Founders.jsx';
 import Contact from './Contact.jsx';
 import HostSignUp from './HostSignUp.jsx';
 import HousingRequest from './HousingRequest.jsx';
+import MediaCrew from './MediaCrew.jsx';
 
 const PglLogo = '/images/pgl_logo.png';
 
@@ -150,6 +151,7 @@ function PulseGolfLeague() {
     if (p === '/contact') return 'contact';
     if (p === '/host-housing') return 'host-housing';
     if (p === '/housing-request') return 'housing-request';
+    if (p === '/media-crew') return 'media-crew';
     return 'home';
   };
   const [page, setPage] = useState(getPage);
@@ -294,6 +296,11 @@ function PulseGolfLeague() {
     return <HousingRequest onBack={() => navigate(backTo)} />;
   }
 
+  if (page === 'media-crew') {
+    const backTo = history.state?.from || '/';
+    return <MediaCrew onBack={() => navigate(backTo)} />;
+  }
+
   if (page === 'signup') {
     return <SignUp onBack={() => navigate('/tournament-info')} />;
   }
@@ -364,6 +371,9 @@ function PulseGolfLeague() {
           <div className="hero-cta" style={{ marginTop: 16 }}>
             <button className="hero-founders-button" onClick={() => navigate('/housing-request', { from: '/' })}>Request Host Housing (Players)</button>
             <button className="hero-founders-button" onClick={() => navigate('/host-housing', { from: '/' })}>Host a Player (Club Members)</button>
+          </div>
+          <div className="hero-cta" style={{ marginTop: 16 }}>
+            <button className="hero-founders-button" onClick={() => navigate('/media-crew', { from: '/' })}>Join the Media Crew</button>
           </div>
         </div>
         <div className="hero-scroll-indicator">

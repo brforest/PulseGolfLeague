@@ -385,6 +385,162 @@ function HostHousingTab({ password }) {
   );
 }
 
+// ── Media Crew Tab ───────────────────────────────────────────────────────────
+const GOLF_KNOWLEDGE_LABELS = {
+  none: 'None',
+  some: 'Some',
+  golfer: 'Golfer',
+  very_familiar: 'Very Familiar',
+};
+const TRANSPORTATION_LABELS = {
+  yes: 'Yes',
+  no: 'No',
+  need_help: 'Needs Help',
+};
+const DATE_LABELS = { sep_8: 'Sep 8', sep_9: 'Sep 9', sep_10: 'Sep 10', sep_11: 'Sep 11' };
+const ROLE_LABELS = {
+  camera_operator: 'Camera Operator',
+  photography: 'Photography',
+  livestream_broadcast: 'Livestream/Broadcast',
+  social_media_bts: 'Social Media/BTS',
+  editing: 'Editing',
+  production_assistant: 'Production Assistant',
+};
+
+function MediaCrewTab({ password }) {
+  const [signups, setSignups] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
+  const [deleteTarget, setDeleteTarget] = useState(null);
+  const [deleting, setDeleting] = useState(false);
+
+  const load = useCallback(async () => {
+    setLoading(true);
+    setError('');
+    try {
+      const res = await fetch(`${API_URL}/api/admin/media-crew`, {
+        headers: { Authorization: `Bearer ${password}` },
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Failed to load media crew sign-ups.');
+      setSignups(data.signups || []);
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setLoading(false);
+    }
+  }, [password]);
+
+  useEffect(() => { load(); }, [load]);
+
+  const handleDeleteConfirm = async () => {
+    if (!deleteTarget) return;
+    setDeleting(true);
+    try {
+      const res = await fetch(`${API_URL}/api/admin/media-crew/${deleteTarget.id}`, {
+        method: 'DELETE',
+        headers: { Authorization: `Bearer ${password}` },
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Delete failed.');
+      setSignups((prev) => prev.filter((s) => s.id !== deleteTarget.id));
+      setDeleteTarget(null);
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setDeleting(false);
+    }
+  };
+
+  if (loading) return <p className="admin-load-error">Loading media crew sign-ups…</p>;
+  if (error)   return <p className="admin-load-error">{error}</p>;
+
+  return (
+    <div className="admin-referrals">
+      <p className="admin-referrals-note">
+        {signups.length} media crew application{signups.length !== 1 ? 's' : ''}.
+      </p>
+
+      <div className="admin-filters">
+        <button className="admin-btn admin-btn-secondary" onClick={load}>Refresh</button>
+      </div>
+
+      {signups.length === 0 ? (
+        <p className="admin-load-error">No sign-ups yet.</p>
+      ) : (
+        <div className="admin-table-wrap">
+          <table className="admin-table">
+            <thead>
+              <tr>
+                <th>Name</th>
+                <th>Email</th>
+                <th>Phone</th>
+                <th>School</th>
+                <th>Major</th>
+                <th>Year</th>
+                <th>Dates</th>
+                <th>Roles</th>
+                <th>Experience</th>
+                <th>Equipment</th>
+                <th>Golf Knowledge</th>
+                <th>Portfolio</th>
+                <th>Transportation</th>
+                <th>Why Interested</th>
+                <th>Submitted</th>
+                <th></th>
+              </tr>
+            </thead>
+            <tbody>
+              {signups.map((s) => (
+                <tr key={s.id} className="admin-row">
+                  <td className="admin-td-name"><strong>{s.name}</strong></td>
+                  <td>{s.email}</td>
+                  <td>{s.phone}</td>
+                  <td>{s.school}</td>
+                  <td>{s.major || '—'}</td>
+                  <td>{s.year_in_school || '—'}</td>
+                  <td>{(s.available_dates || []).map((d) => DATE_LABELS[d] || d).join(', ') || '—'}</td>
+                  <td>{(s.roles_interested || []).map((r) => ROLE_LABELS[r] || r).join(', ') || '—'}</td>
+                  <td>{s.experience || '—'}</td>
+                  <td>{s.equipment || '—'}</td>
+                  <td>{GOLF_KNOWLEDGE_LABELS[s.golf_knowledge] || s.golf_knowledge}</td>
+                  <td>{s.portfolio_link ? <a href={s.portfolio_link} target="_blank" rel="noopener noreferrer">Link</a> : '—'}</td>
+                  <td>{TRANSPORTATION_LABELS[s.has_transportation] || s.has_transportation}</td>
+                  <td>{s.why_interested || '—'}</td>
+                  <td>{formatDate(s.submitted_at)}</td>
+                  <td>
+                    <button className="admin-btn admin-btn-delete" onClick={() => setDeleteTarget(s)}>Delete</button>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}
+
+      {deleteTarget && (
+        <div className="admin-modal-overlay" onClick={() => setDeleteTarget(null)}>
+          <div className="admin-modal admin-modal-small" onClick={(e) => e.stopPropagation()}>
+            <div className="admin-modal-header">
+              <h3 className="admin-modal-title">Delete Sign-Up</h3>
+              <button className="admin-modal-close" onClick={() => setDeleteTarget(null)}>✕</button>
+            </div>
+            <div className="admin-modal-body">
+              <p>Delete the media crew application from <strong>{deleteTarget.name}</strong>?</p>
+            </div>
+            <div className="admin-modal-footer">
+              <button className="admin-btn admin-btn-secondary" onClick={() => setDeleteTarget(null)} disabled={deleting}>Cancel</button>
+              <button className="admin-btn admin-btn-delete" onClick={handleDeleteConfirm} disabled={deleting}>
+                {deleting ? 'Deleting…' : 'Delete'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
 // ── Email Tab ─────────────────────────────────────────────────────────────────
 function EmailsTab({ registrations, password }) {
 
@@ -1099,6 +1255,12 @@ export default function Admin({ onBack }) {
           Host Housing
         </button>
         <button
+          className={`admin-tab${tab === 'media-crew' ? ' admin-tab-active' : ''}`}
+          onClick={() => setTab('media-crew')}
+        >
+          Media Crew
+        </button>
+        <button
           className={`admin-tab${tab === 'emails' ? ' admin-tab-active' : ''}`}
           onClick={() => setTab('emails')}
         >
@@ -1301,6 +1463,10 @@ export default function Admin({ onBack }) {
 
       {tab === 'host-housing' && (
         <HostHousingTab password={password} />
+      )}
+
+      {tab === 'media-crew' && (
+        <MediaCrewTab password={password} />
       )}
 
       {tab === 'emails' && (

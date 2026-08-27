@@ -198,6 +198,47 @@ adminRoute.delete('/host-housing/:id', async (req, res) => {
   }
 });
 
+// ── GET /api/admin/media-crew ────────────────────────────────────────────────
+adminRoute.get('/media-crew', async (_req, res) => {
+  try {
+    const result = await pool.query(
+      `SELECT
+         id, name, email, phone, school, major, year_in_school,
+         available_dates, roles_interested, experience, equipment,
+         golf_knowledge, portfolio_link, has_transportation, why_interested,
+         submitted_at
+       FROM media_crew_signups
+       ORDER BY submitted_at ASC`
+    );
+    res.json({ signups: result.rows });
+  } catch (err) {
+    console.error('GET /admin/media-crew error:', err);
+    res.status(500).json({ error: 'Internal server error.' });
+  }
+});
+
+// ── DELETE /api/admin/media-crew/:id ─────────────────────────────────────────
+adminRoute.delete('/media-crew/:id', async (req, res) => {
+  const id = parseInt(req.params.id, 10);
+  if (!Number.isInteger(id) || id <= 0) {
+    return res.status(400).json({ error: 'Invalid ID.' });
+  }
+
+  try {
+    const result = await pool.query(
+      'DELETE FROM media_crew_signups WHERE id = $1 RETURNING id',
+      [id]
+    );
+    if (result.rowCount === 0) {
+      return res.status(404).json({ error: 'Sign-up not found.' });
+    }
+    res.json({ success: true, id });
+  } catch (err) {
+    console.error('DELETE /admin/media-crew error:', err);
+    res.status(500).json({ error: 'Internal server error.' });
+  }
+});
+
 // ── GET /api/admin/referrals ──────────────────────────────────────────────────
 // Returns each referrer name along with the count of players they referred
 // and the list of those players. Used to determine who earns a discount.

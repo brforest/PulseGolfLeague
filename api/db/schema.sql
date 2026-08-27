@@ -90,3 +90,37 @@ CREATE TABLE IF NOT EXISTS host_housing_signups (
 
 CREATE INDEX IF NOT EXISTS idx_hh_role         ON host_housing_signups (role);
 CREATE INDEX IF NOT EXISTS idx_hh_submitted_at ON host_housing_signups (submitted_at);
+
+CREATE TABLE IF NOT EXISTS media_crew_signups (
+  id                SERIAL PRIMARY KEY,
+
+  name              TEXT        NOT NULL,
+  email             TEXT        NOT NULL,
+  phone             TEXT        NOT NULL,
+  school            TEXT        NOT NULL,
+  major             TEXT,
+  year_in_school    TEXT,
+
+  -- Subset of 'sep_8', 'sep_9', 'sep_10', 'sep_11'
+  available_dates   TEXT[]      NOT NULL DEFAULT '{}',
+
+  -- Subset of 'camera_operator', 'photography', 'livestream_broadcast',
+  -- 'social_media_bts', 'editing', 'production_assistant'
+  roles_interested  TEXT[]      NOT NULL DEFAULT '{}',
+
+  experience        TEXT,
+  equipment         TEXT,
+
+  golf_knowledge    TEXT        NOT NULL
+                      CHECK (golf_knowledge IN ('none', 'some', 'golfer', 'very_familiar')),
+
+  portfolio_link    TEXT,
+  has_transportation TEXT       NOT NULL
+                      CHECK (has_transportation IN ('yes', 'no', 'need_help')),
+
+  why_interested    TEXT,
+
+  submitted_at      TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+CREATE INDEX IF NOT EXISTS idx_mc_submitted_at ON media_crew_signups (submitted_at);
