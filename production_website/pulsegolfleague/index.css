@@ -4217,5 +4217,54 @@ html {
   font-style: italic;
 }
 
+/* ── Attachments ─────────────────────────────────────────── */
+.admin-compose-attachment-list {
+  list-style: none;
+  margin: 10px 0 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.admin-compose-attachment-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 6px 10px;
+  background: var(--bg-dark);
+  border: 1px solid var(--border);
+  border-radius: 3px;
+  font-size: 0.82rem;
+}
+
+.admin-compose-attachment-name {
+  color: var(--text-primary);
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.admin-compose-attachment-size {
+  color: var(--text-muted);
+  font-size: 0.75rem;
+  white-space: nowrap;
+}
+
+.admin-compose-attachment-remove {
+  background: none;
+  border: none;
+  color: var(--text-muted);
+  cursor: pointer;
+  font-size: 0.85rem;
+  line-height: 1;
+  padding: 2px 4px;
+}
+
+.admin-compose-attachment-remove:hover {
+  color: var(--accent-red);
+}
+
 
 

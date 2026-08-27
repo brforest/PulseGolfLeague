@@ -323,8 +323,9 @@ adminRoute.get('/emails/:emailId', async (req, res) => {
 // Body accepts either:
 //   { recipients, subject, body }     — plain-text body (paragraph-per-blank-line)
 //   { recipients, subject, bodyHtml } — rich HTML body from the composer
+// Optional: attachments: [{ filename, content (base64) }] — max 5 files, 8MB each, 20MB total.
 adminRoute.post('/emails/send', async (req, res) => {
-  const { recipients, subject, body, bodyHtml, inReplyTo } = req.body;
+  const { recipients, subject, body, bodyHtml, inReplyTo, attachments: rawAttachments } = req.body;
   const useHtml = bodyHtml !== undefined;
   const isReply = !!(inReplyTo && typeof inReplyTo === 'string' && inReplyTo.length <= 1000);
 
@@ -339,6 +340,46 @@ adminRoute.post('/emails/send', async (req, res) => {
   }
   if (subject.length > 200) {
     return res.status(400).json({ error: 'subject too long (max 200 chars).' });
+  }
+
+  // ── Attachments ──
+  // Resend caps a whole email at 40MB after Base64 encoding; we cap well under
+  // that since the same attachments are re-sent once per recipient.
+  const MAX_ATTACHMENTS = 5;
+  const MAX_ATTACHMENT_BYTES = 8 * 1024 * 1024; // 8MB decoded per file
+  const MAX_TOTAL_BYTES = 20 * 1024 * 1024; // 20MB decoded total
+  let attachments;
+  if (rawAttachments !== undefined) {
+    if (!Array.isArray(rawAttachments)) {
+      return res.status(400).json({ error: 'attachments must be an array.' });
+    }
+    if (rawAttachments.length > MAX_ATTACHMENTS) {
+      return res.status(400).json({ error: `Maximum ${MAX_ATTACHMENTS} attachments per email.` });
+    }
+    let totalBytes = 0;
+    for (const a of rawAttachments) {
+      if (!a || typeof a !== 'object' || typeof a.filename !== 'string' || typeof a.content !== 'string') {
+        return res.status(400).json({ error: 'Each attachment needs a filename and base64 content.' });
+      }
+      const filename = a.filename.trim();
+      if (!filename || filename.length > 255 || /[/\\]/.test(filename)) {
+        return res.status(400).json({ error: `Invalid attachment filename: ${a.filename}` });
+      }
+      if (!/^[A-Za-z0-9+/]+={0,2}$/.test(a.content) || a.content.length === 0) {
+        return res.status(400).json({ error: `Invalid attachment content for ${filename}.` });
+      }
+      const bytes = Math.floor((a.content.length * 3) / 4);
+      if (bytes > MAX_ATTACHMENT_BYTES) {
+        return res.status(400).json({ error: `${filename} exceeds the 8MB attachment limit.` });
+      }
+      totalBytes += bytes;
+    }
+    if (totalBytes > MAX_TOTAL_BYTES) {
+      return res.status(400).json({ error: 'Total attachment size exceeds the 20MB limit.' });
+    }
+    if (rawAttachments.length > 0) {
+      attachments = rawAttachments.map((a) => ({ filename: a.filename.trim(), content: a.content }));
+    }
   }
 
   if (useHtml) {
@@ -370,10 +411,10 @@ adminRoute.post('/emails/send', async (req, res) => {
   // Throttled to one per 200ms to stay under Resend's 5 req/sec rate limit.
   for (const to of recipients) {
     const sendFn = (isReply && useHtml)
-      ? sendCustomEmailReply({ to, subject: trimmedSubject, bodyHtml, inReplyTo })
+      ? sendCustomEmailReply({ to, subject: trimmedSubject, bodyHtml, inReplyTo, attachments })
       : useHtml
-        ? sendCustomEmailHtml({ to, subject: trimmedSubject, bodyHtml })
-        : sendCustomEmail({ to, subject: trimmedSubject, bodyText: body });
+        ? sendCustomEmailHtml({ to, subject: trimmedSubject, bodyHtml, attachments })
+        : sendCustomEmail({ to, subject: trimmedSubject, bodyText: body, attachments });
     await sendFn.catch((err) => { errors.push(`${to}: ${err.message}`); });
     await new Promise((resolve) => setTimeout(resolve, 200));
   }

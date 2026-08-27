@@ -255,29 +255,31 @@ function chargeHtml(p, { amountFormatted, paymentId }) {
 
 // ─── Custom admin email (plain text) ──────────────────────────────────────────
 
-export async function sendCustomEmail({ to, subject, bodyText }) {
+export async function sendCustomEmail({ to, subject, bodyText, attachments }) {
   const { error } = await getClient().emails.send({
     from: FROM(),
     to: Array.isArray(to) ? to : [to],
     subject,
     html: customEmailHtml(subject, bodyText),
+    ...(attachments?.length && { attachments }),
   });
   if (error) throw error;
 }
 
 // ─── Custom admin email (rich HTML from the compose editor) ───────────────────
 
-export async function sendCustomEmailHtml({ to, subject, bodyHtml }) {
+export async function sendCustomEmailHtml({ to, subject, bodyHtml, attachments }) {
   const { error } = await getClient().emails.send({
     from: FROM(),
     to: Array.isArray(to) ? to : [to],
     subject,
     html: customEmailHtmlFromHtml(subject, bodyHtml),
+    ...(attachments?.length && { attachments }),
   });
   if (error) throw error;
 }
 
-export async function sendCustomEmailReply({ to, subject, bodyHtml, inReplyTo }) {
+export async function sendCustomEmailReply({ to, subject, bodyHtml, inReplyTo, attachments }) {
   const sendOptions = {
     from: FROM(),
     to: Array.isArray(to) ? to : [to],
@@ -286,6 +288,9 @@ export async function sendCustomEmailReply({ to, subject, bodyHtml, inReplyTo })
   };
   if (inReplyTo) {
     sendOptions.headers = { 'In-Reply-To': inReplyTo, 'References': inReplyTo };
+  }
+  if (attachments?.length) {
+    sendOptions.attachments = attachments;
   }
   const { error } = await getClient().emails.send(sendOptions);
   if (error) throw error;

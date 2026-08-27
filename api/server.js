@@ -39,6 +39,10 @@ app.use(
 );
 
 // ── Body parsing ──────────────────────────────────────────
+// Admin email composer allows file attachments (base64-encoded), so it needs a
+// much larger body limit than the rest of the API. Registered first so it wins
+// for that path; body-parser skips re-parsing on the global middleware below.
+app.use('/api/admin/emails/send', express.json({ limit: '15mb' }));
 app.use(express.json({ limit: '20kb' }));
 
 // ── Rate limiting ─────────────────────────────────────────

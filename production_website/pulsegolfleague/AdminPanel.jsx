@@ -568,6 +568,9 @@ function EmailsTab({ registrations, password }) {
   const [confirmRecipients, setConfirmRecipients] = useState([]);
   const [confirmBodyHtml, setConfirmBodyHtml] = useState('');
   const [replyMessageId, setReplyMessageId] = useState(null);
+  const [attachments, setAttachments] = useState([]); // [{ filename, content, size }]
+  const [attachmentError, setAttachmentError] = useState('');
+  const fileInputRef = useRef(null);
 
   // ── Load inbox ──
   const loadInbox = useCallback(async () => {
@@ -636,6 +639,8 @@ function EmailsTab({ registrations, password }) {
     setReplyMessageId(email.message_id || null);
     setSendResult(null);
     setSendError('');
+    setAttachments([]);
+    setAttachmentError('');
     setTimeout(() => {
       if (bodyRef.current) {
         bodyRef.current.innerHTML = '';
@@ -700,6 +705,61 @@ function EmailsTab({ registrations, password }) {
     document.execCommand('insertText', false, text);
   };
 
+  // ── Attachments ──
+  const MAX_ATTACHMENTS = 5;
+  const MAX_ATTACHMENT_BYTES = 8 * 1024 * 1024;
+  const MAX_TOTAL_BYTES = 20 * 1024 * 1024;
+
+  const handleFilesSelected = (e) => {
+    const files = Array.from(e.target.files || []);
+    e.target.value = ''; // allow re-selecting the same file later
+    if (files.length === 0) return;
+    setAttachmentError('');
+
+    if (attachments.length + files.length > MAX_ATTACHMENTS) {
+      setAttachmentError(`Maximum ${MAX_ATTACHMENTS} attachments per email.`);
+      return;
+    }
+    const currentTotal = attachments.reduce((sum, a) => sum + a.size, 0);
+    const oversized = files.find((f) => f.size > MAX_ATTACHMENT_BYTES);
+    if (oversized) {
+      setAttachmentError(`${oversized.name} exceeds the 8MB attachment limit.`);
+      return;
+    }
+    const newTotal = files.reduce((sum, f) => sum + f.size, currentTotal);
+    if (newTotal > MAX_TOTAL_BYTES) {
+      setAttachmentError('Total attachment size exceeds the 20MB limit.');
+      return;
+    }
+
+    Promise.all(
+      files.map(
+        (file) =>
+          new Promise((resolve, reject) => {
+            const reader = new FileReader();
+            reader.onload = () => {
+              const base64 = String(reader.result).split(',')[1] || '';
+              resolve({ filename: file.name, content: base64, size: file.size });
+            };
+            reader.onerror = () => reject(new Error(`Failed to read ${file.name}.`));
+            reader.readAsDataURL(file);
+          })
+      )
+    )
+      .then((newAttachments) => setAttachments((prev) => [...prev, ...newAttachments]))
+      .catch((err) => setAttachmentError(err.message));
+  };
+
+  const removeAttachment = (filename) => {
+    setAttachments((prev) => prev.filter((a) => a.filename !== filename));
+  };
+
+  const formatBytes = (bytes) => {
+    if (bytes < 1024) return `${bytes} B`;
+    if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
+    return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
+  };
+
   const handleSendClick = () => {
     const recipients = getRecipients();
     const hasBody = bodyRef.current?.textContent?.trim().length > 0;
@@ -727,6 +787,9 @@ function EmailsTab({ registrations, password }) {
           subject: subject.trim(),
           bodyHtml: confirmBodyHtml,
           ...(replyMessageId && { inReplyTo: replyMessageId }),
+          ...(attachments.length > 0 && {
+            attachments: attachments.map(({ filename, content }) => ({ filename, content })),
+          }),
         }),
       });
       const data = await res.json();
@@ -737,6 +800,8 @@ function EmailsTab({ registrations, password }) {
       setSelectedPlayers(new Set());
       setCustomTo('');
       setReplyMessageId(null);
+      setAttachments([]);
+      setAttachmentError('');
       loadEmails();
     } catch (err) {
       setSendError(err.message);
@@ -913,6 +978,44 @@ function EmailsTab({ registrations, password }) {
             data-placeholder="Write your message here…"
             onPaste={handleBodyPaste}
           />
+        </div>
+
+        {/* Attachments */}
+        <div className="admin-compose-block">
+          <label className="admin-compose-label">Attachments</label>
+          <p className="admin-compose-hint">Up to 5 files, 8MB each, 20MB total.</p>
+          <input
+            ref={fileInputRef}
+            type="file"
+            multiple
+            onChange={handleFilesSelected}
+            style={{ display: 'none' }}
+          />
+          <button
+            type="button"
+            className="admin-btn admin-btn-secondary admin-btn-xs"
+            onClick={() => fileInputRef.current?.click()}
+            disabled={attachments.length >= MAX_ATTACHMENTS}
+          >
+            Add file…
+          </button>
+          {attachmentError && <p className="admin-load-error" style={{ margin: '8px 0 0' }}>{attachmentError}</p>}
+          {attachments.length > 0 && (
+            <ul className="admin-compose-attachment-list">
+              {attachments.map((a) => (
+                <li key={a.filename} className="admin-compose-attachment-row">
+                  <span className="admin-compose-attachment-name">{a.filename}</span>
+                  <span className="admin-compose-attachment-size">{formatBytes(a.size)}</span>
+                  <button
+                    type="button"
+                    className="admin-compose-attachment-remove"
+                    onClick={() => removeAttachment(a.filename)}
+                    title="Remove"
+                  >✕</button>
+                </li>
+              ))}
+            </ul>
+          )}
         </div>
 
         {sendError && <p className="admin-load-error" style={{ margin: '0 24px 12px' }}>{sendError}</p>}
