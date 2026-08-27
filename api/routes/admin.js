@@ -311,6 +311,20 @@ adminRoute.get('/emails/:emailId', async (req, res) => {
     if (!response.ok) {
       return res.status(response.status).json({ error: data.message || 'Resend API error.' });
     }
+
+    // Attachment metadata is a separate call; don't fail the whole detail view if it errors.
+    try {
+      const attRes = await fetch(`https://api.resend.com/emails/${emailId}/attachments`, {
+        headers: { Authorization: `Bearer ${apiKey}` },
+      });
+      if (attRes.ok) {
+        const attData = await attRes.json();
+        data.attachments = attData.data || [];
+      }
+    } catch {
+      // ignore — attachments are optional in the response
+    }
+
     res.json(data);
   } catch (err) {
     console.error('GET /admin/emails/:id error:', err);
@@ -488,6 +502,16 @@ adminRoute.get('/inbox/:id', async (req, res) => {
     // headers.from may include display name: "Name <addr@example.com>"
     const headerFrom = data.headers?.from || data.from || '';
     const nameAddrMatch = /^(.*?)\s*<([^>]+)>$/.exec(headerFrom);
+
+    // Attachment metadata is a separate call; don't fail the whole detail view if it errors.
+    let attachments = [];
+    try {
+      const { data: attData } = await resend.emails.receiving.attachments.list({ emailId: id });
+      attachments = attData?.data || [];
+    } catch {
+      // ignore — attachments are optional in the response
+    }
+
     res.json({
       id: data.id,
       message_id: data.message_id || null,
@@ -498,6 +522,7 @@ adminRoute.get('/inbox/:id', async (req, res) => {
       received_at: data.created_at || null,
       html_body: data.html || null,
       text_body: data.text || null,
+      attachments,
     });
   } catch (err) {
     console.error('GET /admin/inbox/:id error:', err);

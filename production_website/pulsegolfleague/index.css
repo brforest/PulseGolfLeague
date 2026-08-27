@@ -4266,5 +4266,46 @@ html {
   color: var(--accent-red);
 }
 
+/* ── Attachments in Inbox/Sent detail modals ─────────────── */
+.admin-email-attachment-list {
+  list-style: none;
+  margin: 0 24px 16px;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.admin-email-attachment-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 6px 10px;
+  background: var(--bg-dark);
+  border: 1px solid var(--border);
+  border-radius: 3px;
+  font-size: 0.82rem;
+}
+
+.admin-email-attachment-name {
+  color: var(--text-primary);
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  text-decoration: none;
+}
+
+.admin-email-attachment-name:hover {
+  color: var(--accent-red);
+  text-decoration: underline;
+}
+
+.admin-email-attachment-size {
+  color: var(--text-muted);
+  font-size: 0.75rem;
+  white-space: nowrap;
+}
+
 
 

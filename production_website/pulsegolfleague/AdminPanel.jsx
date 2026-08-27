@@ -1082,6 +1082,18 @@ function EmailsTab({ registrations, password }) {
                   <div><strong>To:</strong> {inboxDetail.to_address}</div>
                   <div><strong>Received:</strong> {inboxDetail.received_at ? new Date(inboxDetail.received_at).toLocaleString() : '—'}</div>
                 </div>
+                {inboxDetail.attachments?.length > 0 && (
+                  <ul className="admin-email-attachment-list">
+                    {inboxDetail.attachments.map((a) => (
+                      <li key={a.id} className="admin-email-attachment-row">
+                        <a href={a.download_url} target="_blank" rel="noopener noreferrer" className="admin-email-attachment-name">
+                          📎 {a.filename}
+                        </a>
+                        <span className="admin-email-attachment-size">{formatBytes(a.size)}</span>
+                      </li>
+                    ))}
+                  </ul>
+                )}
                 {inboxDetail.html_body ? (
                   <iframe className="admin-email-frame" srcDoc={inboxDetail.html_body} sandbox="allow-same-origin" title="Email preview" />
                 ) : (
@@ -1118,6 +1130,18 @@ function EmailsTab({ registrations, password }) {
                   <div><strong>Sent:</strong> {detailEmail.created_at ? new Date(detailEmail.created_at).toLocaleString() : '—'}</div>
                   <div><strong>Status:</strong> {detailEmail.last_event || '—'}</div>
                 </div>
+                {detailEmail.attachments?.length > 0 && (
+                  <ul className="admin-email-attachment-list">
+                    {detailEmail.attachments.map((a) => (
+                      <li key={a.id} className="admin-email-attachment-row">
+                        <a href={a.download_url} target="_blank" rel="noopener noreferrer" className="admin-email-attachment-name">
+                          📎 {a.filename}
+                        </a>
+                        <span className="admin-email-attachment-size">{formatBytes(a.size)}</span>
+                      </li>
+                    ))}
+                  </ul>
+                )}
                 {detailEmail.html ? (
                   <iframe className="admin-email-frame" srcDoc={detailEmail.html} sandbox="allow-same-origin" title="Email preview" />
                 ) : (

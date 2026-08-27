@@ -249,6 +249,10 @@ server {
 
     # Proxy /api requests to the Node API
     location /api {
+        # Admin email composer allows attachments up to ~20MB decoded (~27MB base64);
+        # nginx's default 1MB limit would reject those uploads with a 413 before they
+        # ever reach the API's own body-size check.
+        client_max_body_size 20m;
         proxy_pass         http://127.0.0.1:3001;
         proxy_http_version 1.1;
         proxy_set_header   Host              $host;
@@ -366,3 +370,4 @@ node -e "import('./jobs/chargeRegistrations.js').then(m => m.runChargeJob())"
 | Square tokenization fails | Verify `VITE_SQUARE_APP_ID` and `VITE_SQUARE_ENV` match your Square Dashboard |
 | Confirmation email not received | Check spam; verify Resend domain is verified; check `pm2 logs` for email errors |
 | Charge job didn't run | Check server timezone; view logs with `pm2 logs pgl-api \| grep charge-job` |
+| Admin email attachment fails with 413 | nginx's `client_max_body_size` (default 1MB) is rejecting the upload before it reaches the API. Confirm `client_max_body_size 20m;` is set in the `/api` location block (see section 10), then `sudo nginx -t && sudo systemctl reload nginx`. |
