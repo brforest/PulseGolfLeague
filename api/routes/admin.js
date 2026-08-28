@@ -1,7 +1,8 @@
 import { Router } from 'express';
 import { Resend } from 'resend';
 import pool from '../db/index.js';
-import { sendCustomEmail, sendCustomEmailHtml, sendCustomEmailReply } from '../services/email.js';
+import { sendCustomEmail, sendCustomEmailHtml, sendCustomEmailReply, sendChargeEmail } from '../services/email.js';
+import { chargeCard } from '../services/square.js';
 
 export const adminRoute = Router();
 
@@ -134,6 +135,86 @@ adminRoute.patch('/registrations/:id', async (req, res) => {
     }
     console.error('PATCH /admin/registrations error:', err);
     res.status(500).json({ error: 'Internal server error.' });
+  }
+});
+
+// ── POST /api/admin/registrations/:id/charge ──────────────────────────────────
+// Manually charges a registration's card on file for a custom amount — used to
+// retry failed automated charges or to apply a one-off referral discount.
+// Sends the same "entry fee charged" confirmation email as the automated job.
+adminRoute.post('/registrations/:id/charge', async (req, res) => {
+  const id = parseInt(req.params.id, 10);
+  if (!Number.isInteger(id) || id <= 0) {
+    return res.status(400).json({ error: 'Invalid registration ID.' });
+  }
+
+  const { amountCents, note } = req.body;
+  if (!Number.isInteger(amountCents) || amountCents <= 0) {
+    return res.status(400).json({ error: 'amountCents must be a positive integer.' });
+  }
+  if (amountCents > 100_000_000) {
+    return res.status(400).json({ error: 'amountCents is unreasonably large.' });
+  }
+  if (note !== undefined && (typeof note !== 'string' || note.length > 500)) {
+    return res.status(400).json({ error: 'note must be a string up to 500 characters.' });
+  }
+
+  let reg;
+  try {
+    const result = await pool.query('SELECT * FROM registrations WHERE id = $1', [id]);
+    if (result.rowCount === 0) {
+      return res.status(404).json({ error: 'Registration not found.' });
+    }
+    reg = result.rows[0];
+  } catch (err) {
+    console.error('POST /admin/registrations/:id/charge lookup error:', err);
+    return res.status(500).json({ error: 'Internal server error.' });
+  }
+
+  if (!reg.square_customer_id || !reg.square_card_id) {
+    return res.status(400).json({ error: 'This registration has no card on file.' });
+  }
+
+  try {
+    const paymentId = await chargeCard({
+      customerId: reg.square_customer_id,
+      cardId: reg.square_card_id,
+      amountCents,
+      note: (typeof note === 'string' && note.trim()) || 'Yolo Fliers Matchplay Championship — Entry Fee (manual charge)',
+    });
+
+    await pool.query(
+      `UPDATE registrations
+       SET charge_status       = 'charged',
+           charged_at          = NOW(),
+           square_payment_id   = $1,
+           charge_amount_cents = $2,
+           charge_error        = NULL
+       WHERE id = $3`,
+      [paymentId, amountCents, id]
+    );
+
+    const amountFormatted = `$${(amountCents / 100).toFixed(2)} USD`;
+    sendChargeEmail(
+      { firstName: reg.first_name, lastName: reg.last_name, email: reg.email },
+      { amountFormatted, paymentId }
+    ).catch((err) => console.error(`Manual charge email failed for ${reg.email}:`, err));
+
+    res.json({ success: true, paymentId, amountCents });
+  } catch (err) {
+    const message = err?.errors?.[0]?.detail || err?.message || 'Unknown error';
+    console.error(`POST /admin/registrations/${id}/charge error:`, message);
+
+    try {
+      await pool.query(
+        `UPDATE registrations SET charge_status = 'failed', charge_error = $1 WHERE id = $2`,
+        [message, id]
+      );
+    } catch (updateErr) {
+      console.error('Failed to record charge failure:', updateErr);
+    }
+
+    res.status(502).json({ error: `Charge failed: ${message}` });
   }
 });
 

@@ -1198,6 +1198,96 @@ function EmailsTab({ registrations, password }) {
   );
 }
 
+// ── Charge Modal ────────────────────────────────────────────────────────────────
+function ChargeModal({ reg, password, onCharged, onClose }) {
+  const defaultAmount = reg.charge_amount_cents != null ? (reg.charge_amount_cents / 100).toFixed(2) : '519.00';
+  const [amount, setAmount] = useState(defaultAmount);
+  const [note, setNote] = useState('');
+  const [charging, setCharging] = useState(false);
+  const [error, setError] = useState('');
+
+  const hasCard = !!(reg.square_customer_id && reg.square_card_id);
+
+  const handleCharge = async () => {
+    setError('');
+    const amountCents = Math.round(parseFloat(amount) * 100);
+    if (!Number.isFinite(amountCents) || amountCents <= 0) {
+      setError('Enter a valid charge amount.');
+      return;
+    }
+    setCharging(true);
+    try {
+      const res = await fetch(`${API_URL}/api/admin/registrations/${reg.id}/charge`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${password}` },
+        body: JSON.stringify({ amountCents, note: note.trim() || undefined }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Charge failed.');
+      onCharged(reg.id, {
+        charge_status: 'charged',
+        charge_amount_cents: amountCents,
+        square_payment_id: data.paymentId,
+        charged_at: new Date().toISOString(),
+        charge_error: null,
+      });
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setCharging(false);
+    }
+  };
+
+  return (
+    <div className="admin-modal-overlay" onClick={onClose}>
+      <div className="admin-modal admin-modal-small" onClick={(e) => e.stopPropagation()}>
+        <div className="admin-modal-header">
+          <h3 className="admin-modal-title">Charge {reg.first_name} {reg.last_name}</h3>
+          <button className="admin-modal-close" onClick={onClose}>✕</button>
+        </div>
+        <div className="admin-modal-body">
+          {!hasCard && (
+            <p className="admin-delete-warning">No card on file for this player — the charge will fail.</p>
+          )}
+          <div className="admin-edit-field">
+            <label className="admin-edit-label">Amount (USD)</label>
+            <input
+              className="admin-edit-input"
+              type="number"
+              min="0"
+              step="0.01"
+              value={amount}
+              onChange={(e) => setAmount(e.target.value)}
+            />
+          </div>
+          <div className="admin-edit-field">
+            <label className="admin-edit-label">Note (optional, shown on Square receipt)</label>
+            <input
+              className="admin-edit-input"
+              type="text"
+              value={note}
+              onChange={(e) => setNote(e.target.value)}
+              placeholder="e.g. Referral discount applied"
+            />
+          </div>
+          <p className="admin-sub">
+            A confirmation email will be sent to <strong>{reg.email}</strong> once the charge succeeds.
+          </p>
+        </div>
+        {error && <div className="admin-modal-error">{error}</div>}
+        <div className="admin-modal-footer">
+          <button className="admin-btn admin-btn-secondary" onClick={onClose} disabled={charging}>
+            Cancel
+          </button>
+          <button className="admin-btn admin-btn-primary" onClick={handleCharge} disabled={charging}>
+            {charging ? 'Charging…' : 'Charge Card'}
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 const ADMIN_SESSION_KEY = 'pgl_admin_password';
 
 // ── Main Admin Component ───────────────────────────────────────────────────────
@@ -1216,6 +1306,7 @@ export default function Admin({ onBack }) {
   const [deleteTarget, setDeleteTarget] = useState(null);
   const [deleteError, setDeleteError] = useState('');
   const [deleting, setDeleting] = useState(false);
+  const [chargeTarget, setChargeTarget] = useState(null);
 
   const [filter, setFilter] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
@@ -1298,6 +1389,11 @@ export default function Admin({ onBack }) {
     setRegistrations((prev) => prev.map((r) => (r.id === updated.id ? updated : r)));
     setEditTarget(null);
   };
+
+  const handleCharged = useCallback((id, updates) => {
+    setRegistrations((prev) => prev.map((r) => (r.id === id ? { ...r, ...updates } : r)));
+    setChargeTarget(null);
+  }, []);
 
   const handleToggleActive = useCallback(async (r) => {
     const newActive = r.active === false ? true : false;
@@ -1563,6 +1659,12 @@ export default function Admin({ onBack }) {
                     {r.active === false ? 'Activate' : 'Deactivate'}
                   </button>
                   <button
+                    className="admin-btn admin-btn-primary"
+                    onClick={() => setChargeTarget(r)}
+                  >
+                    Charge
+                  </button>
+                  <button
                     className="admin-btn admin-btn-delete"
                     onClick={() => { setDeleteTarget(r); setDeleteError(''); }}
                   >
@@ -1582,6 +1684,16 @@ export default function Admin({ onBack }) {
           password={password}
           onSave={handleSave}
           onClose={() => setEditTarget(null)}
+        />
+      )}
+
+      {/* Charge Modal */}
+      {chargeTarget && (
+        <ChargeModal
+          reg={chargeTarget}
+          password={password}
+          onCharged={handleCharged}
+          onClose={() => setChargeTarget(null)}
         />
       )}
 
