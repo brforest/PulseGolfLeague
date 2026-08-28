@@ -1703,8 +1703,23 @@ html {
   font-weight: 700;
   letter-spacing: -0.5px;
   color: var(--text-primary);
-  margin: 0 0 40px;
+  margin: 0 0 16px;
   line-height: 1.15;
+}
+
+.partnership-subtitle {
+  font-size: 1rem;
+  color: var(--text-secondary);
+  line-height: 1.7;
+  margin: 0 0 40px;
+}
+
+.partnership-section-heading {
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 1.3rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin: 12px 0 0;
 }
 
 .partnership-content {
