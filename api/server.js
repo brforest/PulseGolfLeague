@@ -92,14 +92,26 @@ const adminLimiter = rateLimit({
 });
 
 // ── Routes ────────────────────────────────────────────────
+// NOTE: limiters are scoped to each route's own path prefix (not the shared
+// '/api' prefix). A limiter mounted on '/api' runs on every /api/* request
+// that reaches it, even for paths its paired router doesn't handle (Express
+// only skips a middleware once something before it ends the response) — so
+// stacking multiple '/api'-scoped limiters here would multiply-count a single
+// request against every one of them.
 app.get('/api/health', (_req, res) => res.json({ status: 'ok', ts: new Date().toISOString() }));
 app.use('/api/admin', adminLimiter, adminRoute);   // must be before the /api catch-alls
-app.use('/api', publicReadLimiter, playersRoute);
-app.use('/api', registrationLimiter, registerRoute);
-app.use('/api', registrationLimiter, contactRoute);
-app.use('/api', registrationLimiter, hostHousingRoute);
-app.use('/api', registrationLimiter, mediaCrewRoute);
-app.use('/api', updatePaymentLimiter, updatePaymentRoute);
+app.use('/api/players', publicReadLimiter);
+app.use('/api/register', registrationLimiter);
+app.use('/api/contact', registrationLimiter);
+app.use('/api/host-housing', registrationLimiter);
+app.use('/api/media-crew', registrationLimiter);
+app.use('/api/update-payment', updatePaymentLimiter);
+app.use('/api', playersRoute);
+app.use('/api', registerRoute);
+app.use('/api', contactRoute);
+app.use('/api', hostHousingRoute);
+app.use('/api', mediaCrewRoute);
+app.use('/api', updatePaymentRoute);
 
 // ── 404 fallthrough ───────────────────────────────────────
 app.use((_req, res) => res.status(404).json({ error: 'Not found.' }));
