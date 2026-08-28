@@ -10,6 +10,7 @@ import HousingRequest from './HousingRequest.jsx';
 import MediaCrew from './MediaCrew.jsx';
 import Partnership18Birdies from './Partnership18Birdies.jsx';
 import PartnershipTitleist from './PartnershipTitleist.jsx';
+import UpdatePaymentInfo from './UpdatePaymentInfo.jsx';
 
 const PglLogo = '/images/pgl_logo.png';
 
@@ -156,6 +157,7 @@ function PulseGolfLeague() {
     if (p === '/media-crew') return 'media-crew';
     if (p === '/18birdies-partnership') return '18birdies-partnership';
     if (p === '/titleist-partnership') return 'titleist-partnership';
+    if (p === '/update-payment') return 'update-payment';
     return 'home';
   };
   const [page, setPage] = useState(getPage);
@@ -313,6 +315,11 @@ function PulseGolfLeague() {
   if (page === 'titleist-partnership') {
     const backTo = history.state?.from || '/';
     return <PartnershipTitleist onBack={() => navigate(backTo)} />;
+  }
+
+  if (page === 'update-payment') {
+    const backTo = history.state?.from || '/';
+    return <UpdatePaymentInfo onBack={() => navigate(backTo)} />;
   }
 
   if (page === 'signup') {
