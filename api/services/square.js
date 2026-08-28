@@ -86,6 +86,12 @@ export async function saveCardOnFile(nonce, customerId, playerInfo) {
 /**
  * Charge a previously saved card.
  * Returns the Square payment ID.
+ *
+ * locationId is passed explicitly (from SQUARE_LOCATION_ID) rather than left
+ * for Square to infer. Without it, Square falls back to the account's default
+ * location — if that location isn't enabled for card-not-present/online
+ * processing, every card-on-file charge can come back GENERIC_DECLINE
+ * regardless of the card itself.
  */
 export async function chargeCard({ customerId, cardId, amountCents, note }) {
   const response = await client.payments.create({
@@ -96,6 +102,7 @@ export async function chargeCard({ customerId, cardId, amountCents, note }) {
       amount: BigInt(amountCents),
       currency: 'USD',
     },
+    ...(process.env.SQUARE_LOCATION_ID && { locationId: process.env.SQUARE_LOCATION_ID }),
     autocomplete: true,
     note,
   });

@@ -157,7 +157,7 @@ DATABASE_URL=postgresql://pgl_user:CHOOSE_A_STRONG_PASSWORD@localhost:5432/pgl
 
 SQUARE_ENV=sandbox              # change to "production" when ready
 SQUARE_ACCESS_TOKEN=YOUR_SQUARE_ACCESS_TOKEN
-
+SQUARE_LOCATION_ID=YOUR_SQUARE_LOCATION_ID
 RESEND_API_KEY=re_YOUR_RESEND_KEY
 EMAIL_FROM=PGL <noreply@pulsegolfleague.com>
 
