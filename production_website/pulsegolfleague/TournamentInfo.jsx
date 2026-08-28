@@ -112,11 +112,11 @@ export default function TournamentInfo({ onRegister, onBack, onFounders, onConta
               </div>
               <div className="tinfo-fact">
                 <span className="tinfo-fact-label">ENTRY FEE</span>
-                <span className="tinfo-fact-value">$500 · Charged August 25, 2026</span>
+                <span className="tinfo-fact-value">$500</span>
               </div>
               <div className="tinfo-fact">
                 <span className="tinfo-fact-label">SIGNUP DEADLINE</span>
-                <span className="tinfo-fact-value">Tuesday, August 25, 2026</span>
+                <span className="tinfo-fact-value">Sunday, September 6, 2026</span>
               </div>
             </div>
           </div>
@@ -297,7 +297,7 @@ export default function TournamentInfo({ onRegister, onBack, onFounders, onConta
         {/* CTA */}
         <section className="tinfo-cta">
           <h2 className="tinfo-cta-title">Ready to compete?</h2>
-          <p className="tinfo-cta-sub">$500 entry · Card not charged until August 25, 2026 · Top 32 earn their money back</p>
+          <p className="tinfo-cta-sub">$500 entry · Make the cut, make your money back</p>
           <div className="tinfo-cta-actions">
             <button className="tinfo-cta-btn" onClick={onRegister}>Sign Up Now</button>
             {onHousing && (

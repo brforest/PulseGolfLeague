@@ -41,7 +41,7 @@ const WAIVER_SECTIONS = [
   },
   {
     title: 'PAYMENT AUTHORIZATION',
-    body: `By providing your payment information and completing registration, you authorize Pulse Golf League to charge your card in the amount of $519.00 USD, two (2) weeks prior to the event start date (August 25, 2026). You will receive an email confirmation prior to any charge being processed. In the event of tournament cancellation by PGL, a full refund will be issued to your original payment method within 10 business days. Withdrawals made prior to the charge date will not be charged. Withdrawals made after the charge date are non-refundable unless a substitute player is found at PGL's discretion.`,
+    body: `By providing your payment information and completing registration, upon approval to play. You will receive an email confirmation prior to any charge being processed. In the event of tournament cancellation by PGL, a full refund will be issued to your original payment method within 10 business days. Withdrawals made prior to the charge date will not be charged. Withdrawals made after the charge date are non-refundable unless a substitute player is found at PGL's discretion.`,
   },
 ];
 
@@ -60,7 +60,7 @@ function TournamentDetailsStep({ onNext }) {
 
         <div className="signup-charge-notice signup-charge-notice-top">
           <span className="signup-charge-notice-icon">ℹ</span>
-          <span>Your card will <strong>not</strong> be charged today. The $500 entry fee (+ $19 processing fee) will be charged on <strong>August 25, 2026</strong>.</span>
+          <span>Your card will be charged today the $500 entry fee (+ $19 processing fee) upon approval to play.</span>
         </div>
         <div className="signup-actions signup-actions-top">
           <button className="signup-btn-primary" onClick={onNext}>
@@ -104,7 +104,7 @@ function TournamentDetailsStep({ onNext }) {
 
         <div className="signup-charge-notice">
           <span className="signup-charge-notice-icon">ℹ</span>
-          <span>Your card will <strong>not</strong> be charged today. The $500 entry fee (+ $19 processing fee) will be charged on <strong>August 25, 2026</strong>.</span>
+          <span>Your card will be charged today the $500 entry fee (+ $19 processing fee) upon approval to play.</span>
         </div>
 
         <div className="signup-actions">
@@ -475,8 +475,7 @@ function PaymentStep({ cardContainerRef, cardLoading, paymentError, submitting, 
       <div className="signup-card">
         <h2 className="signup-card-title">Payment Information</h2>
         <p className="signup-card-subtitle">
-          Your card will <strong>not</strong> be charged today. A total of{' '}
-          <strong>$519.00</strong> will be charged on <strong>August 25, 2026</strong>.
+          A total of{' '} <strong>$519.00</strong> will be charged upon approval to play.
         </p>
 
         <div className="signup-payment-summary">
@@ -491,10 +490,6 @@ function PaymentStep({ cardContainerRef, cardLoading, paymentError, submitting, 
           <div className="signup-payment-row signup-payment-row-total">
             <span>Total</span>
             <span>$519.00</span>
-          </div>
-          <div className="signup-payment-row signup-payment-row-charge">
-            <span>Charge Date</span>
-            <span>August 25, 2026</span>
           </div>
         </div>
 
@@ -591,7 +586,7 @@ function ConfirmationPage({ playerInfo, onBack }) {
           </div>
           <div className="signup-confirm-item">
             <span className="signup-confirm-label">PAYMENT</span>
-            <span className="signup-confirm-value">$519.00 to be charged on August 25, 2026</span>
+            <span className="signup-confirm-value">$519.00 to be charged upon approval to play</span>
           </div>
         </div>
 
