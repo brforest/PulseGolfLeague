@@ -8,6 +8,7 @@ import Contact from './Contact.jsx';
 import HostSignUp from './HostSignUp.jsx';
 import HousingRequest from './HousingRequest.jsx';
 import MediaCrew from './MediaCrew.jsx';
+import Partnership18Birdies from './Partnership18Birdies.jsx';
 
 const PglLogo = '/images/pgl_logo.png';
 
@@ -152,6 +153,7 @@ function PulseGolfLeague() {
     if (p === '/host-housing') return 'host-housing';
     if (p === '/housing-request') return 'housing-request';
     if (p === '/media-crew') return 'media-crew';
+    if (p === '/18birdies-partnership') return '18birdies-partnership';
     return 'home';
   };
   const [page, setPage] = useState(getPage);
@@ -299,6 +301,11 @@ function PulseGolfLeague() {
   if (page === 'media-crew') {
     const backTo = history.state?.from || '/';
     return <MediaCrew onBack={() => navigate(backTo)} />;
+  }
+
+  if (page === '18birdies-partnership') {
+    const backTo = history.state?.from || '/';
+    return <Partnership18Birdies onBack={() => navigate(backTo)} />;
   }
 
   if (page === 'signup') {
