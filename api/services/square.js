@@ -102,3 +102,32 @@ export async function chargeCard({ customerId, cardId, amountCents, note }) {
 
   return response.payment.id;
 }
+
+// Human-readable guidance for Square's card decline codes, keyed by the
+// `code` field on the API error (not the `detail` text, which is less stable).
+// See https://developer.squareup.com/docs/payments-api/error-codes
+const DECLINE_HINTS = {
+  GENERIC_DECLINE:
+    "The card issuer declined the charge without a specific reason. This is common for stored-card charges — the bank's fraud/risk system may be blocking it, the account may be closed, or there may be insufficient funds. Ask the player to contact their bank to authorize the charge, or have them add a different card via the Update Payment page.",
+  CVV_FAILURE: 'The saved CVV no longer matches the card. Ask the player to re-add their card via the Update Payment page.',
+  ADDRESS_VERIFICATION_FAILURE: "The billing address on file no longer matches the card. Ask the player to re-add their card via the Update Payment page.",
+  CARD_EXPIRED: 'This card has expired. Ask the player to add a new card via the Update Payment page.',
+  CARD_NOT_SUPPORTED: 'This card type is not supported for this charge.',
+  INSUFFICIENT_FUNDS: 'The card was declined for insufficient funds.',
+  INVALID_ACCOUNT: 'The card account is invalid or closed. Ask the player to add a new card via the Update Payment page.',
+  INVALID_EXPIRATION: 'The card expiration on file is invalid. Ask the player to add a new card via the Update Payment page.',
+  TRANSACTION_LIMIT: "This charge exceeds a limit set by the card issuer.",
+};
+
+/**
+ * Extracts a human-friendly message + optional remediation hint from a Square
+ * SDK error thrown by chargeCard(). Falls back gracefully for non-Square errors.
+ */
+export function describeSquareError(err) {
+  const squareError = err?.errors?.[0];
+  const code = squareError?.code;
+  const message = squareError?.detail || err?.message || 'Unknown error';
+  const hint = code ? DECLINE_HINTS[code] : undefined;
+  return { message, code, hint };
+}
+

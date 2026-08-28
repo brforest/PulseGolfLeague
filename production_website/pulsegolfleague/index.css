@@ -3943,6 +3943,13 @@ html {
   border-top: 1px solid rgba(196, 32, 32, 0.2);
 }
 
+.admin-charge-hint {
+  margin: 8px 0 0;
+  color: var(--text-secondary);
+  font-size: 0.8rem;
+  line-height: 1.5;
+}
+
 .admin-modal-footer {
   display: flex;
   justify-content: flex-end;

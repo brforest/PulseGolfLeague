@@ -2,7 +2,7 @@ import { Router } from 'express';
 import { Resend } from 'resend';
 import pool from '../db/index.js';
 import { sendCustomEmail, sendCustomEmailHtml, sendCustomEmailReply, sendChargeEmail } from '../services/email.js';
-import { chargeCard } from '../services/square.js';
+import { chargeCard, describeSquareError } from '../services/square.js';
 
 export const adminRoute = Router();
 
@@ -202,8 +202,8 @@ adminRoute.post('/registrations/:id/charge', async (req, res) => {
 
     res.json({ success: true, paymentId, amountCents });
   } catch (err) {
-    const message = err?.errors?.[0]?.detail || err?.message || 'Unknown error';
-    console.error(`POST /admin/registrations/${id}/charge error:`, message);
+    const { message, code, hint } = describeSquareError(err);
+    console.error(`POST /admin/registrations/${id}/charge error:`, code || '', message);
 
     try {
       await pool.query(
@@ -214,7 +214,7 @@ adminRoute.post('/registrations/:id/charge', async (req, res) => {
       console.error('Failed to record charge failure:', updateErr);
     }
 
-    res.status(502).json({ error: `Charge failed: ${message}` });
+    res.status(502).json({ error: `Charge failed: ${message}`, code, hint });
   }
 });
 

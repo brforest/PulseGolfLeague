@@ -1205,11 +1205,13 @@ function ChargeModal({ reg, password, onCharged, onClose }) {
   const [note, setNote] = useState('');
   const [charging, setCharging] = useState(false);
   const [error, setError] = useState('');
+  const [hint, setHint] = useState('');
 
   const hasCard = !!(reg.square_customer_id && reg.square_card_id);
 
   const handleCharge = async () => {
     setError('');
+    setHint('');
     const amountCents = Math.round(parseFloat(amount) * 100);
     if (!Number.isFinite(amountCents) || amountCents <= 0) {
       setError('Enter a valid charge amount.');
@@ -1223,7 +1225,10 @@ function ChargeModal({ reg, password, onCharged, onClose }) {
         body: JSON.stringify({ amountCents, note: note.trim() || undefined }),
       });
       const data = await res.json();
-      if (!res.ok) throw new Error(data.error || 'Charge failed.');
+      if (!res.ok) {
+        setHint(data.hint || '');
+        throw new Error(data.error || 'Charge failed.');
+      }
       onCharged(reg.id, {
         charge_status: 'charged',
         charge_amount_cents: amountCents,
@@ -1274,7 +1279,12 @@ function ChargeModal({ reg, password, onCharged, onClose }) {
             A confirmation email will be sent to <strong>{reg.email}</strong> once the charge succeeds.
           </p>
         </div>
-        {error && <div className="admin-modal-error">{error}</div>}
+        {error && (
+          <div className="admin-modal-error">
+            {error}
+            {hint && <p className="admin-charge-hint">{hint}</p>}
+          </div>
+        )}
         <div className="admin-modal-footer">
           <button className="admin-btn admin-btn-secondary" onClick={onClose} disabled={charging}>
             Cancel
