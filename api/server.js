@@ -65,6 +65,17 @@ const publicReadLimiter = rateLimit({
   message: { error: 'Too many requests — please try again later.' },
 });
 
+// Update-payment gets its own, more generous limiter (separate from
+// registrationLimiter) since multiple players may use it from the same
+// shared wifi/IP at a venue, and each attempt is a lookup + a save.
+const updatePaymentLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 40,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { error: 'Too many requests — please try again later.' },
+});
+
 // Admin endpoints — only counts unauthenticated/failed requests.
 // Authenticated requests are skipped so the dashboard isn't self-limiting.
 const adminLimiter = rateLimit({
@@ -88,7 +99,7 @@ app.use('/api', registrationLimiter, registerRoute);
 app.use('/api', registrationLimiter, contactRoute);
 app.use('/api', registrationLimiter, hostHousingRoute);
 app.use('/api', registrationLimiter, mediaCrewRoute);
-app.use('/api', registrationLimiter, updatePaymentRoute);
+app.use('/api', updatePaymentLimiter, updatePaymentRoute);
 
 // ── 404 fallthrough ───────────────────────────────────────
 app.use((_req, res) => res.status(404).json({ error: 'Not found.' }));
