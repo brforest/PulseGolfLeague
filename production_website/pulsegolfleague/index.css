@@ -4180,6 +4180,22 @@ html {
   line-height: 1.5;
 }
 
+.admin-compose-format-options {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.admin-compose-format-option {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.82rem;
+  color: var(--text-primary);
+  cursor: pointer;
+}
+.admin-compose-format-option input[type="radio"] { accent-color: var(--accent-red); cursor: pointer; }
+
 .admin-compose-body {
   width: 100%;
   background: var(--bg-dark);

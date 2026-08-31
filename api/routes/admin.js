@@ -350,22 +350,40 @@ adminRoute.get('/referrals', async (_req, res) => {
 });
 
 // ── GET /api/admin/emails ─────────────────────────────────────────────────────
-// Returns the list of sent emails from Resend (metadata only, no html body)
+// Returns ALL sent emails from Resend within the last N days (metadata only, no html body).
+// Resend caps a single page at 100, so we page through with the `after` cursor until either
+// the emails go past the cutoff date or we run out of pages (has_more === false).
 adminRoute.get('/emails', async (req, res) => {
   const apiKey = process.env.RESEND_API_KEY;
   if (!apiKey) return res.status(503).json({ error: 'Email service not configured.' });
 
-  const limit = Math.min(parseInt(req.query.limit, 10) || 50, 100);
+  const days = Math.min(parseInt(req.query.days, 10) || 30, 90);
+  const cutoff = Date.now() - days * 24 * 60 * 60 * 1000;
+  const MAX_PAGES = 20; // safety cap (~2000 emails) in case Resend paginates unexpectedly
 
   try {
-    const response = await fetch(`https://api.resend.com/emails?limit=${limit}`, {
-      headers: { Authorization: `Bearer ${apiKey}` },
-    });
-    const data = await response.json();
-    if (!response.ok) {
-      return res.status(response.status).json({ error: data.message || 'Resend API error.' });
+    const results = [];
+    let after;
+    for (let page = 0; page < MAX_PAGES; page++) {
+      const url = new URL('https://api.resend.com/emails');
+      url.searchParams.set('limit', '100');
+      if (after) url.searchParams.set('after', after);
+      const response = await fetch(url, { headers: { Authorization: `Bearer ${apiKey}` } });
+      const data = await response.json();
+      if (!response.ok) {
+        return res.status(response.status).json({ error: data.message || 'Resend API error.' });
+      }
+      const batch = data.data || [];
+      if (batch.length === 0) break;
+      let hitCutoff = false;
+      for (const e of batch) {
+        if (new Date(e.created_at).getTime() < cutoff) { hitCutoff = true; break; }
+        results.push(e);
+      }
+      if (hitCutoff || !data.has_more) break;
+      after = batch[batch.length - 1].id;
     }
-    res.json(data);
+    res.json({ data: results });
   } catch (err) {
     console.error('GET /admin/emails error:', err);
     res.status(500).json({ error: 'Failed to fetch emails from Resend.' });
@@ -414,16 +432,19 @@ adminRoute.get('/emails/:emailId', async (req, res) => {
 });
 
 // ── POST /api/admin/emails/send ───────────────────────────────────────────────
-// Sends a custom branded email to one or more recipients.
+// Sends a custom email to one or more recipients.
 // Body accepts either:
 //   { recipients, subject, body }     — plain-text body (paragraph-per-blank-line)
 //   { recipients, subject, bodyHtml } — rich HTML body from the composer
+// Optional: format — 'branded' (full PGL template, default) or 'simple' (plain reply-style,
+//   still has the PGL footer). Only applies when bodyHtml is used.
 // Optional: attachments: [{ filename, content (base64) }] — max 5 files, 8MB each, 20MB total.
 // Optional: cc — array of email addresses, max 20, CC'd on every recipient's email.
 adminRoute.post('/emails/send', async (req, res) => {
-  const { recipients, subject, body, bodyHtml, inReplyTo, attachments: rawAttachments, cc: rawCc } = req.body;
+  const { recipients, subject, body, bodyHtml, inReplyTo, format: rawFormat, attachments: rawAttachments, cc: rawCc } = req.body;
   const useHtml = bodyHtml !== undefined;
   const isReply = !!(inReplyTo && typeof inReplyTo === 'string' && inReplyTo.length <= 1000);
+  const format = rawFormat === 'simple' || rawFormat === 'branded' ? rawFormat : (isReply ? 'simple' : 'branded');
 
   if (!Array.isArray(recipients) || recipients.length === 0) {
     return res.status(400).json({ error: 'recipients must be a non-empty array.' });
@@ -525,11 +546,11 @@ adminRoute.post('/emails/send', async (req, res) => {
   // Send individually so each recipient's To: header shows only their address.
   // Throttled to one per 200ms to stay under Resend's 5 req/sec rate limit.
   for (const to of recipients) {
-    const sendFn = (isReply && useHtml)
-      ? sendCustomEmailReply({ to, subject: trimmedSubject, bodyHtml, inReplyTo, attachments, cc })
-      : useHtml
-        ? sendCustomEmailHtml({ to, subject: trimmedSubject, bodyHtml, attachments, cc })
-        : sendCustomEmail({ to, subject: trimmedSubject, bodyText: body, attachments, cc });
+    const sendFn = !useHtml
+      ? sendCustomEmail({ to, subject: trimmedSubject, bodyText: body, attachments, cc })
+      : format === 'simple'
+        ? sendCustomEmailReply({ to, subject: trimmedSubject, bodyHtml, inReplyTo: isReply ? inReplyTo : undefined, attachments, cc })
+        : sendCustomEmailHtml({ to, subject: trimmedSubject, bodyHtml, attachments, cc });
     await sendFn.catch((err) => { errors.push(`${to}: ${err.message}`); });
     await new Promise((resolve) => setTimeout(resolve, 200));
   }
@@ -547,13 +568,32 @@ adminRoute.post('/emails/send', async (req, res) => {
 });
 
 // ── GET /api/admin/inbox ──────────────────────────────────────────────────────
-// Returns the most recent received emails from Resend.
+// Returns ALL received emails from Resend within the last N days. Same cursor-paging
+// approach as GET /emails above, since Resend caps a single page at 100 results.
 adminRoute.get('/inbox', async (req, res) => {
   try {
     const resend = new Resend(process.env.RESEND_API_KEY);
-    const { data, error } = await resend.emails.receiving.list({ limit: 50 });
-    if (error) throw new Error(error.message || 'Failed to fetch inbox.');
-    const emails = (data?.data || []).map((e) => ({
+    const days = Math.min(parseInt(req.query.days, 10) || 30, 90);
+    const cutoff = Date.now() - days * 24 * 60 * 60 * 1000;
+    const MAX_PAGES = 20; // safety cap (~2000 emails) in case Resend paginates unexpectedly
+
+    const results = [];
+    let after;
+    for (let page = 0; page < MAX_PAGES; page++) {
+      const { data, error } = await resend.emails.receiving.list({ limit: 100, ...(after && { after }) });
+      if (error) throw new Error(error.message || 'Failed to fetch inbox.');
+      const batch = data?.data || [];
+      if (batch.length === 0) break;
+      let hitCutoff = false;
+      for (const e of batch) {
+        if (new Date(e.created_at).getTime() < cutoff) { hitCutoff = true; break; }
+        results.push(e);
+      }
+      if (hitCutoff || !data?.has_more) break;
+      after = batch[batch.length - 1].id;
+    }
+
+    const emails = results.map((e) => ({
       id: e.id,
       from_address: e.from || '',
       from_name: null,

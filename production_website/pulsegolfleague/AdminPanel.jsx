@@ -570,16 +570,17 @@ function EmailsTab({ registrations, password }) {
   const [confirmCc, setConfirmCc] = useState([]);
   const [confirmBodyHtml, setConfirmBodyHtml] = useState('');
   const [replyMessageId, setReplyMessageId] = useState(null);
+  const [emailFormat, setEmailFormat] = useState('branded'); // 'branded' | 'simple'
   const [attachments, setAttachments] = useState([]); // [{ filename, content, size }]
   const [attachmentError, setAttachmentError] = useState('');
   const fileInputRef = useRef(null);
 
-  // ── Load inbox ──
+  // ── Load inbox ── (all messages from the last 30 days, not just the most recent N)
   const loadInbox = useCallback(async () => {
     setInboxLoading(true);
     setInboxError('');
     try {
-      const res = await fetch(`${API_URL}/api/admin/inbox?limit=50`, {
+      const res = await fetch(`${API_URL}/api/admin/inbox?days=30`, {
         headers: { Authorization: `Bearer ${password}` },
       });
       const data = await res.json();
@@ -592,12 +593,12 @@ function EmailsTab({ registrations, password }) {
     }
   }, [password]);
 
-  // ── Load sent emails ──
+  // ── Load sent emails ── (all emails from the last 30 days, not just the most recent N)
   const loadEmails = useCallback(async () => {
     setEmailsLoading(true);
     setEmailsError('');
     try {
-      const res = await fetch(`${API_URL}/api/admin/emails?limit=50`, {
+      const res = await fetch(`${API_URL}/api/admin/emails?days=30`, {
         headers: { Authorization: `Bearer ${password}` },
       });
       const data = await res.json();
@@ -640,6 +641,7 @@ function EmailsTab({ registrations, password }) {
       : `Re: ${email.subject || ''}`.trim();
     setSubject(reSubject);
     setReplyMessageId(email.message_id || null);
+    setEmailFormat('simple');
     setSendResult(null);
     setSendError('');
     setAttachments([]);
@@ -798,6 +800,7 @@ function EmailsTab({ registrations, password }) {
           recipients: confirmRecipients,
           subject: subject.trim(),
           bodyHtml: confirmBodyHtml,
+          format: emailFormat,
           ...(replyMessageId && { inReplyTo: replyMessageId }),
           ...(attachments.length > 0 && {
             attachments: attachments.map(({ filename, content }) => ({ filename, content })),
@@ -814,6 +817,7 @@ function EmailsTab({ registrations, password }) {
       setCustomTo('');
       setCcTo('');
       setReplyMessageId(null);
+      setEmailFormat('branded');
       setAttachments([]);
       setAttachmentError('');
       loadEmails();
@@ -977,10 +981,39 @@ function EmailsTab({ registrations, password }) {
           />
         </div>
 
+        {/* Format */}
+        <div className="admin-compose-block">
+          <label className="admin-compose-label">Format</label>
+          <div className="admin-compose-format-options">
+            <label className="admin-compose-format-option">
+              <input
+                type="radio"
+                name="emailFormat"
+                checked={emailFormat === 'branded'}
+                onChange={() => setEmailFormat('branded')}
+              />
+              PGL Branded (full header/footer template)
+            </label>
+            <label className="admin-compose-format-option">
+              <input
+                type="radio"
+                name="emailFormat"
+                checked={emailFormat === 'simple'}
+                onChange={() => setEmailFormat('simple')}
+              />
+              Simple Reply (plain white background, still has PGL footer)
+            </label>
+          </div>
+        </div>
+
         {/* Body — rich text editor */}
         <div className="admin-compose-block">
           <label className="admin-compose-label">Message</label>
-          <p className="admin-compose-hint">Sent using the PGL branded email template. Pasted text is always plain text.</p>
+          <p className="admin-compose-hint">
+            {emailFormat === 'simple'
+              ? 'Sent using the simple reply format (plain background, PGL footer). Pasted text is always plain text.'
+              : 'Sent using the PGL branded email template. Pasted text is always plain text.'}
+          </p>
           <div className="admin-compose-toolbar">
             <button
               type="button"
