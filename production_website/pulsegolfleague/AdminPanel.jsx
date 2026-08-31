@@ -631,16 +631,16 @@ function EmailsTab({ registrations, password }) {
     }
   };
 
-  const startReply = (email) => {
+  // Shared by "Reply" (inbox) and "Follow Up" (sent) — threads via the same message_id.
+  const startComposeReply = (toAddress, subj, messageId) => {
     setInboxDetail(null);
+    setDetailEmail(null);
     setSelectedPlayers(new Set());
-    setCustomTo(email.from_address || '');
+    setCustomTo(toAddress || '');
     setCcTo('');
-    const reSubject = (email.subject || '').startsWith('Re:')
-      ? email.subject
-      : `Re: ${email.subject || ''}`.trim();
+    const reSubject = (subj || '').startsWith('Re:') ? subj : `Re: ${subj || ''}`.trim();
     setSubject(reSubject);
-    setReplyMessageId(email.message_id || null);
+    setReplyMessageId(messageId || null);
     setEmailFormat('simple');
     setSendResult(null);
     setSendError('');
@@ -653,6 +653,15 @@ function EmailsTab({ registrations, password }) {
         bodyRef.current.scrollIntoView({ behavior: 'smooth', block: 'center' });
       }
     }, 50);
+  };
+
+  const startReply = (email) => {
+    startComposeReply(email.from_address, email.subject, email.message_id);
+  };
+
+  const startFollowUp = (email) => {
+    const toAddress = Array.isArray(email.to) ? email.to[0] : email.to;
+    startComposeReply(toAddress, email.subject, email.message_id);
   };
 
   // ── Sent email detail ──
@@ -1181,6 +1190,11 @@ function EmailsTab({ registrations, password }) {
                   <div className="admin-email-text">{detailEmail.text || 'No content.'}</div>
                 )}
               </>
+            )}
+            {!detailEmail._loading && !detailEmail._error && (
+              <div className="admin-modal-footer">
+                <button className="admin-btn admin-btn-primary" onClick={() => startFollowUp(detailEmail)}>Follow Up →</button>
+              </div>
             )}
           </div>
         </div>
