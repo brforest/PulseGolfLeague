@@ -896,16 +896,17 @@ function EmailsTab({ registrations, password }) {
         <div className="admin-table-wrap" style={{ borderRadius: 0, border: 'none', maxHeight: '450px', overflowY: 'auto' }}>
           <table className="admin-table">
             <thead>
-              <tr><th>To</th><th>Subject</th><th>Sent</th><th>Status</th></tr>
+              <tr><th>To</th><th>CC</th><th>Subject</th><th>Sent</th><th>Status</th></tr>
             </thead>
             <tbody>
-              {emailsLoading && <tr><td colSpan={4} className="admin-empty-row">Loading…</td></tr>}
+              {emailsLoading && <tr><td colSpan={5} className="admin-empty-row">Loading…</td></tr>}
               {!emailsLoading && emails.length === 0 && (
-                <tr><td colSpan={4} className="admin-empty-row">No emails found.</td></tr>
+                <tr><td colSpan={5} className="admin-empty-row">No emails found.</td></tr>
               )}
               {emails.map((e) => (
                 <tr key={e.id} className="admin-row admin-email-row" onClick={() => loadDetail(e.id)}>
                   <td className="admin-email-to">{Array.isArray(e.to) ? e.to.join(', ') : e.to}</td>
+                  <td className="admin-email-to">{e.cc?.length > 0 ? (Array.isArray(e.cc) ? e.cc.join(', ') : e.cc) : '—'}</td>
                   <td>{e.subject}</td>
                   <td className="admin-email-date">
                     {e.created_at
@@ -1168,6 +1169,9 @@ function EmailsTab({ registrations, password }) {
               <>
                 <div className="admin-email-meta">
                   <div><strong>To:</strong> {Array.isArray(detailEmail.to) ? detailEmail.to.join(', ') : detailEmail.to}</div>
+                  {detailEmail.cc?.length > 0 && (
+                    <div><strong>CC:</strong> {Array.isArray(detailEmail.cc) ? detailEmail.cc.join(', ') : detailEmail.cc}</div>
+                  )}
                   <div><strong>From:</strong> {detailEmail.from}</div>
                   <div><strong>Sent:</strong> {detailEmail.created_at ? new Date(detailEmail.created_at).toLocaleString() : '—'}</div>
                   <div><strong>Status:</strong> {detailEmail.last_event || '—'}</div>
