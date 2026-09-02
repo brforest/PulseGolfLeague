@@ -148,7 +148,7 @@ function confirmationHtml(p) {
             <!-- Detail rows -->
             <table width="100%" cellpadding="0" cellspacing="0" style="margin-bottom:32px;">
               ${row('Event', 'Yolo Fliers Matchplay Championship')}
-              ${row('Qualifier', 'Monday, September 8, 2026')}
+              ${row('Qualifier', 'Tuesday, September 8, 2026')}
               ${row('Match Play', 'September 9–11, 2026')}
               ${row('Venue', 'Yolo Fliers Club — Woodland, CA')}
               ${row('Playing Status', esc(p.playingStatus))}
@@ -224,7 +224,7 @@ function chargeHtml(p, { amountFormatted, paymentId }) {
               ${row('Amount Charged', esc(amountFormatted))}
               ${row('Payment ID', esc(paymentId))}
               ${row('Event', 'Yolo Fliers Matchplay Championship')}
-              ${row('Qualifier', 'Monday, September 8, 2026')}
+              ${row('Qualifier', 'Tuesday, September 8, 2026')}
               ${row('Match Play', 'September 9–11, 2026')}
               ${row('Venue', 'Yolo Fliers Club — Woodland, CA')}
             </table>

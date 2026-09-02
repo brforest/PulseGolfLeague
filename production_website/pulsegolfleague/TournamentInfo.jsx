@@ -86,7 +86,7 @@ export default function TournamentInfo({ onRegister, onBack, onFounders, onConta
           </div>
           <div className="tinfo-overview-text">
             <h2 className="tinfo-section-title">About the Event</h2>
-            <p>Welcome to the inaugural event of the Pulse Golf League — The Yolo Fliers Match Play Championship! One-day, 18-hole qualifier on Monday, September 8; top 32 make it on to Single Elimination Match Play starting on Tuesday, September 9.</p>
+            <p>Welcome to the inaugural event of the Pulse Golf League — The Yolo Fliers Match Play Championship! One-day, 18-hole qualifier on Tuesday, September 8; top 32 make it on to Single Elimination Match Play starting on Tuesday, September 9.</p>
             <p>Hosted at Yolo Fliers Club, one of the premiere private courses in the California Central Valley, and home to PGA Tour Q-School, PGA Tour Pre-Qualifiers and Monday Qualifiers, AJGA events, and more. Located in Woodland, CA, less than 30 minutes from downtown Sacramento and even closer to Sacramento International Airport (SMF).</p>
 
             <div className="tinfo-key-facts">
