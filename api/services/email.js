@@ -6,12 +6,12 @@ function getClient() {
 }
 const FROM = () => process.env.EMAIL_FROM || 'PGL <noreply@pulsegolfleague.com>';
 
-export async function sendConfirmationEmail(playerInfo) {
+export async function sendConfirmationEmail(playerInfo, { amountFormatted } = {}) {
   const { error } = await getClient().emails.send({
     from: FROM(),
     to: [playerInfo.email],
     subject: "You're registered — Yolo Fliers Matchplay Championship",
-    html: confirmationHtml(playerInfo),
+    html: confirmationHtml(playerInfo, { amountFormatted: amountFormatted || '$519.00' }),
   });
   if (error) throw error;
 }
@@ -109,7 +109,7 @@ export async function sendAdminAlertEmail({ subject, errorType, playerEmail, pla
 
 // ─── Templates ────────────────────────────────────────────────────────────────
 
-function confirmationHtml(p) {
+function confirmationHtml(p, { amountFormatted }) {
   return `<!DOCTYPE html>
 <html lang="en">
 <head>
@@ -152,7 +152,7 @@ function confirmationHtml(p) {
               ${row('Match Play', 'September 9–11, 2026')}
               ${row('Venue', 'Yolo Fliers Club — Woodland, CA')}
               ${row('Playing Status', esc(p.playingStatus))}
-              ${row('Entry Fee', '$519.00 USD')}
+              ${row('Entry Fee', `${esc(amountFormatted)} USD`)}
             </table>
 
             <!-- Charge notice -->
@@ -160,7 +160,7 @@ function confirmationHtml(p) {
               <tr>
                 <td style="padding:16px 20px;background:rgba(0,0,0,0.25);border-left:2px solid #c42020;
                            font-size:0.85rem;color:#b0ab98;line-height:1.7;border-radius:0 4px 4px 0;">
-                  Your $519 entry fee will be collected when you are approved to play.
+                  Your ${esc(amountFormatted)} entry fee will be collected when you are approved to play.
                   You'll receive another email when your card is charged.
                 </td>
               </tr>

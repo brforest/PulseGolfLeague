@@ -10,6 +10,9 @@ const REQUIRED_FIELDS = [
   'nationality', 'email', 'phone', 'playingStatus', 'homeTown', 'homeCourse',
 ];
 
+const PROCESSING_FEE_CENTS = 1900;
+const ENTRY_FEE_CENTS = { Amateur: 35000, Professional: 50000 };
+
 registerRoute.post('/register', async (req, res) => {
   const { nonce, playerInfo } = req.body ?? {};
 
@@ -146,6 +149,7 @@ registerRoute.post('/register', async (req, res) => {
   // ── Persist registration ────────────────────────────────
 
   const chargeDate = process.env.CHARGE_DATE || '2026-08-25';
+  const chargeAmountCents = (ENTRY_FEE_CENTS[playerInfo.playingStatus] ?? ENTRY_FEE_CENTS.Professional) + PROCESSING_FEE_CENTS;
 
   try {
     await pool.query(
@@ -158,10 +162,10 @@ registerRoute.post('/register', async (req, res) => {
          instagram, twitter, tiktok,
          referred_by,
          square_customer_id, square_card_id,
-         scheduled_charge_date
+         scheduled_charge_date, charge_amount_cents
        ) VALUES (
          $1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,
-         $12,$13,$14,$15,$16,$17,$18,$19,$20,$21,$22,$23
+         $12,$13,$14,$15,$16,$17,$18,$19,$20,$21,$22,$23,$24
        )`,
       [
         playerInfo.firstName.trim(),
@@ -187,6 +191,7 @@ registerRoute.post('/register', async (req, res) => {
         customerId,
         cardId,
         chargeDate,
+        chargeAmountCents,
       ]
     );
   } catch (err) {
@@ -205,7 +210,7 @@ registerRoute.post('/register', async (req, res) => {
 
   // ── Confirmation email (non-blocking) ───────────────────
 
-  sendConfirmationEmail(playerInfo).catch((err) => {
+  sendConfirmationEmail(playerInfo, { amountFormatted: `$${(chargeAmountCents / 100).toFixed(2)}` }).catch((err) => {
     console.error(`Confirmation email failed for ${playerInfo.email}:`, err);
   });
 

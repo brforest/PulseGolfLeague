@@ -1251,7 +1251,8 @@ function EmailsTab({ registrations, password }) {
 
 // ── Charge Modal ────────────────────────────────────────────────────────────────
 function ChargeModal({ reg, password, onCharged, onClose }) {
-  const defaultAmount = reg.charge_amount_cents != null ? (reg.charge_amount_cents / 100).toFixed(2) : '519.00';
+  const fallbackAmount = reg.playing_status === 'Amateur' ? '369.00' : '519.00';
+  const defaultAmount = reg.charge_amount_cents != null ? (reg.charge_amount_cents / 100).toFixed(2) : fallbackAmount;
   const [amount, setAmount] = useState(defaultAmount);
   const [note, setNote] = useState('');
   const [charging, setCharging] = useState(false);

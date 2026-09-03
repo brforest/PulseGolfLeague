@@ -6,6 +6,11 @@ const EventPoster = '/images/yolo_fliers_matchplay_championship_poster.png';
 const SQUARE_APP_ID = import.meta.env.VITE_SQUARE_APP_ID || 'sandbox-sq0idb-REPLACE_WITH_YOUR_APP_ID';
 const SQUARE_LOCATION_ID = import.meta.env.VITE_SQUARE_LOCATION_ID || 'REPLACE_WITH_YOUR_LOCATION_ID';
 
+const PROCESSING_FEE_CENTS = 1900;
+const ENTRY_FEE_CENTS = { Amateur: 35000, Professional: 50000 };
+const getEntryFeeCents = (playingStatus) => ENTRY_FEE_CENTS[playingStatus] ?? ENTRY_FEE_CENTS.Professional;
+const formatUsd = (cents) => `$${(cents / 100).toFixed(2)}`;
+
 const WAIVER_SECTIONS = [
   {
     title: 'AUTHORITY TO REGISTER AND/OR TO ACT AS AGENT',
@@ -60,7 +65,7 @@ function TournamentDetailsStep({ onNext }) {
 
         <div className="signup-charge-notice signup-charge-notice-top">
           <span className="signup-charge-notice-icon">ℹ</span>
-          <span>Your card will be charged today the $500 entry fee (+ $19 processing fee) upon approval to play.</span>
+          <span>Your card will be charged today the entry fee ($350 Amateur / $500 Professional, + $19 processing fee) upon approval to play.</span>
         </div>
         <div className="signup-actions signup-actions-top">
           <button className="signup-btn-primary" onClick={onNext}>
@@ -104,7 +109,7 @@ function TournamentDetailsStep({ onNext }) {
 
         <div className="signup-charge-notice">
           <span className="signup-charge-notice-icon">ℹ</span>
-          <span>Your card will be charged today the $500 entry fee (+ $19 processing fee) upon approval to play.</span>
+          <span>Your card will be charged today the entry fee ($350 Amateur / $500 Professional, + $19 processing fee) upon approval to play.</span>
         </div>
 
         <div className="signup-actions">
@@ -470,26 +475,28 @@ function PlayerInfoStep({ data, onChange, onNext, onBack }) {
 
 // ===== Step 4: Payment =====
 function PaymentStep({ cardContainerRef, cardLoading, paymentError, submitting, onSubmit, onBack, playerInfo }) {
+  const entryFeeCents = getEntryFeeCents(playerInfo.playingStatus);
+  const totalCents = entryFeeCents + PROCESSING_FEE_CENTS;
   return (
     <div className="signup-step-content">
       <div className="signup-card">
         <h2 className="signup-card-title">Payment Information</h2>
         <p className="signup-card-subtitle">
-          A total of{' '} <strong>$519.00</strong> will be charged upon approval to play.
+          A total of{' '} <strong>{formatUsd(totalCents)}</strong> will be charged upon approval to play.
         </p>
 
         <div className="signup-payment-summary">
           <div className="signup-payment-row">
             <span>Yolo Fliers Matchplay Championship — Entry Fee</span>
-            <span>$500.00</span>
+            <span>{formatUsd(entryFeeCents)}</span>
           </div>
           <div className="signup-payment-row">
             <span>Processing Fee</span>
-            <span>$19.00</span>
+            <span>{formatUsd(PROCESSING_FEE_CENTS)}</span>
           </div>
           <div className="signup-payment-row signup-payment-row-total">
             <span>Total</span>
-            <span>$519.00</span>
+            <span>{formatUsd(totalCents)}</span>
           </div>
         </div>
 
@@ -554,6 +561,7 @@ function PaymentStep({ cardContainerRef, cardLoading, paymentError, submitting, 
 
 // ===== Confirmation =====
 function ConfirmationPage({ playerInfo, onBack }) {
+  const totalCents = getEntryFeeCents(playerInfo.playingStatus) + PROCESSING_FEE_CENTS;
   return (
     <div className="signup-step-content">
       <div className="signup-card signup-confirmation">
@@ -586,7 +594,7 @@ function ConfirmationPage({ playerInfo, onBack }) {
           </div>
           <div className="signup-confirm-item">
             <span className="signup-confirm-label">PAYMENT</span>
-            <span className="signup-confirm-value">$519.00 to be charged upon approval to play</span>
+            <span className="signup-confirm-value">{formatUsd(totalCents)} to be charged upon approval to play</span>
           </div>
         </div>
 

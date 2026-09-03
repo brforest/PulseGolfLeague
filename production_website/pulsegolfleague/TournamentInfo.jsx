@@ -112,7 +112,7 @@ export default function TournamentInfo({ onRegister, onBack, onFounders, onConta
               </div>
               <div className="tinfo-fact">
                 <span className="tinfo-fact-label">ENTRY FEE</span>
-                <span className="tinfo-fact-value">$500</span>
+                <span className="tinfo-fact-value">$350 Amateur / $500 Professional</span>
               </div>
               <div className="tinfo-fact">
                 <span className="tinfo-fact-label">SIGNUP DEADLINE</span>
