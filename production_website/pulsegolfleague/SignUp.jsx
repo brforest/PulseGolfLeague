@@ -6,9 +6,10 @@ const EventPoster = '/images/yolo_fliers_matchplay_championship_poster.png';
 const SQUARE_APP_ID = import.meta.env.VITE_SQUARE_APP_ID || 'sandbox-sq0idb-REPLACE_WITH_YOUR_APP_ID';
 const SQUARE_LOCATION_ID = import.meta.env.VITE_SQUARE_LOCATION_ID || 'REPLACE_WITH_YOUR_LOCATION_ID';
 
-const PROCESSING_FEE_CENTS = 1900;
+const PROCESSING_FEE_CENTS = { Amateur: 1000, Professional: 1900 };
 const ENTRY_FEE_CENTS = { Amateur: 35000, Professional: 50000 };
 const getEntryFeeCents = (playingStatus) => ENTRY_FEE_CENTS[playingStatus] ?? ENTRY_FEE_CENTS.Professional;
+const getProcessingFeeCents = (playingStatus) => PROCESSING_FEE_CENTS[playingStatus] ?? PROCESSING_FEE_CENTS.Professional;
 const formatUsd = (cents) => `$${(cents / 100).toFixed(2)}`;
 
 const WAIVER_SECTIONS = [
@@ -65,7 +66,7 @@ function TournamentDetailsStep({ onNext }) {
 
         <div className="signup-charge-notice signup-charge-notice-top">
           <span className="signup-charge-notice-icon">ℹ</span>
-          <span>Your card will be charged today the entry fee ($350 Amateur / $500 Professional, + $19 processing fee) upon approval to play.</span>
+          <span>Your card will be charged today the entry fee ($350 Amateur + $10 processing / $500 Professional + $19 processing) upon approval to play.</span>
         </div>
         <div className="signup-actions signup-actions-top">
           <button className="signup-btn-primary" onClick={onNext}>
@@ -109,7 +110,7 @@ function TournamentDetailsStep({ onNext }) {
 
         <div className="signup-charge-notice">
           <span className="signup-charge-notice-icon">ℹ</span>
-          <span>Your card will be charged today the entry fee ($350 Amateur / $500 Professional, + $19 processing fee) upon approval to play.</span>
+          <span>Your card will be charged today the entry fee ($350 Amateur + $10 processing / $500 Professional + $19 processing) upon approval to play.</span>
         </div>
 
         <div className="signup-actions">
@@ -476,7 +477,8 @@ function PlayerInfoStep({ data, onChange, onNext, onBack }) {
 // ===== Step 4: Payment =====
 function PaymentStep({ cardContainerRef, cardLoading, paymentError, submitting, onSubmit, onBack, playerInfo }) {
   const entryFeeCents = getEntryFeeCents(playerInfo.playingStatus);
-  const totalCents = entryFeeCents + PROCESSING_FEE_CENTS;
+  const processingFeeCents = getProcessingFeeCents(playerInfo.playingStatus);
+  const totalCents = entryFeeCents + processingFeeCents;
   return (
     <div className="signup-step-content">
       <div className="signup-card">
@@ -492,7 +494,7 @@ function PaymentStep({ cardContainerRef, cardLoading, paymentError, submitting, 
           </div>
           <div className="signup-payment-row">
             <span>Processing Fee</span>
-            <span>{formatUsd(PROCESSING_FEE_CENTS)}</span>
+            <span>{formatUsd(processingFeeCents)}</span>
           </div>
           <div className="signup-payment-row signup-payment-row-total">
             <span>Total</span>
@@ -561,7 +563,7 @@ function PaymentStep({ cardContainerRef, cardLoading, paymentError, submitting, 
 
 // ===== Confirmation =====
 function ConfirmationPage({ playerInfo, onBack }) {
-  const totalCents = getEntryFeeCents(playerInfo.playingStatus) + PROCESSING_FEE_CENTS;
+  const totalCents = getEntryFeeCents(playerInfo.playingStatus) + getProcessingFeeCents(playerInfo.playingStatus);
   return (
     <div className="signup-step-content">
       <div className="signup-card signup-confirmation">

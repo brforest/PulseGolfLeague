@@ -10,7 +10,7 @@ const REQUIRED_FIELDS = [
   'nationality', 'email', 'phone', 'playingStatus', 'homeTown', 'homeCourse',
 ];
 
-const PROCESSING_FEE_CENTS = 1900;
+const PROCESSING_FEE_CENTS = { Amateur: 1000, Professional: 1900 };
 const ENTRY_FEE_CENTS = { Amateur: 35000, Professional: 50000 };
 
 registerRoute.post('/register', async (req, res) => {
@@ -149,7 +149,8 @@ registerRoute.post('/register', async (req, res) => {
   // ── Persist registration ────────────────────────────────
 
   const chargeDate = process.env.CHARGE_DATE || '2026-08-25';
-  const chargeAmountCents = (ENTRY_FEE_CENTS[playerInfo.playingStatus] ?? ENTRY_FEE_CENTS.Professional) + PROCESSING_FEE_CENTS;
+  const chargeAmountCents = (ENTRY_FEE_CENTS[playerInfo.playingStatus] ?? ENTRY_FEE_CENTS.Professional)
+    + (PROCESSING_FEE_CENTS[playerInfo.playingStatus] ?? PROCESSING_FEE_CENTS.Professional);
 
   try {
     await pool.query(
