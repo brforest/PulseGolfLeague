@@ -5,13 +5,10 @@ const EventPoster = '/images/yolo_fliers_matchplay_championship_poster.png';
 
 const API_URL = import.meta.env.VITE_API_URL || '';
 
-const PURSE_ROWS = [
-  { round: 'Round of 32',   value: '$500 ea.' },
-  { round: 'Round of 16',   value: '$1,000 ea.*' },
-  { round: 'Quarters',      value: '$2,250 ea.*' },
-  { round: 'Semi-Final',    value: '$3,500 ea.*' },
-  { round: 'Runner-Up',     value: '$7,000*' },
-  { round: 'Champion',      value: '$15,000*' },
+const FORMAT_SCALE_ROWS = [
+  { field: '33–63 players',  path: '36-Hole Qualifier → 8-Player Championship' },
+  { field: '64–127 players', path: '18-Hole Qualifier → 16-Player Championship' },
+  { field: '128+ players',   path: '18-Hole Qualifier → 32-Player Championship' },
 ];
 
 function statusLabel(status) {
@@ -70,9 +67,9 @@ export default function TournamentInfo({ onRegister, onBack, onFounders, onConta
           <span className="tinfo-eyebrow">INAUGURAL EVENT · YOLO FLIERS CLUB · WOODLAND, CA</span>
           <h1 className="tinfo-event-title">Yolo Fliers Matchplay Championship</h1>
           <div className="tinfo-dates">
-            <span>QUALIFIER: TUE, SEPT 8</span>
+            <span>POOL PLAY / QUALIFIER: TUE, SEPT 8</span>
             <span className="tinfo-date-dot">·</span>
-            <span>MATCH PLAY: SEPT 9–11</span>
+            <span>CHAMPIONSHIP MATCH PLAY: SEPT 9–11</span>
           </div>
         </div>
       </div>
@@ -86,24 +83,24 @@ export default function TournamentInfo({ onRegister, onBack, onFounders, onConta
           </div>
           <div className="tinfo-overview-text">
             <h2 className="tinfo-section-title">About the Event</h2>
-            <p>Welcome to the inaugural event of the Pulse Golf League — The Yolo Fliers Match Play Championship! One-day, 18-hole qualifier on Tuesday, September 8; top 32 make it on to Single Elimination Match Play starting on Tuesday, September 9.</p>
+            <p>Welcome to the inaugural event of the Pulse Golf League — The Yolo Fliers Match Play Championship! Day one is Pool Play or a Stroke Play Qualifier (depending on final field size), followed by Championship Match Play starting September 9.</p>
             <p>Hosted at Yolo Fliers Club, one of the premiere private courses in the California Central Valley, and home to PGA Tour Q-School, PGA Tour Pre-Qualifiers and Monday Qualifiers, AJGA events, and more. Located in Woodland, CA, less than 30 minutes from downtown Sacramento and even closer to Sacramento International Airport (SMF).</p>
 
             <div className="tinfo-key-facts">
               <div className="tinfo-fact">
                 <span className="tinfo-fact-label">FORMAT</span>
-                <span className="tinfo-fact-value">18-Hole Qualifier → Single Elimination Match Play</span>
+                <span className="tinfo-fact-value">Pool Play or Stroke Play Qualifier → Championship Match Play (scales with field size)</span>
               </div>
               <div className="tinfo-fact">
                 <span className="tinfo-fact-label">FIELD</span>
-                <span className="tinfo-fact-value">144 Qualify · Top 32 Advance</span>
+                <span className="tinfo-fact-value">Bracket size scales with total field — up to 144 Players · 32 Championship Spots</span>
               </div>
               <div className="tinfo-fact">
-                <span className="tinfo-fact-label">QUALIFIER</span>
+                <span className="tinfo-fact-label">POOL PLAY / QUALIFIER</span>
                 <span className="tinfo-fact-value">Monday, September 8, 2026</span>
               </div>
               <div className="tinfo-fact">
-                <span className="tinfo-fact-label">MATCH PLAY</span>
+                <span className="tinfo-fact-label">CHAMPIONSHIP MATCH PLAY</span>
                 <span className="tinfo-fact-value">September 9–11, 2026</span>
               </div>
               <div className="tinfo-fact">
@@ -119,6 +116,40 @@ export default function TournamentInfo({ onRegister, onBack, onFounders, onConta
                 <span className="tinfo-fact-value">Sunday, September 6, 2026</span>
               </div>
             </div>
+          </div>
+        </section>
+
+        {/* Tournament Format */}
+        <section className="tinfo-section tinfo-format">
+          <h2 className="tinfo-section-title">Tournament Format</h2>
+          <p>Our long-term vision is a 144-player field with 32 players earning their way into Championship Match Play. As we get closer to the event, the inaugural format will adapt to the field we have so every committed player gets the best possible experience.</p>
+
+          <div className="tinfo-promise">
+            <span className="tinfo-promise-heading">32 PLAYERS OR FEWER — POOL PLAY MATCH PLAY</span>
+            <ul className="tinfo-promise-list">
+              <li>Players are placed into 4-player pools, with each player facing the other three in their pool.</li>
+              <li>3 × 18-hole matches per player — 54 guaranteed holes of Match Play.</li>
+              <li>Top-performing players advance to the Championship Match Play bracket.</li>
+            </ul>
+          </div>
+
+          <div className="tinfo-promise">
+            <span className="tinfo-promise-heading">33+ PLAYERS — STROKE PLAY QUALIFIER</span>
+            <p style={{ color: 'var(--text-secondary)', fontSize: '0.9rem', marginBottom: '16px' }}>If the field grows above 32 players, we return to a Stroke Play Qualifier. The number of players advancing to Championship Match Play scales with the size of the field, keeping the bracket clean with no byes.</p>
+            <div className="tinfo-purse-table">
+              {FORMAT_SCALE_ROWS.map(({ field, path }) => (
+                <div key={field} className="tinfo-purse-row">
+                  <span className="tinfo-purse-round">{field}</span>
+                  <span className="tinfo-purse-value">{path}</span>
+                </div>
+              ))}
+            </div>
+            <p className="tinfo-purse-disclaimer">Long-term vision: 144 Players → Stroke Play Qualifier → 32 Championship Match Play Players</p>
+          </div>
+
+          <div className="tinfo-promise">
+            <span className="tinfo-promise-heading">THE GUARANTEE</span>
+            <p style={{ color: 'var(--text-secondary)', fontSize: '0.9rem' }}>If you earn your way into Championship Match Play and lose your first Championship Match, you get your entry fee back — <strong>$500 for Professionals, $350 for Amateurs</strong>. Every match you win from there increases your payout.</p>
           </div>
         </section>
 
@@ -144,16 +175,14 @@ export default function TournamentInfo({ onRegister, onBack, onFounders, onConta
         {/* Purse Breakdown */}
         <section className="tinfo-section tinfo-purse">
           <h2 className="tinfo-section-title">Prize Purse</h2>
-          <p className="tinfo-purse-subtitle">Top 32 players earn their entry fee back — and then some.</p>
+          <p className="tinfo-purse-subtitle">Earn your way into Championship Match Play and you're guaranteed your entry fee back — every win from there adds more.</p>
           <div className="tinfo-purse-table">
-            {PURSE_ROWS.map(({ round, value }) => (
-              <div key={round} className={`tinfo-purse-row${round === 'Champion' ? ' tinfo-purse-champion' : ''}`}>
-                <span className="tinfo-purse-round">{round}</span>
-                <span className="tinfo-purse-value">{value}</span>
-              </div>
-            ))}
+            <div className="tinfo-purse-row tinfo-purse-champion">
+              <span className="tinfo-purse-round">Championship Match Play Guarantee</span>
+              <span className="tinfo-purse-value">$500 Pro / $350 Am</span>
+            </div>
           </div>
-          <p className="tinfo-purse-disclaimer">* Assuming full field of 144 players</p>
+          <p className="tinfo-purse-disclaimer">The purse beyond the guarantee is funded directly by entry fees (after venue and operating costs), so it scales with the final field size. Confirmed round-by-round payouts will be announced once registration closes.</p>
         </section>
 
         {/* Schedule */}
@@ -163,15 +192,15 @@ export default function TournamentInfo({ onRegister, onBack, onFounders, onConta
             <div className="tinfo-schedule-item">
               <span className="tinfo-schedule-date">TUE · SEP 08</span>
               <div>
-                <div className="tinfo-schedule-name">18-Hole Stroke Play Qualifier</div>
-                <div className="tinfo-schedule-desc">All 144 players compete. Low 32 advance to match play.</div>
+                <div className="tinfo-schedule-name">Pool Play or Stroke Play Qualifier</div>
+                <div className="tinfo-schedule-desc">Format depends on final field size — see Tournament Format above.</div>
               </div>
             </div>
             <div className="tinfo-schedule-item">
               <span className="tinfo-schedule-date">WED · SEP 09</span>
               <div>
-                <div className="tinfo-schedule-name">Round of 32</div>
-                <div className="tinfo-schedule-desc">Single-elimination match play begins.</div>
+                <div className="tinfo-schedule-name">Championship Match Play Begins</div>
+                <div className="tinfo-schedule-desc">Bracket size (8, 16, or 32 players) scales with the final field.</div>
               </div>
             </div>
             <div className="tinfo-schedule-item">
@@ -196,7 +225,7 @@ export default function TournamentInfo({ onRegister, onBack, onFounders, onConta
               <span className="tinfo-schedule-date">FRI · SEP 11 PM</span>
               <div>
                 <div className="tinfo-schedule-name">Final — Champion Crowned</div>
-                <div className="tinfo-schedule-desc">Live-streamed to the world. $15,000* to the winner.</div>
+                <div className="tinfo-schedule-desc">Live-streamed to the world.</div>
               </div>
             </div>
           </div>
@@ -297,7 +326,7 @@ export default function TournamentInfo({ onRegister, onBack, onFounders, onConta
         {/* CTA */}
         <section className="tinfo-cta">
           <h2 className="tinfo-cta-title">Ready to compete?</h2>
-          <p className="tinfo-cta-sub">$500 entry · Make the cut, make your money back</p>
+          <p className="tinfo-cta-sub">$350 Amateur / $500 Professional entry · Make the cut, make your money back</p>
           <div className="tinfo-cta-actions">
             <button className="tinfo-cta-btn" onClick={onRegister}>Sign Up Now</button>
             {onHousing && (

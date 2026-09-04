@@ -126,12 +126,8 @@ function TournamentBracket() {
 
       <div className="purse-strip">
         {[
-          { round: 'ROUND OF 32', value: '$500 ea.' },
-          { round: 'ROUND OF 16', value: '$1,000 ea.*' },
-          { round: 'QUARTERS',    value: '$2,250 ea.*' },
-          { round: 'SEMI-FINAL',  value: '$3,500 ea.*' },
-          { round: 'RUNNER-UP',   value: '$7,000*' },
-          { round: 'CHAMPION',    value: '$15,000*' },
+          { round: 'ROUND OF 32 (GUARANTEE)', value: '$500 Pro / $350 Am' },
+          { round: 'CHAMPION',                value: 'Prize Grows With The Field' },
         ].map(({ round, value }, i) => (
           <div key={i} className="purse-item">
             <span className="purse-value">{value}</span>
@@ -139,7 +135,7 @@ function TournamentBracket() {
           </div>
         ))}
       </div>
-      <p className="purse-disclaimer">* Assuming full field of 144 players</p>
+      <p className="purse-disclaimer">Purse beyond the guarantee is funded by entry fees and scales with the final field size — confirmed payouts announced once registration closes.</p>
     </div>
   );
 }
@@ -383,7 +379,7 @@ function PulseGolfLeague() {
             <span className="hero-title-accent">RESTART THE PULSE.</span>
           </h1>
           <p className="hero-subheading">
-            144 players. 32 advance. One champion. Join the Pulse Golf League for our Pilot event at Yolo Fliers GC this September. High-intensity golf, streamed live to the world.
+            Pool play or a stroke play qualifier — the format scales with the field. Championship Match Play crowns one champion. Join the Pulse Golf League for our Pilot event at Yolo Fliers GC this September. High-intensity golf, streamed live to the world.
           </p>
           <div className="hero-cta">
             <button className="hero-pilot-info-button" onClick={() => navigate('/tournament-info')}>Pilot Event Info and Sign Up</button>
@@ -409,17 +405,17 @@ function PulseGolfLeague() {
           <h2 className="format-title">MATCH PLAY<br />MADNESS</h2>
         </div>
         <p className="format-description">
-          A four-day pilot built for pressure. A one day stroke play qualifier, low 32 advance. Round of 32 starts the bracket, every match is head-to-head, and only one player survives all five rounds to claim the title.
+          A four-day pilot built for pressure. 32 players or fewer play Pool Play Match Play — 4-player pools, 54 guaranteed holes — before advancing to Championship Match Play. A field of 33+ returns to a Stroke Play Qualifier that scales from 8 to 32 Championship spots. Every match from there is head-to-head, and only one player survives to claim the title.
         </p>
         <div className="format-flow">
           <div className="format-step">
-            <span className="format-number">144</span>
-            <span className="format-label">QUALIFY</span>
+            <span className="format-number" style={{ fontSize: 'clamp(2rem, 5vw, 4rem)' }}>POOL PLAY OR QUALIFIER</span>
+            <span className="format-label">DAY 1</span>
           </div>
           <div className="format-arrow">→</div>
           <div className="format-step">
-            <span className="format-number">32</span>
-            <span className="format-label">ADVANCE</span>
+            <span className="format-number">8–32</span>
+            <span className="format-label">CHAMPIONSHIP MATCH PLAY</span>
           </div>
           <div className="format-arrow">→</div>
           <div className="format-step">
@@ -515,9 +511,9 @@ function PulseGolfLeague() {
               <span className="matchday-label">Woodland, CA</span>
             </div>
             <div className="matchday-prize">
-              <span className="prize-amount">$15,000*</span>
+              <span className="prize-amount" style={{ fontSize: '1.9rem' }}>PRIZES GROW WITH THE FIELD</span>
               <span className="prize-label">TO THE WINNER</span>
-              <span className="prize-disclaimer">* Assuming full field of 144 players</span>
+              <span className="prize-disclaimer">Reach Championship Match Play and lose Round 1 — get your entry fee back, guaranteed</span>
             </div>
           </div>
           <div className="matchday-cta">
@@ -526,8 +522,8 @@ function PulseGolfLeague() {
               onClick={() => navigate('/tournament-info')}
             >Tournament Info and Sign Up</button>
             <div className="entry-info">
-              <span className="entry-fee">$500 ENTRY</span>
-              <span className="entry-note">TOP 32 EARN THEIR MONEY BACK</span>
+              <span className="entry-fee">$350 AM / $500 PRO ENTRY</span>
+              <span className="entry-note">EARN YOUR WAY IN, LOSE ROUND 1, GET IT BACK</span>
             </div>
           </div>
         </div>
