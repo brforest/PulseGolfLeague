@@ -511,7 +511,7 @@ function PulseGolfLeague() {
               <span className="matchday-label">Woodland, CA</span>
             </div>
             <div className="matchday-prize">
-              <span className="prize-amount" style={{ fontSize: '1.9rem' }}>PRIZES GROW WITH THE FIELD</span>
+              <span className="prize-amount" style={{ fontSize: '1.9rem' }}>PRIZE GROW WITH THE FIELD</span>
               <span className="prize-label">TO THE WINNER</span>
               <span className="prize-disclaimer">Reach Championship Match Play and lose Round 1 — get your entry fee back, guaranteed</span>
             </div>
