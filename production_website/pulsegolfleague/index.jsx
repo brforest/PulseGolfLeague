@@ -16,17 +16,17 @@ const PglLogo = '/images/pgl_logo.png';
 
 function TournamentBracket() {
   const SW = 120, SH = 30, HH = 50, UNIT = 40;
-  const cx = [0, 160, 320, 480, 640];
-  const rounds = ['TOP 8', 'QUARTERFINALS', 'SEMIFINALS', 'FINAL', 'CHAMPION'];
-  const dates  = ['SEP 8-9', 'SEP 10 AM', 'SEP 10 PM', 'SEP 11 AM', 'SEP 11 AM'];
+  const cx = [0, 160, 320, 480];
+  const rounds = ['QUARTERFINALS', 'SEMIFINALS', 'FINAL', 'CHAMPION'];
+  const dates  = ['SEP 10 AM', 'SEP 10 PM', 'SEP 11 AM', 'SEP 11 AM'];
 
   const r1y = Array.from({ length: 8 }, (_, i) => UNIT / 2 + i * UNIT);
   const r2y = Array.from({ length: 4 }, (_, i) => (r1y[i * 2] + r1y[i * 2 + 1]) / 2);
   const r3y = Array.from({ length: 2 }, (_, i) => (r2y[i * 2] + r2y[i * 2 + 1]) / 2);
-  const r4y = [(r3y[0] + r3y[1]) / 2];
+  const champY = (r3y[0] + r3y[1]) / 2;
 
   const svgH = HH + 8 * UNIT + 12;
-  const svgW = cx[4] + SW + 12;
+  const svgW = cx[3] + SW + 12;
 
   const BORDER  = 'rgba(176,171,152,0.2)';
   const MUTED   = '#706c58';
@@ -103,25 +103,23 @@ function TournamentBracket() {
         {/* Connector lines */}
         <RoundConnectors fromYs={r1y} toYs={r2y} colIdx={0} />
         <RoundConnectors fromYs={r2y} toYs={r3y} colIdx={1} />
-        <RoundConnectors fromYs={r3y} toYs={r4y} colIdx={2} />
-        <line x1={cx[3] + SW} y1={r4y[0] + HH} x2={cx[4]} y2={r4y[0] + HH}
-          stroke={RED} strokeWidth="1.5" strokeDasharray="4 3"
+        <path
+          d={`M${cx[2] + SW} ${r3y[0] + HH}H${(cx[2] + SW + cx[3]) / 2}V${r3y[1] + HH}H${cx[2] + SW} M${(cx[2] + SW + cx[3]) / 2} ${champY + HH}H${cx[3]}`}
+          fill="none" stroke={RED} strokeWidth="1.5" strokeDasharray="4 3"
         />
 
-        {/* R32 slots */}
+        {/* Quarterfinal slots */}
         {r1y.map((y, i) => (
           <BracketSlot key={`r1-${i}`} x={cx[0]} y={y}
-            label={`QUALIFIER ${String(i + 1).padStart(2, '0')}`}
+            label={`SEED ${String(i + 1).padStart(2, '0')}`}
           />
         ))}
-        {/* R16 slots */}
+        {/* Semifinal slots */}
         {r2y.map((y, i) => <BracketSlot key={`r2-${i}`} x={cx[1]} y={y} />)}
-        {/* QF slots */}
+        {/* Final slots */}
         {r3y.map((y, i) => <BracketSlot key={`r3-${i}`} x={cx[2]} y={y} />)}
-        {/* SF slot */}
-        <BracketSlot x={cx[3]} y={r4y[0]} />
         {/* Champion */}
-        <BracketSlot x={cx[4]} y={r4y[0]} label="CHAMPION" champ />
+        <BracketSlot x={cx[3]} y={champY} label="CHAMPION" champ />
       </svg>
 
       <div className="purse-strip">
