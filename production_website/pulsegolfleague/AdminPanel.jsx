@@ -574,6 +574,11 @@ function EmailsTab({ registrations, password }) {
   const [attachments, setAttachments] = useState([]); // [{ filename, content, size }]
   const [attachmentError, setAttachmentError] = useState('');
   const fileInputRef = useRef(null);
+  const savedRangeRef = useRef(null);
+  const [linkModalOpen, setLinkModalOpen] = useState(false);
+  const [linkUrl, setLinkUrl] = useState('');
+  const [linkDisplayText, setLinkDisplayText] = useState('');
+  const [linkError, setLinkError] = useState('');
 
   // ── Load inbox ── (all messages from the last 30 days, not just the most recent N)
   const loadInbox = useCallback(async () => {
@@ -726,6 +731,46 @@ function EmailsTab({ registrations, password }) {
     const text = e.clipboardData.getData('text/plain');
     document.execCommand('insertText', false, text);
   };
+
+  const openLinkModal = () => {
+    const sel = window.getSelection();
+    const range = sel && sel.rangeCount > 0 ? sel.getRangeAt(0) : null;
+    savedRangeRef.current = range && bodyRef.current?.contains(range.commonAncestorContainer) ? range.cloneRange() : null;
+    setLinkDisplayText(savedRangeRef.current ? savedRangeRef.current.toString() : '');
+    setLinkUrl('');
+    setLinkError('');
+    setLinkModalOpen(true);
+  };
+
+  const closeLinkModal = () => {
+    setLinkModalOpen(false);
+    setLinkError('');
+  };
+
+  const insertLink = () => {
+    const text = linkDisplayText.trim();
+    let url = linkUrl.trim();
+    if (!text) { setLinkError('Display text is required.'); return; }
+    if (!url) { setLinkError('URL is required.'); return; }
+    if (/^javascript:/i.test(url)) { setLinkError('That URL is not allowed.'); return; }
+    if (!/^[a-z][a-z0-9+.-]*:/i.test(url)) url = `https://${url}`;
+    if (!/^https?:/i.test(url) && !/^mailto:/i.test(url)) { setLinkError('URL must start with http://, https://, or mailto:.'); return; }
+
+    bodyRef.current?.focus();
+    const sel = window.getSelection();
+    if (savedRangeRef.current && sel) {
+      sel.removeAllRanges();
+      sel.addRange(savedRangeRef.current);
+    }
+    const anchorHtml = `<a href="${escAttr(url)}">${esc(text)}</a>`;
+    document.execCommand('insertHTML', false, anchorHtml);
+    setLinkModalOpen(false);
+    setLinkError('');
+  };
+
+  const esc = (str) =>
+    String(str ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+  const escAttr = (str) => esc(str).replace(/"/g, '&quot;');
 
   // ── Attachments ──
   const MAX_ATTACHMENTS = 5;
@@ -1043,7 +1088,42 @@ function EmailsTab({ registrations, password }) {
               onMouseDown={(e) => { e.preventDefault(); formatText('underline'); }}
               title="Underline (Ctrl+U)"
             ><u>U</u></button>
+            <button
+              type="button"
+              className="admin-compose-toolbar-btn"
+              onMouseDown={(e) => { e.preventDefault(); openLinkModal(); }}
+              title="Insert link"
+            >🔗</button>
           </div>
+          {linkModalOpen && (
+            <div className="admin-compose-link-modal">
+              <div className="admin-compose-link-row">
+                <label>Display text</label>
+                <input
+                  className="admin-edit-input"
+                  type="text"
+                  value={linkDisplayText}
+                  onChange={(e) => setLinkDisplayText(e.target.value)}
+                  placeholder="e.g. Tournament Info"
+                />
+              </div>
+              <div className="admin-compose-link-row">
+                <label>URL</label>
+                <input
+                  className="admin-edit-input"
+                  type="text"
+                  value={linkUrl}
+                  onChange={(e) => setLinkUrl(e.target.value)}
+                  placeholder="https://pulsegolfleague.com"
+                />
+              </div>
+              {linkError && <p className="admin-load-error" style={{ margin: '4px 0' }}>{linkError}</p>}
+              <div className="admin-compose-link-actions">
+                <button type="button" className="admin-btn admin-btn-secondary admin-btn-xs" onClick={closeLinkModal}>Cancel</button>
+                <button type="button" className="admin-btn admin-btn-primary admin-btn-xs" onClick={insertLink}>Insert Link</button>
+              </div>
+            </div>
+          )}
           <div
             ref={bodyRef}
             contentEditable

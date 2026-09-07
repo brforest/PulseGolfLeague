@@ -4324,6 +4324,37 @@ html {
   color: var(--text-primary);
 }
 
+/* Link insert modal (shown inline below the toolbar) */
+.admin-compose-link-modal {
+  background: var(--bg-dark);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  padding: 12px;
+  margin-bottom: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.admin-compose-link-row {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.admin-compose-link-row label {
+  font-size: 0.7rem;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+
+.admin-compose-link-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+}
+
 /* contentEditable rich-body editor */
 .admin-compose-richbody {
   width: 100%;
