@@ -383,7 +383,15 @@ function PulseGolfLeague() {
           </p>
           <div className="hero-cta">
             <a className="hero-pilot-info-button" style={{ textDecoration: 'none' }} href="https://app.squabbitgolf.com/w/tournament/T9PX5d1oK?tab=leaderboard" target="_blank" rel="noopener noreferrer">Leaderboard</a>
-            <a className="hero-pilot-info-button" style={{ textDecoration: 'none' }} href="https://www.youtube.com/live/jQjYAwPRmPQ?si=oQAn4R1e0BG_82HS" target="_blank" rel="noopener noreferrer">Watch Day 1 Live (Sept 8)</a>
+            <div className="tinfo-video-wrap" style={{ width: 'min(560px, 92vw)' }}>
+              <iframe
+                src="https://www.youtube.com/embed/6-JNmJSk4z4"
+                title="PGL Day 2 — Round 2 Stroke Play Qualifying (Sept 9)"
+                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                allowFullScreen
+              />
+            </div>
+            <a className="hero-pilot-info-button" style={{ textDecoration: 'none' }} href="https://www.youtube.com/live/jQjYAwPRmPQ?si=oQAn4R1e0BG_82HS" target="_blank" rel="noopener noreferrer">Watch Day 1 Livestream (Sept 8)</a>
           </div>
           <div className="hero-cta" style={{ marginTop: 16 }}>
             <button className="hero-founders-button" onClick={() => navigate('/tournament-info')}>Pilot Event Info and Sign Up</button>
@@ -457,15 +465,6 @@ function PulseGolfLeague() {
               DON'T JUST<br />WATCH.
             </h2>
             <h2 className="live-title-accent">FEEL IT.</h2>
-          </div>
-          <p className="live-streaming" style={{ marginBottom: '12px' }}>WATCH DAY 2 LIVE — ROUND 2 QUALIFYING, SEPT 9</p>
-          <div className="tinfo-video-wrap" style={{ margin: '0 auto 32px' }}>
-            <iframe
-              src="https://www.youtube.com/embed/6-JNmJSk4z4"
-              title="PGL Day 2 — Round 2 Stroke Play Qualifying (Sept 9)"
-              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-              allowFullScreen
-            />
           </div>
           <div className="live-features">
             <span>LIVE MATCH PLAY</span>
