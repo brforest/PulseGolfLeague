@@ -58,7 +58,6 @@ export default function TournamentInfo({ onRegister, onBack, onFounders, onConta
       <header className="tinfo-header">
         <button className="tinfo-back-btn" onClick={onBack}>← Back</button>
         <img src={PglLogo} alt="Pulse Golf League" className="tinfo-logo" />
-        <button className="tinfo-register-btn-header" onClick={onRegister}>Register</button>
       </header>
 
       {/* Hero Banner */}
@@ -233,7 +232,7 @@ export default function TournamentInfo({ onRegister, onBack, onFounders, onConta
           <p className="tinfo-purse-subtitle">Catch every round live, and follow the Leaderboard as scores update in real time.</p>
           <div className="tinfo-cta-actions" style={{ justifyContent: 'flex-start', marginBottom: '24px' }}>
             <a className="tinfo-cta-secondary-btn" style={{ display: 'inline-block', textDecoration: 'none' }} href="https://app.squabbitgolf.com/w/tournament/T9PX5d1oK?tab=leaderboard" target="_blank" rel="noopener noreferrer">Leaderboard</a>
-            <a className="tinfo-cta-secondary-btn" style={{ display: 'inline-block', textDecoration: 'none' }} href="https://www.youtube.com/live/jQjYAwPRmPQ?si=oQAn4R1e0BG_82HS" target="_blank" rel="noopener noreferrer">Watch Day 1 Live (Sept 8)</a>
+            <a className="tinfo-cta-secondary-btn" style={{ display: 'inline-block', textDecoration: 'none' }} href="https://www.youtube.com/live/jQjYAwPRmPQ" target="_blank" rel="noopener noreferrer">Watch Day 1 Livestream (Sept 8)</a>
           </div>
           <div className="tinfo-video-wrap">
             <iframe

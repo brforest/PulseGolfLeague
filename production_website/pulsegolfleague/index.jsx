@@ -391,10 +391,10 @@ function PulseGolfLeague() {
                 allowFullScreen
               />
             </div>
-            <a className="hero-pilot-info-button" style={{ textDecoration: 'none' }} href="https://www.youtube.com/live/jQjYAwPRmPQ?si=oQAn4R1e0BG_82HS" target="_blank" rel="noopener noreferrer">Watch Day 1 Livestream (Sept 8)</a>
+            <a className="hero-pilot-info-button" style={{ textDecoration: 'none' }} href="https://www.youtube.com/live/jQjYAwPRmPQ" target="_blank" rel="noopener noreferrer">Watch Day 1 Livestream (Sept 8)</a>
           </div>
           <div className="hero-cta" style={{ marginTop: 16 }}>
-            <button className="hero-founders-button" onClick={() => navigate('/tournament-info')}>Pilot Event Info and Sign Up</button>
+            <button className="hero-founders-button" onClick={() => navigate('/tournament-info')}>Pilot Event Info</button>
             <button className="hero-founders-button" onClick={() => navigate('/founders', { from: '/' })}>Meet the Founders</button>
           </div>
         </div>
@@ -527,7 +527,7 @@ function PulseGolfLeague() {
             <button
               className="tournament-info-button"
               onClick={() => navigate('/tournament-info')}
-            >Tournament Info and Sign Up</button>
+            >Tournament Info</button>
             <div className="entry-info">
               <span className="entry-fee">$350 AM / $500 PRO ENTRY</span>
               <span className="entry-note">MAKE THE CUT, GUARANTEED $500+ — DOUBLES EVERY WIN</span>
