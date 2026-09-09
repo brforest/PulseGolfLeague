@@ -94,7 +94,7 @@ export default function TournamentInfo({ onRegister, onBack, onFounders, onConta
               </div>
               <div className="tinfo-fact">
                 <span className="tinfo-fact-label">FIELD</span>
-                <span className="tinfo-fact-value">18 Players · Top 8 Advance</span>
+                <span className="tinfo-fact-value">15 Players · Top 8 Advance</span>
               </div>
               <div className="tinfo-fact">
                 <span className="tinfo-fact-label">QUALIFYING ROUND 1</span>
@@ -106,7 +106,7 @@ export default function TournamentInfo({ onRegister, onBack, onFounders, onConta
               </div>
               <div className="tinfo-fact">
                 <span className="tinfo-fact-label">CHAMPIONSHIP MATCH PLAY</span>
-                <span className="tinfo-fact-value">September 10–11, 2026</span>
+                <span className="tinfo-fact-value">September 10-11, 2026</span>
               </div>
               <div className="tinfo-fact">
                 <span className="tinfo-fact-label">VENUE</span>
@@ -118,7 +118,7 @@ export default function TournamentInfo({ onRegister, onBack, onFounders, onConta
               </div>
               <div className="tinfo-fact">
                 <span className="tinfo-fact-label">FIELD STATUS</span>
-                <span className="tinfo-fact-value">Locked at 18 Players</span>
+                <span className="tinfo-fact-value">Locked at 15 Players</span>
               </div>
             </div>
           </div>
@@ -127,7 +127,7 @@ export default function TournamentInfo({ onRegister, onBack, onFounders, onConta
         {/* Tournament Format */}
         <section className="tinfo-section tinfo-format">
           <h2 className="tinfo-section-title">Tournament Format</h2>
-          <p>The inaugural Yolo Fliers Match Play Championship field is set at 18 players.</p>
+          <p>The inaugural Yolo Fliers Match Play Championship field is set at 15 players.</p>
 
           <div className="tinfo-promise">
             <span className="tinfo-promise-heading">36-HOLE STROKE PLAY QUALIFYING</span>
@@ -227,6 +227,25 @@ export default function TournamentInfo({ onRegister, onBack, onFounders, onConta
           </div>
         </section>
 
+        {/* Watch Live */}
+        <section className="tinfo-section tinfo-watch">
+          <h2 className="tinfo-section-title">Watch Live</h2>
+          <p className="tinfo-purse-subtitle">Catch every round live, and follow the Leaderboard as scores update in real time.</p>
+          <div className="tinfo-cta-actions" style={{ justifyContent: 'flex-start', marginBottom: '24px' }}>
+            <a className="tinfo-cta-secondary-btn" style={{ display: 'inline-block', textDecoration: 'none' }} href="https://app.squabbitgolf.com/w/tournament/T9PX5d1oK?tab=leaderboard" target="_blank" rel="noopener noreferrer">Leaderboard</a>
+            <a className="tinfo-cta-secondary-btn" style={{ display: 'inline-block', textDecoration: 'none' }} href="https://www.youtube.com/live/jQjYAwPRmPQ?si=oQAn4R1e0BG_82HS" target="_blank" rel="noopener noreferrer">Watch Day 1 Live (Sept 8)</a>
+          </div>
+          <div className="tinfo-video-wrap">
+            <iframe
+              src="https://www.youtube.com/embed/6-JNmJSk4z4"
+              title="PGL Day 2 — Round 2 Stroke Play Qualifying (Sept 9)"
+              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+              allowFullScreen
+            />
+          </div>
+          <p className="tinfo-purse-disclaimer">Day 2 — Round 2 Stroke Play Qualifying (Sept 9)</p>
+        </section>
+
         {/* Player List */}
         <section className="tinfo-section tinfo-players">
           <h2 className="tinfo-section-title">Registered Players</h2>
@@ -234,7 +253,7 @@ export default function TournamentInfo({ onRegister, onBack, onFounders, onConta
           {!loadingPlayers && !playerError && (
             <div className="tinfo-player-stat">
               <span className="tinfo-player-stat-num">{players.length}</span>
-              <span className="tinfo-player-stat-denom">/ 18</span>
+              <span className="tinfo-player-stat-denom">/ 15</span>
               <span className="tinfo-player-stat-label">spots filled</span>
             </div>
           )}

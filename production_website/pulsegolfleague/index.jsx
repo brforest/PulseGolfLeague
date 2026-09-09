@@ -379,16 +379,15 @@ function PulseGolfLeague() {
             <span className="hero-title-accent">RESTART THE PULSE.</span>
           </h1>
           <p className="hero-subheading">
-            18 players. 36-hole stroke play qualifying. Top 8 advance to Championship Match Play. One champion. Join the Pulse Golf League for our Pilot event at Yolo Fliers GC this September. High-intensity golf, streamed live to the world.
+            15 players. 36-hole stroke play qualifying. Top 8 advance to Championship Match Play. One champion. Join the Pulse Golf League for our Pilot event at Yolo Fliers GC this September. High-intensity golf, streamed live to the world.
           </p>
           <div className="hero-cta">
             <button className="hero-pilot-info-button" onClick={() => navigate('/tournament-info')}>Pilot Event Info and Sign Up</button>
             <button className="hero-founders-button" onClick={() => navigate('/founders', { from: '/' })}>Meet the Founders</button>
           </div>
           <div className="hero-cta" style={{ marginTop: 16 }}>
-            <button className="hero-founders-button" onClick={() => navigate('/housing-request', { from: '/' })}>Request Host Housing (Players)</button>
-            <button className="hero-founders-button" onClick={() => navigate('/host-housing', { from: '/' })}>Host a Player (Club Members)</button>
-            <button className="hero-founders-button" onClick={() => navigate('/media-crew', { from: '/' })}>Join the Media Crew</button>
+            <a className="hero-founders-button" style={{ textDecoration: 'none' }} href="https://app.squabbitgolf.com/w/tournament/T9PX5d1oK?tab=leaderboard" target="_blank" rel="noopener noreferrer">Leaderboard</a>
+            <a className="hero-founders-button" style={{ textDecoration: 'none' }} href="https://www.youtube.com/live/jQjYAwPRmPQ?si=oQAn4R1e0BG_82HS" target="_blank" rel="noopener noreferrer">Watch Day 1 Live (Sept 8)</a>
           </div>
         </div>
         <div className="hero-scroll-indicator">
@@ -409,7 +408,7 @@ function PulseGolfLeague() {
         </p>
         <div className="format-flow">
           <div className="format-step">
-            <span className="format-number">18</span>
+            <span className="format-number">15</span>
             <span className="format-label">QUALIFY</span>
           </div>
           <div className="format-arrow">→</div>
