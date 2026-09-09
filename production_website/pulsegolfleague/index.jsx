@@ -391,10 +391,6 @@ function PulseGolfLeague() {
             </div>
             <a className="hero-pilot-info-button" style={{ textDecoration: 'none' }} href="https://www.youtube.com/live/jQjYAwPRmPQ" target="_blank" rel="noopener noreferrer">Watch Day 1 Livestream (Sept 8)</a>
           </div>
-          <div className="hero-cta" style={{ marginTop: 16 }}>
-            <button className="hero-founders-button" onClick={() => navigate('/tournament-info')}>Pilot Event Info</button>
-            <button className="hero-founders-button" onClick={() => navigate('/founders', { from: '/' })}>Meet the Founders</button>
-          </div>
         </div>
         <div className="hero-scroll-indicator">
           <span>SCROLL</span>
