@@ -1871,6 +1871,32 @@ html {
     padding: 16px 48px;
   }
 
+  .hero-cta {
+    width: 100%;
+  }
+
+  .hero-pilot-info-button,
+  .hero-founders-button,
+  .tournament-info-button {
+    width: 100%;
+    max-width: 340px;
+    box-sizing: border-box;
+    padding: 16px 24px;
+    letter-spacing: 3px;
+    font-size: 0.85rem;
+    text-align: center;
+    white-space: normal;
+  }
+
+  .matchday-cta {
+    width: 100%;
+  }
+
+  .entry-fee,
+  .entry-note {
+    letter-spacing: 2px;
+  }
+
   .intro-section,
   .season-section,
   .format-section,

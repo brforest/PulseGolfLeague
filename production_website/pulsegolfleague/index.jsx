@@ -325,11 +325,9 @@ function PulseGolfLeague() {
   if (page === 'tournament-info') {
     return (
       <TournamentInfo
-        onRegister={() => navigate('/registration')}
         onBack={() => navigate('/')}
         onFounders={() => navigate('/founders', { from: '/tournament-info' })}
         onContact={(from) => navigate('/contact', { from: from || '/tournament-info' })}
-        onHousing={(from) => navigate('/housing-request', { from: from || '/tournament-info' })}
       />
     );
   }

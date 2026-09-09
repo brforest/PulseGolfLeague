@@ -20,7 +20,7 @@ function statusLabel(status) {
   }
 }
 
-export default function TournamentInfo({ onRegister, onBack, onFounders, onContact, onHousing }) {
+export default function TournamentInfo({ onBack, onFounders, onContact }) {
   const [players, setPlayers] = useState([]);
   const [loadingPlayers, setLoadingPlayers] = useState(true);
   const [playerError, setPlayerError] = useState('');
@@ -334,18 +334,6 @@ export default function TournamentInfo({ onRegister, onBack, onFounders, onConta
               />
               <span className="tinfo-sponsor-name">Athlesign</span>
             </a>
-          </div>
-        </section>
-
-        {/* CTA */}
-        <section className="tinfo-cta">
-          <h2 className="tinfo-cta-title">Ready to compete?</h2>
-          <p className="tinfo-cta-sub">$350 Amateur / $500 Professional entry · Make the cut, guaranteed at least $500 back</p>
-          <div className="tinfo-cta-actions">
-            <button className="tinfo-cta-btn" onClick={onRegister}>Sign Up Now</button>
-            {onHousing && (
-              <button className="tinfo-cta-secondary-btn" onClick={() => onHousing('/tournament-info')}>Need Host Housing?</button>
-            )}
           </div>
         </section>
 
