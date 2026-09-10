@@ -381,10 +381,11 @@ function PulseGolfLeague() {
           </p>
           <div className="hero-cta">
             <a className="hero-pilot-info-button" style={{ textDecoration: 'none' }} href="https://app.squabbitgolf.com/w/tournament/T9PX5d1oK?tab=leaderboard" target="_blank" rel="noopener noreferrer">Leaderboard</a>
+            <a className="hero-pilot-info-button" style={{ textDecoration: 'none' }} href="https://www.youtube.com/watch?v=6-JNmJSk4z4" target="_blank" rel="noopener noreferrer">Watch Day 2 Livestream (Sept 9)</a>
             <div className="tinfo-video-wrap" style={{ width: 'min(560px, 92vw)' }}>
               <iframe
-                src="https://www.youtube.com/embed/6-JNmJSk4z4"
-                title="PGL Day 2 — Round 2 Stroke Play Qualifying (Sept 9)"
+                src="https://www.youtube.com/embed/cXe9nK4rpak"
+                title="PGL Day 3 — Championship Match Play (Sept 10)"
                 allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
                 allowFullScreen
               />

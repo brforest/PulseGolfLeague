@@ -233,16 +233,17 @@ export default function TournamentInfo({ onBack, onFounders, onContact }) {
           <div className="tinfo-cta-actions" style={{ justifyContent: 'flex-start', marginBottom: '24px' }}>
             <a className="tinfo-cta-secondary-btn" style={{ display: 'inline-block', textDecoration: 'none' }} href="https://app.squabbitgolf.com/w/tournament/T9PX5d1oK?tab=leaderboard" target="_blank" rel="noopener noreferrer">Leaderboard</a>
             <a className="tinfo-cta-secondary-btn" style={{ display: 'inline-block', textDecoration: 'none' }} href="https://www.youtube.com/live/jQjYAwPRmPQ" target="_blank" rel="noopener noreferrer">Watch Day 1 Livestream (Sept 8)</a>
+            <a className="tinfo-cta-secondary-btn" style={{ display: 'inline-block', textDecoration: 'none' }} href="https://www.youtube.com/watch?v=6-JNmJSk4z4" target="_blank" rel="noopener noreferrer">Watch Day 2 Livestream (Sept 9)</a>
           </div>
           <div className="tinfo-video-wrap">
             <iframe
-              src="https://www.youtube.com/embed/6-JNmJSk4z4"
-              title="PGL Day 2 — Round 2 Stroke Play Qualifying (Sept 9)"
+              src="https://www.youtube.com/embed/cXe9nK4rpak"
+              title="PGL Day 3 — Championship Match Play (Sept 10)"
               allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
               allowFullScreen
             />
           </div>
-          <p className="tinfo-purse-disclaimer">Day 2 — Round 2 Stroke Play Qualifying (Sept 9)</p>
+          <p className="tinfo-purse-disclaimer">Day 3 — Championship Match Play (Sept 10)</p>
         </section>
 
         {/* Player List */}
