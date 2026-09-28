@@ -3,6 +3,7 @@ import { Resend } from 'resend';
 import pool from '../db/index.js';
 import { sendCustomEmail, sendCustomEmailHtml, sendCustomEmailReply, sendChargeEmail } from '../services/email.js';
 import { chargeCard, describeSquareError } from '../services/square.js';
+import { decryptField } from '../services/crypto.js';
 
 export const adminRoute = Router();
 
@@ -316,6 +317,108 @@ adminRoute.delete('/media-crew/:id', async (req, res) => {
     res.json({ success: true, id });
   } catch (err) {
     console.error('DELETE /admin/media-crew error:', err);
+    res.status(500).json({ error: 'Internal server error.' });
+  }
+});
+
+// ── GET /api/admin/banking-info ───────────────────────────────────────────────
+// Returns banking sign-ups WITHOUT decrypting routing/account numbers — only
+// the last 4 of the account are exposed here. Full numbers require a separate
+// explicit reveal request (GET /api/admin/banking-info/:id/reveal).
+adminRoute.get('/banking-info', async (_req, res) => {
+  try {
+    const result = await pool.query(
+      `SELECT
+         id, first_name, last_name, email, phone,
+         account_holder_name, bank_name, account_type,
+         account_number_last4, notes, processed, processed_at, submitted_at
+       FROM banking_info_signups
+       ORDER BY submitted_at ASC`
+    );
+    res.json({ signups: result.rows });
+  } catch (err) {
+    console.error('GET /admin/banking-info error:', err);
+    res.status(500).json({ error: 'Internal server error.' });
+  }
+});
+
+// ── GET /api/admin/banking-info/:id/reveal ────────────────────────────────────
+// Decrypts and returns the full routing/account number for a single sign-up.
+// Called only when an admin explicitly clicks "Reveal" to set the player up
+// in Bluevine — never included in the general list response.
+adminRoute.get('/banking-info/:id/reveal', async (req, res) => {
+  const id = parseInt(req.params.id, 10);
+  if (!Number.isInteger(id) || id <= 0) {
+    return res.status(400).json({ error: 'Invalid ID.' });
+  }
+
+  try {
+    const result = await pool.query(
+      'SELECT routing_number_enc, account_number_enc FROM banking_info_signups WHERE id = $1',
+      [id]
+    );
+    if (result.rowCount === 0) {
+      return res.status(404).json({ error: 'Sign-up not found.' });
+    }
+    const { routing_number_enc, account_number_enc } = result.rows[0];
+    res.json({
+      routingNumber: decryptField(routing_number_enc),
+      accountNumber: decryptField(account_number_enc),
+    });
+  } catch (err) {
+    console.error('GET /admin/banking-info/:id/reveal error:', err);
+    res.status(500).json({ error: 'Internal server error.' });
+  }
+});
+
+// ── PATCH /api/admin/banking-info/:id ─────────────────────────────────────────
+// Admin marks a sign-up as processed once the player has been set up for
+// payouts in Bluevine.
+adminRoute.patch('/banking-info/:id', async (req, res) => {
+  const id = parseInt(req.params.id, 10);
+  if (!Number.isInteger(id) || id <= 0) {
+    return res.status(400).json({ error: 'Invalid ID.' });
+  }
+  if (typeof req.body?.processed !== 'boolean') {
+    return res.status(400).json({ error: 'processed must be a boolean.' });
+  }
+
+  try {
+    const result = await pool.query(
+      `UPDATE banking_info_signups
+       SET processed = $1, processed_at = CASE WHEN $1 THEN NOW() ELSE NULL END
+       WHERE id = $2
+       RETURNING id`,
+      [req.body.processed, id]
+    );
+    if (result.rowCount === 0) {
+      return res.status(404).json({ error: 'Sign-up not found.' });
+    }
+    res.json({ success: true, id });
+  } catch (err) {
+    console.error('PATCH /admin/banking-info error:', err);
+    res.status(500).json({ error: 'Internal server error.' });
+  }
+});
+
+// ── DELETE /api/admin/banking-info/:id ────────────────────────────────────────
+adminRoute.delete('/banking-info/:id', async (req, res) => {
+  const id = parseInt(req.params.id, 10);
+  if (!Number.isInteger(id) || id <= 0) {
+    return res.status(400).json({ error: 'Invalid ID.' });
+  }
+
+  try {
+    const result = await pool.query(
+      'DELETE FROM banking_info_signups WHERE id = $1 RETURNING id',
+      [id]
+    );
+    if (result.rowCount === 0) {
+      return res.status(404).json({ error: 'Sign-up not found.' });
+    }
+    res.json({ success: true, id });
+  } catch (err) {
+    console.error('DELETE /admin/banking-info error:', err);
     res.status(500).json({ error: 'Internal server error.' });
   }
 });

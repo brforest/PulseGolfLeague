@@ -541,6 +541,202 @@ function MediaCrewTab({ password }) {
   );
 }
 
+// ── Banking Info Tab ─────────────────────────────────────────────────────────
+function BankingInfoTab({ password }) {
+  const [signups, setSignups] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
+  const [deleteTarget, setDeleteTarget] = useState(null);
+  const [deleting, setDeleting] = useState(false);
+  const [revealed, setRevealed] = useState({}); // id -> { routingNumber, accountNumber }
+  const [revealingId, setRevealingId] = useState(null);
+  const [revealError, setRevealError] = useState('');
+
+  const load = useCallback(async () => {
+    setLoading(true);
+    setError('');
+    try {
+      const res = await fetch(`${API_URL}/api/admin/banking-info`, {
+        headers: { Authorization: `Bearer ${password}` },
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Failed to load banking info.');
+      setSignups(data.signups || []);
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setLoading(false);
+    }
+  }, [password]);
+
+  useEffect(() => { load(); }, [load]);
+
+  const handleReveal = async (id) => {
+    setRevealError('');
+    setRevealingId(id);
+    try {
+      const res = await fetch(`${API_URL}/api/admin/banking-info/${id}/reveal`, {
+        headers: { Authorization: `Bearer ${password}` },
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Failed to reveal banking info.');
+      setRevealed((prev) => ({ ...prev, [id]: data }));
+    } catch (err) {
+      setRevealError(err.message);
+    } finally {
+      setRevealingId(null);
+    }
+  };
+
+  const handleToggleProcessed = async (s) => {
+    try {
+      const res = await fetch(`${API_URL}/api/admin/banking-info/${s.id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${password}` },
+        body: JSON.stringify({ processed: !s.processed }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Update failed.');
+      setSignups((prev) => prev.map((row) => (row.id === s.id ? { ...row, processed: !s.processed } : row)));
+    } catch (err) {
+      setError(err.message);
+    }
+  };
+
+  const handleDeleteConfirm = async () => {
+    if (!deleteTarget) return;
+    setDeleting(true);
+    try {
+      const res = await fetch(`${API_URL}/api/admin/banking-info/${deleteTarget.id}`, {
+        method: 'DELETE',
+        headers: { Authorization: `Bearer ${password}` },
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Delete failed.');
+      setSignups((prev) => prev.filter((s) => s.id !== deleteTarget.id));
+      setRevealed((prev) => {
+        const next = { ...prev };
+        delete next[deleteTarget.id];
+        return next;
+      });
+      setDeleteTarget(null);
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setDeleting(false);
+    }
+  };
+
+  if (loading) return <p className="admin-load-error">Loading banking info…</p>;
+  if (error)   return <p className="admin-load-error">{error}</p>;
+
+  const processedCount = signups.filter((s) => s.processed).length;
+
+  return (
+    <div className="admin-referrals">
+      <p className="admin-referrals-note">
+        {signups.length} sign-up{signups.length !== 1 ? 's' : ''} · {processedCount} set up in Bluevine.
+        Account/routing numbers are encrypted at rest — click "Reveal" to view them for Bluevine setup.
+      </p>
+
+      <div className="admin-filters">
+        <button className="admin-btn admin-btn-secondary" onClick={load}>Refresh</button>
+      </div>
+
+      {revealError && <p className="admin-load-error">{revealError}</p>}
+
+      {signups.length === 0 ? (
+        <p className="admin-load-error">No banking info submitted yet.</p>
+      ) : (
+        <div className="admin-table-wrap">
+          <table className="admin-table">
+            <thead>
+              <tr>
+                <th>Name</th>
+                <th>Email</th>
+                <th>Phone</th>
+                <th>Account Holder</th>
+                <th>Bank</th>
+                <th>Type</th>
+                <th>Routing #</th>
+                <th>Account #</th>
+                <th>Notes</th>
+                <th>Submitted</th>
+                <th>Processed</th>
+                <th></th>
+              </tr>
+            </thead>
+            <tbody>
+              {signups.map((s) => {
+                const info = revealed[s.id];
+                return (
+                  <tr key={s.id} className="admin-row">
+                    <td className="admin-td-name"><strong>{s.first_name} {s.last_name}</strong></td>
+                    <td>{s.email}</td>
+                    <td>{s.phone}</td>
+                    <td>{s.account_holder_name}</td>
+                    <td>{s.bank_name}</td>
+                    <td>{s.account_type}</td>
+                    <td>
+                      {info ? info.routingNumber : '•••••••••'}
+                    </td>
+                    <td>
+                      {info ? info.accountNumber : `••••${s.account_number_last4}`}
+                    </td>
+                    <td>{s.notes || '—'}</td>
+                    <td>{formatDate(s.submitted_at)}</td>
+                    <td>
+                      <button
+                        className={`admin-btn ${s.processed ? 'admin-btn-activate' : 'admin-btn-secondary'}`}
+                        onClick={() => handleToggleProcessed(s)}
+                      >
+                        {s.processed ? 'Done ✓' : 'Mark Done'}
+                      </button>
+                    </td>
+                    <td>
+                      {!info && (
+                        <button
+                          className="admin-btn admin-btn-edit"
+                          onClick={() => handleReveal(s.id)}
+                          disabled={revealingId === s.id}
+                        >
+                          {revealingId === s.id ? 'Revealing…' : 'Reveal'}
+                        </button>
+                      )}
+                      <button className="admin-btn admin-btn-delete" onClick={() => setDeleteTarget(s)}>Delete</button>
+                    </td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
+        </div>
+      )}
+
+      {deleteTarget && (
+        <div className="admin-modal-overlay" onClick={() => setDeleteTarget(null)}>
+          <div className="admin-modal admin-modal-small" onClick={(e) => e.stopPropagation()}>
+            <div className="admin-modal-header">
+              <h3 className="admin-modal-title">Delete Banking Info</h3>
+              <button className="admin-modal-close" onClick={() => setDeleteTarget(null)}>✕</button>
+            </div>
+            <div className="admin-modal-body">
+              <p>Permanently delete banking info submitted by <strong>{deleteTarget.first_name} {deleteTarget.last_name}</strong>?</p>
+              <p className="admin-delete-warning">This cannot be undone.</p>
+            </div>
+            <div className="admin-modal-footer">
+              <button className="admin-btn admin-btn-secondary" onClick={() => setDeleteTarget(null)} disabled={deleting}>Cancel</button>
+              <button className="admin-btn admin-btn-delete" onClick={handleDeleteConfirm} disabled={deleting}>
+                {deleting ? 'Deleting…' : 'Delete'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
 // ── Email Tab ─────────────────────────────────────────────────────────────────
 function EmailsTab({ registrations, password }) {
 
@@ -1667,6 +1863,12 @@ export default function Admin({ onBack }) {
           Media Crew
         </button>
         <button
+          className={`admin-tab${tab === 'banking-info' ? ' admin-tab-active' : ''}`}
+          onClick={() => setTab('banking-info')}
+        >
+          Banking Info
+        </button>
+        <button
           className={`admin-tab${tab === 'emails' ? ' admin-tab-active' : ''}`}
           onClick={() => setTab('emails')}
         >
@@ -1889,6 +2091,10 @@ export default function Admin({ onBack }) {
 
       {tab === 'media-crew' && (
         <MediaCrewTab password={password} />
+      )}
+
+      {tab === 'banking-info' && (
+        <BankingInfoTab password={password} />
       )}
 
       {tab === 'emails' && (

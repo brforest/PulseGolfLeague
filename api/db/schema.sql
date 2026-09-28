@@ -124,3 +124,35 @@ CREATE TABLE IF NOT EXISTS media_crew_signups (
 );
 
 CREATE INDEX IF NOT EXISTS idx_mc_submitted_at ON media_crew_signups (submitted_at);
+
+-- Direct deposit / ACH banking info collected from players so they can be set
+-- up for payouts in Bluevine. Routing/account numbers are stored ENCRYPTED
+-- (AES-256-GCM, see api/services/crypto.js) — never stored or transmitted in
+-- plaintext except for the account's last 4 digits (used for display only).
+CREATE TABLE IF NOT EXISTS banking_info_signups (
+  id                    SERIAL PRIMARY KEY,
+
+  first_name            TEXT        NOT NULL,
+  last_name             TEXT        NOT NULL,
+  email                 TEXT        NOT NULL,
+  phone                 TEXT        NOT NULL,
+
+  account_holder_name   TEXT        NOT NULL,
+  bank_name             TEXT        NOT NULL,
+  account_type          TEXT        NOT NULL CHECK (account_type IN ('checking', 'savings')),
+
+  routing_number_enc    TEXT        NOT NULL,
+  account_number_enc    TEXT        NOT NULL,
+  account_number_last4  TEXT        NOT NULL,
+
+  notes                 TEXT,
+
+  -- Admin marks this once the player has been set up for payouts in Bluevine
+  processed             BOOLEAN     NOT NULL DEFAULT FALSE,
+  processed_at          TIMESTAMPTZ,
+
+  submitted_at          TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+CREATE INDEX IF NOT EXISTS idx_bank_submitted_at ON banking_info_signups (submitted_at);
+CREATE INDEX IF NOT EXISTS idx_bank_processed     ON banking_info_signups (processed);

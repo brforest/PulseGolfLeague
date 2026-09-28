@@ -10,6 +10,7 @@ import { contactRoute } from './routes/contact.js';
 import { hostHousingRoute } from './routes/hostHousing.js';
 import { mediaCrewRoute } from './routes/mediaCrew.js';
 import { updatePaymentRoute } from './routes/updatePayment.js';
+import { bankingInfoRoute } from './routes/bankingInfo.js';
 import { startChargeJob } from './jobs/chargeRegistrations.js';
 
 const app = express();
@@ -106,12 +107,14 @@ app.use('/api/contact', registrationLimiter);
 app.use('/api/host-housing', registrationLimiter);
 app.use('/api/media-crew', registrationLimiter);
 app.use('/api/update-payment', updatePaymentLimiter);
+app.use('/api/banking-info', registrationLimiter);
 app.use('/api', playersRoute);
 app.use('/api', registerRoute);
 app.use('/api', contactRoute);
 app.use('/api', hostHousingRoute);
 app.use('/api', mediaCrewRoute);
 app.use('/api', updatePaymentRoute);
+app.use('/api', bankingInfoRoute);
 
 // ── 404 fallthrough ───────────────────────────────────────
 app.use((_req, res) => res.status(404).json({ error: 'Not found.' }));
