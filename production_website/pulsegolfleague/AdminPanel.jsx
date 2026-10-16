@@ -636,7 +636,7 @@ function BankingInfoTab({ password }) {
     <div className="admin-referrals">
       <p className="admin-referrals-note">
         {signups.length} sign-up{signups.length !== 1 ? 's' : ''} · {processedCount} set up in Bluevine.
-        Account/routing numbers are encrypted at rest — click "Reveal" to view them for Bluevine setup.
+        Account/routing/SWIFT numbers are encrypted at rest — click "Reveal" to view them for Bluevine setup.
       </p>
 
       <div className="admin-filters">
@@ -655,11 +655,13 @@ function BankingInfoTab({ password }) {
                 <th>Name</th>
                 <th>Email</th>
                 <th>Phone</th>
+                <th>Method</th>
                 <th>Account Holder</th>
                 <th>Bank</th>
                 <th>Type</th>
-                <th>Routing #</th>
-                <th>Account #</th>
+                <th>Routing # / SWIFT</th>
+                <th>Account # / IBAN</th>
+                <th>Bank Country / Currency</th>
                 <th>Notes</th>
                 <th>Submitted</th>
                 <th>Processed</th>
@@ -669,19 +671,29 @@ function BankingInfoTab({ password }) {
             <tbody>
               {signups.map((s) => {
                 const info = revealed[s.id];
+                const isWire = s.payment_method === 'wire';
                 return (
                   <tr key={s.id} className="admin-row">
                     <td className="admin-td-name"><strong>{s.first_name} {s.last_name}</strong></td>
                     <td>{s.email}</td>
                     <td>{s.phone}</td>
+                    <td>{isWire ? 'Wire/SWIFT' : 'ACH'}</td>
                     <td>{s.account_holder_name}</td>
                     <td>{s.bank_name}</td>
-                    <td>{s.account_type}</td>
+                    <td>{s.account_type || '—'}</td>
                     <td>
-                      {info ? info.routingNumber : '•••••••••'}
+                      {info ? (isWire ? info.swiftBic : info.routingNumber) : '•••••••••'}
                     </td>
                     <td>
                       {info ? info.accountNumber : `••••${s.account_number_last4}`}
+                    </td>
+                    <td>
+                      {isWire ? `${s.bank_country || '—'} / ${s.currency || '—'}` : '—'}
+                      {isWire && (s.bank_address || s.beneficiary_address) && (
+                        <div className="admin-sub" title={`Bank: ${s.bank_address || '—'}\nBeneficiary: ${s.beneficiary_address || '—'}`}>
+                          Addresses on file
+                        </div>
+                      )}
                     </td>
                     <td>{s.notes || '—'}</td>
                     <td>{formatDate(s.submitted_at)}</td>

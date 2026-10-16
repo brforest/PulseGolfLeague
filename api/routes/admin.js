@@ -330,8 +330,9 @@ adminRoute.get('/banking-info', async (_req, res) => {
     const result = await pool.query(
       `SELECT
          id, first_name, last_name, email, phone,
-         account_holder_name, bank_name, account_type,
-         account_number_last4, notes, processed, processed_at, submitted_at
+         payment_method, account_holder_name, bank_name, account_type,
+         account_number_last4, bank_address, beneficiary_address, bank_country, currency,
+         notes, processed, processed_at, submitted_at
        FROM banking_info_signups
        ORDER BY submitted_at ASC`
     );
@@ -354,16 +355,17 @@ adminRoute.get('/banking-info/:id/reveal', async (req, res) => {
 
   try {
     const result = await pool.query(
-      'SELECT routing_number_enc, account_number_enc FROM banking_info_signups WHERE id = $1',
+      'SELECT routing_number_enc, account_number_enc, swift_bic_enc FROM banking_info_signups WHERE id = $1',
       [id]
     );
     if (result.rowCount === 0) {
       return res.status(404).json({ error: 'Sign-up not found.' });
     }
-    const { routing_number_enc, account_number_enc } = result.rows[0];
+    const { routing_number_enc, account_number_enc, swift_bic_enc } = result.rows[0];
     res.json({
-      routingNumber: decryptField(routing_number_enc),
+      routingNumber: routing_number_enc ? decryptField(routing_number_enc) : null,
       accountNumber: decryptField(account_number_enc),
+      swiftBic: swift_bic_enc ? decryptField(swift_bic_enc) : null,
     });
   } catch (err) {
     console.error('GET /admin/banking-info/:id/reveal error:', err);

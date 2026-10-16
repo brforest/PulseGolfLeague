@@ -125,10 +125,11 @@ CREATE TABLE IF NOT EXISTS media_crew_signups (
 
 CREATE INDEX IF NOT EXISTS idx_mc_submitted_at ON media_crew_signups (submitted_at);
 
--- Direct deposit / ACH banking info collected from players so they can be set
--- up for payouts in Bluevine. Routing/account numbers are stored ENCRYPTED
--- (AES-256-GCM, see api/services/crypto.js) — never stored or transmitted in
--- plaintext except for the account's last 4 digits (used for display only).
+-- Direct deposit / ACH / international wire banking info collected from
+-- players so they can be set up for payouts in Bluevine. Routing/account/
+-- SWIFT numbers are stored ENCRYPTED (AES-256-GCM, see api/services/crypto.js)
+-- — never stored or transmitted in plaintext except for the account's last 4
+-- digits (used for display only).
 CREATE TABLE IF NOT EXISTS banking_info_signups (
   id                    SERIAL PRIMARY KEY,
 
@@ -137,13 +138,26 @@ CREATE TABLE IF NOT EXISTS banking_info_signups (
   email                 TEXT        NOT NULL,
   phone                 TEXT        NOT NULL,
 
+  -- 'ach' = US direct deposit · 'wire' = international wire/SWIFT
+  payment_method        TEXT        NOT NULL DEFAULT 'ach' CHECK (payment_method IN ('ach', 'wire')),
+
   account_holder_name   TEXT        NOT NULL,
   bank_name             TEXT        NOT NULL,
-  account_type          TEXT        NOT NULL CHECK (account_type IN ('checking', 'savings')),
 
-  routing_number_enc    TEXT        NOT NULL,
+  -- ACH-only fields
+  account_type          TEXT        CHECK (account_type IS NULL OR account_type IN ('checking', 'savings')),
+  routing_number_enc    TEXT,
+
+  -- Shared: account number (ACH) or IBAN/account number (wire)
   account_number_enc    TEXT        NOT NULL,
   account_number_last4  TEXT        NOT NULL,
+
+  -- Wire-only fields
+  swift_bic_enc         TEXT,
+  bank_address          TEXT,
+  beneficiary_address   TEXT,
+  bank_country          TEXT,
+  currency              TEXT,
 
   notes                 TEXT,
 
@@ -156,3 +170,13 @@ CREATE TABLE IF NOT EXISTS banking_info_signups (
 
 CREATE INDEX IF NOT EXISTS idx_bank_submitted_at ON banking_info_signups (submitted_at);
 CREATE INDEX IF NOT EXISTS idx_bank_processed     ON banking_info_signups (processed);
+
+-- Migration for existing databases (table already created before wire/SWIFT support):
+-- ALTER TABLE banking_info_signups ADD COLUMN IF NOT EXISTS payment_method TEXT NOT NULL DEFAULT 'ach' CHECK (payment_method IN ('ach', 'wire'));
+-- ALTER TABLE banking_info_signups ALTER COLUMN account_type DROP NOT NULL;
+-- ALTER TABLE banking_info_signups ALTER COLUMN routing_number_enc DROP NOT NULL;
+-- ALTER TABLE banking_info_signups ADD COLUMN IF NOT EXISTS swift_bic_enc TEXT;
+-- ALTER TABLE banking_info_signups ADD COLUMN IF NOT EXISTS bank_address TEXT;
+-- ALTER TABLE banking_info_signups ADD COLUMN IF NOT EXISTS beneficiary_address TEXT;
+-- ALTER TABLE banking_info_signups ADD COLUMN IF NOT EXISTS bank_country TEXT;
+-- ALTER TABLE banking_info_signups ADD COLUMN IF NOT EXISTS currency TEXT;

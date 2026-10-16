@@ -8,6 +8,11 @@ const ACCOUNT_TYPES = [
   { value: 'savings', label: 'Savings' },
 ];
 
+const PAYMENT_METHODS = [
+  { value: 'ach', label: 'US Direct Deposit (ACH)' },
+  { value: 'wire', label: 'International Wire (SWIFT)' },
+];
+
 export default function BankingInfo({ onBack }) {
   useEffect(() => { window.scrollTo(0, 0); }, []);
   const [form, setForm] = useState({
@@ -15,10 +20,16 @@ export default function BankingInfo({ onBack }) {
     lastName: '',
     email: '',
     phone: '',
+    paymentMethod: 'ach',
     accountHolderName: '',
     bankName: '',
     accountType: '',
     routingNumber: '',
+    swiftBic: '',
+    bankAddress: '',
+    beneficiaryAddress: '',
+    bankCountry: '',
+    currency: '',
     accountNumber: '',
     confirmAccountNumber: '',
     notes: '',
@@ -26,10 +37,22 @@ export default function BankingInfo({ onBack }) {
   const [status, setStatus] = useState('idle'); // idle | sending | success | error
   const [errorMsg, setErrorMsg] = useState('');
 
+  const isWire = form.paymentMethod === 'wire';
+
   const handleChange = (e) => {
     const { name, value } = e.target;
-    if (name === 'routingNumber' || name === 'accountNumber' || name === 'confirmAccountNumber') {
+    if (name === 'routingNumber') {
       setForm((prev) => ({ ...prev, [name]: value.replace(/\D/g, '') }));
+      return;
+    }
+    if (name === 'accountNumber' || name === 'confirmAccountNumber') {
+      // ACH account numbers are digits only; IBAN/wire account numbers can contain letters
+      const cleaned = isWire ? value.replace(/[^A-Za-z0-9]/g, '').toUpperCase() : value.replace(/\D/g, '');
+      setForm((prev) => ({ ...prev, [name]: cleaned }));
+      return;
+    }
+    if (name === 'swiftBic') {
+      setForm((prev) => ({ ...prev, [name]: value.replace(/[^A-Za-z0-9]/g, '').toUpperCase() }));
       return;
     }
     setForm((prev) => ({ ...prev, [name]: value }));
@@ -55,10 +78,16 @@ export default function BankingInfo({ onBack }) {
           lastName: form.lastName,
           email: form.email,
           phone: form.phone,
+          paymentMethod: form.paymentMethod,
           accountHolderName: form.accountHolderName,
           bankName: form.bankName,
-          accountType: form.accountType,
-          routingNumber: form.routingNumber,
+          accountType: isWire ? undefined : form.accountType,
+          routingNumber: isWire ? undefined : form.routingNumber,
+          swiftBic: isWire ? form.swiftBic : undefined,
+          bankAddress: isWire ? form.bankAddress : undefined,
+          beneficiaryAddress: isWire ? form.beneficiaryAddress : undefined,
+          bankCountry: isWire ? form.bankCountry : undefined,
+          currency: isWire ? form.currency : undefined,
           accountNumber: form.accountNumber,
           notes: form.notes,
         }),
@@ -160,6 +189,24 @@ export default function BankingInfo({ onBack }) {
                 />
               </div>
               <div className="contact-field">
+                <label>Payment Method</label>
+                <div className="radio-group">
+                  {PAYMENT_METHODS.map((opt) => (
+                    <label key={opt.value} className="radio-option">
+                      <input
+                        type="radio"
+                        name="paymentMethod"
+                        value={opt.value}
+                        checked={form.paymentMethod === opt.value}
+                        onChange={handleChange}
+                        required
+                      />
+                      <span><strong>{opt.label}</strong></span>
+                    </label>
+                  ))}
+                </div>
+              </div>
+              <div className="contact-field">
                 <label htmlFor="bank-holder-name">Name on Bank Account</label>
                 <input
                   id="bank-holder-name"
@@ -186,63 +233,137 @@ export default function BankingInfo({ onBack }) {
                   placeholder="e.g. Chase, Bank of America"
                 />
               </div>
+              {!isWire && (
+                <>
+                  <div className="contact-field">
+                    <label>Account Type</label>
+                    <div className="radio-group">
+                      {ACCOUNT_TYPES.map((opt) => (
+                        <label key={opt.value} className="radio-option">
+                          <input
+                            type="radio"
+                            name="accountType"
+                            value={opt.value}
+                            checked={form.accountType === opt.value}
+                            onChange={handleChange}
+                            required
+                          />
+                          <span><strong>{opt.label}</strong></span>
+                        </label>
+                      ))}
+                    </div>
+                  </div>
+                  <div className="contact-field">
+                    <label htmlFor="bank-routing">Routing Number</label>
+                    <input
+                      id="bank-routing"
+                      name="routingNumber"
+                      type="text"
+                      inputMode="numeric"
+                      autoComplete="off"
+                      maxLength={9}
+                      required
+                      value={form.routingNumber}
+                      onChange={handleChange}
+                      placeholder="9-digit routing number"
+                    />
+                  </div>
+                </>
+              )}
+              {isWire && (
+                <>
+                  <div className="contact-field">
+                    <label htmlFor="bank-swift">SWIFT/BIC Code</label>
+                    <input
+                      id="bank-swift"
+                      name="swiftBic"
+                      type="text"
+                      autoComplete="off"
+                      maxLength={11}
+                      required
+                      value={form.swiftBic}
+                      onChange={handleChange}
+                      placeholder="e.g. BKKBTHBK"
+                    />
+                  </div>
+                  <div className="contact-field">
+                    <label htmlFor="bank-country">Bank Country</label>
+                    <input
+                      id="bank-country"
+                      name="bankCountry"
+                      type="text"
+                      maxLength={100}
+                      required
+                      value={form.bankCountry}
+                      onChange={handleChange}
+                      placeholder="e.g. Thailand"
+                    />
+                  </div>
+                  <div className="contact-field">
+                    <label htmlFor="bank-currency">Account Currency</label>
+                    <input
+                      id="bank-currency"
+                      name="currency"
+                      type="text"
+                      maxLength={10}
+                      required
+                      value={form.currency}
+                      onChange={handleChange}
+                      placeholder="e.g. THB, USD"
+                    />
+                  </div>
+                  <div className="contact-field">
+                    <label htmlFor="bank-address">Bank Address</label>
+                    <textarea
+                      id="bank-address"
+                      name="bankAddress"
+                      rows={2}
+                      maxLength={300}
+                      required
+                      value={form.bankAddress}
+                      onChange={handleChange}
+                      placeholder="Branch address of your bank"
+                    />
+                  </div>
+                  <div className="contact-field">
+                    <label htmlFor="bank-beneficiary-address">Your Address (Beneficiary)</label>
+                    <textarea
+                      id="bank-beneficiary-address"
+                      name="beneficiaryAddress"
+                      rows={2}
+                      maxLength={300}
+                      required
+                      value={form.beneficiaryAddress}
+                      onChange={handleChange}
+                      placeholder="Your home address on file with the bank"
+                    />
+                  </div>
+                </>
+              )}
               <div className="contact-field">
-                <label>Account Type</label>
-                <div className="radio-group">
-                  {ACCOUNT_TYPES.map((opt) => (
-                    <label key={opt.value} className="radio-option">
-                      <input
-                        type="radio"
-                        name="accountType"
-                        value={opt.value}
-                        checked={form.accountType === opt.value}
-                        onChange={handleChange}
-                        required
-                      />
-                      <span><strong>{opt.label}</strong></span>
-                    </label>
-                  ))}
-                </div>
-              </div>
-              <div className="contact-field">
-                <label htmlFor="bank-routing">Routing Number</label>
-                <input
-                  id="bank-routing"
-                  name="routingNumber"
-                  type="text"
-                  inputMode="numeric"
-                  autoComplete="off"
-                  maxLength={9}
-                  required
-                  value={form.routingNumber}
-                  onChange={handleChange}
-                  placeholder="9-digit routing number"
-                />
-              </div>
-              <div className="contact-field">
-                <label htmlFor="bank-account">Account Number</label>
+                <label htmlFor="bank-account">{isWire ? 'Account Number / IBAN' : 'Account Number'}</label>
                 <input
                   id="bank-account"
                   name="accountNumber"
                   type="text"
-                  inputMode="numeric"
+                  inputMode={isWire ? 'text' : 'numeric'}
                   autoComplete="off"
-                  maxLength={17}
+                  maxLength={isWire ? 34 : 17}
                   required
                   value={form.accountNumber}
                   onChange={handleChange}
-                  placeholder="Account number"
+                  placeholder={isWire ? 'Account number or IBAN' : 'Account number'}
                 />
               </div>
               <div className="contact-field">
-                <label htmlFor="bank-account-confirm">Confirm Account Number</label>
+                <label htmlFor="bank-account-confirm">{isWire ? 'Confirm Account Number / IBAN' : 'Confirm Account Number'}</label>
                 <input
                   id="bank-account-confirm"
                   name="confirmAccountNumber"
                   type="text"
-                  inputMode="numeric"
+                  inputMode={isWire ? 'text' : 'numeric'}
                   autoComplete="off"
-                  maxLength={17}
+                  maxLength={isWire ? 34 : 17}
                   required
                   value={form.confirmAccountNumber}
                   onChange={handleChange}

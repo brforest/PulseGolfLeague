@@ -15,11 +15,17 @@ function isValidRoutingNumber(routing) {
   return sum % 10 === 0;
 }
 
+// SWIFT/BIC is 8 or 11 characters: 4 bank code letters, 2 country letters,
+// 2 location alphanumeric, optional 3 branch alphanumeric
+const SWIFT_RE = /^[A-Z]{6}[A-Z0-9]{2}([A-Z0-9]{3})?$/;
+
 function validateBody(body) {
   const {
     firstName, lastName, email, phone,
-    accountHolderName, bankName, accountType,
-    routingNumber, accountNumber, notes,
+    accountHolderName, bankName, paymentMethod,
+    accountType, routingNumber,
+    swiftBic, bankAddress, beneficiaryAddress, bankCountry, currency,
+    accountNumber, notes,
   } = body ?? {};
 
   if (!firstName || typeof firstName !== 'string' || firstName.trim().length > 100) {
@@ -45,16 +51,43 @@ function validateBody(body) {
   if (!bankName || typeof bankName !== 'string' || bankName.trim().length > 150) {
     return 'Please provide your bank name (max 150 characters).';
   }
-  if (!['checking', 'savings'].includes(accountType)) {
-    return 'Please select a valid account type.';
+  if (!['ach', 'wire'].includes(paymentMethod)) {
+    return 'Please select a valid payment method.';
   }
-  if (typeof routingNumber !== 'string' || !isValidRoutingNumber(routingNumber.trim())) {
-    return 'Please provide a valid 9-digit routing number.';
+
+  if (paymentMethod === 'ach') {
+    if (!['checking', 'savings'].includes(accountType)) {
+      return 'Please select a valid account type.';
+    }
+    if (typeof routingNumber !== 'string' || !isValidRoutingNumber(routingNumber.trim())) {
+      return 'Please provide a valid 9-digit routing number.';
+    }
+    const accountDigits = typeof accountNumber === 'string' ? accountNumber.trim() : '';
+    if (!/^\d{4,17}$/.test(accountDigits)) {
+      return 'Please provide a valid account number (4-17 digits).';
+    }
+  } else {
+    if (typeof swiftBic !== 'string' || !SWIFT_RE.test(swiftBic.trim().toUpperCase())) {
+      return 'Please provide a valid SWIFT/BIC code (8 or 11 characters).';
+    }
+    const accountValue = typeof accountNumber === 'string' ? accountNumber.trim() : '';
+    if (accountValue.length < 4 || accountValue.length > 34) {
+      return 'Please provide a valid account number or IBAN (4-34 characters).';
+    }
+    if (!bankAddress || typeof bankAddress !== 'string' || bankAddress.trim().length > 300) {
+      return "Please provide your bank's address (max 300 characters).";
+    }
+    if (!beneficiaryAddress || typeof beneficiaryAddress !== 'string' || beneficiaryAddress.trim().length > 300) {
+      return 'Please provide your (the account holder\'s) address (max 300 characters).';
+    }
+    if (!bankCountry || typeof bankCountry !== 'string' || bankCountry.trim().length > 100) {
+      return "Please provide your bank's country (max 100 characters).";
+    }
+    if (!currency || typeof currency !== 'string' || currency.trim().length > 10) {
+      return 'Please provide the account currency (e.g. USD, THB).';
+    }
   }
-  const accountDigits = typeof accountNumber === 'string' ? accountNumber.trim() : '';
-  if (!/^\d{4,17}$/.test(accountDigits)) {
-    return 'Please provide a valid account number (4-17 digits).';
-  }
+
   if (notes !== undefined && notes !== null && (typeof notes !== 'string' || notes.length > 1000)) {
     return 'Notes must be 1000 characters or fewer.';
   }
@@ -62,43 +95,55 @@ function validateBody(body) {
 }
 
 // ── POST /api/banking-info ──────────────────────────────────────────────────
-// Players submit their direct deposit info here so admins can set them up for
-// payouts in Bluevine. Routing/account numbers are encrypted before storage.
+// Players submit their direct deposit (ACH) or international wire (SWIFT)
+// info here so admins can set them up for payouts in Bluevine. All
+// routing/account/SWIFT numbers are encrypted before storage.
 bankingInfoRoute.post('/banking-info', async (req, res) => {
   const error = validateBody(req.body);
   if (error) return res.status(400).json({ error });
 
   const {
     firstName, lastName, email, phone,
-    accountHolderName, bankName, accountType,
-    routingNumber, accountNumber, notes,
+    accountHolderName, bankName, paymentMethod,
+    accountType, routingNumber,
+    swiftBic, bankAddress, beneficiaryAddress, bankCountry, currency,
+    accountNumber, notes,
   } = req.body;
 
-  const routingDigits = routingNumber.trim();
-  const accountDigits = accountNumber.trim();
+  const accountValue = accountNumber.trim();
 
   try {
-    const routingNumberEnc = encryptField(routingDigits);
-    const accountNumberEnc = encryptField(accountDigits);
-    const accountNumberLast4 = accountDigits.slice(-4);
+    const isWire = paymentMethod === 'wire';
+    const routingNumberEnc = isWire ? null : encryptField(routingNumber.trim());
+    const swiftBicEnc = isWire ? encryptField(swiftBic.trim().toUpperCase()) : null;
+    const accountNumberEnc = encryptField(accountValue);
+    const accountNumberLast4 = accountValue.slice(-4);
 
     await pool.query(
       `INSERT INTO banking_info_signups
          (first_name, last_name, email, phone,
-          account_holder_name, bank_name, account_type,
-          routing_number_enc, account_number_enc, account_number_last4, notes)
-       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)`,
+          payment_method, account_holder_name, bank_name, account_type,
+          routing_number_enc, account_number_enc, account_number_last4,
+          swift_bic_enc, bank_address, beneficiary_address, bank_country, currency,
+          notes)
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17)`,
       [
         firstName.trim(),
         lastName.trim(),
         email.trim().toLowerCase(),
         phone.trim(),
+        paymentMethod,
         accountHolderName.trim(),
         bankName.trim(),
-        accountType,
+        isWire ? null : accountType,
         routingNumberEnc,
         accountNumberEnc,
         accountNumberLast4,
+        swiftBicEnc,
+        isWire ? bankAddress.trim() : null,
+        isWire ? beneficiaryAddress.trim() : null,
+        isWire ? bankCountry.trim() : null,
+        isWire ? currency.trim().toUpperCase() : null,
         notes?.trim() || null,
       ]
     );
